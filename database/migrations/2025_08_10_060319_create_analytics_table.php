@@ -29,7 +29,8 @@ return new class extends Migration
             $table->integer('time_on_page')->nullable(); // seconds
             $table->json('events')->nullable(); // Click events, scroll depth, etc
             $table->timestamp('visited_at');
-            $table->timestamps();
+            $table->timestamp('created_at')->useCurrent();
+            $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
             $table->index(['page_type', 'visited_at']);
             $table->index('session_id');
         });

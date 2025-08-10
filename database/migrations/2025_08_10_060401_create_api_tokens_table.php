@@ -21,7 +21,8 @@ return new class extends Migration
             $table->boolean('is_active')->default(true);
             $table->string('ip_restriction')->nullable(); // Allowed IPs
             $table->integer('rate_limit')->default(60); // Requests per minute
-            $table->timestamps();
+            $table->timestamp('created_at')->useCurrent();
+            $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
         });
     }
 

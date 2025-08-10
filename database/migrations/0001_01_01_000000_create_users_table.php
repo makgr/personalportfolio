@@ -21,7 +21,8 @@ return new class extends Migration
             $table->enum('role', ['admin', 'editor'])->default('admin');
             $table->boolean('is_active')->default(true);
             $table->rememberToken();
-            $table->timestamps();
+            $table->timestamp('created_at')->useCurrent();
+            $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {

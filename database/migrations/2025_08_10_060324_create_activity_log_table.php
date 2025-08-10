@@ -21,7 +21,8 @@ return new class extends Migration
             $table->string('event')->nullable(); // created, updated, deleted
             $table->string('ip_address')->nullable();
             $table->string('user_agent')->nullable();
-            $table->timestamps();
+            $table->timestamp('created_at')->useCurrent();
+            $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
             $table->index('log_name');
         });
     }

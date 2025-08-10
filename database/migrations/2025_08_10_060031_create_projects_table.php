@@ -39,7 +39,8 @@ return new class extends Migration
             $table->integer('views')->default(0);
             $table->json('meta_tags')->nullable();
             $table->timestamp('published_at')->nullable();
-            $table->timestamps();
+            $table->timestamp('created_at')->useCurrent();
+            $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
             $table->index(['status', 'is_featured']);
             $table->index('slug');
         });

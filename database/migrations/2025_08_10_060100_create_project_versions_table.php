@@ -18,7 +18,8 @@ return new class extends Migration
             $table->json('data');
             $table->string('changed_by')->nullable();
             $table->text('change_notes')->nullable();
-            $table->timestamps();
+            $table->timestamp('created_at')->useCurrent();
+            $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
             $table->index(['project_id', 'version_number']);
         });
     }

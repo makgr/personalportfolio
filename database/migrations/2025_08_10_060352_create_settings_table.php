@@ -19,7 +19,8 @@ return new class extends Migration
             $table->string('group')->default('general'); // general, email, api, cache, etc
             $table->text('description')->nullable();
             $table->boolean('is_public')->default(false); // Can be exposed to frontend
-            $table->timestamps();
+            $table->timestamp('created_at')->useCurrent();
+            $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
         });
     }
 

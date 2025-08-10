@@ -28,7 +28,8 @@ return new class extends Migration
             $table->string('company_url')->nullable();
             $table->integer('order')->default(0);
             $table->boolean('is_active')->default(true);
-            $table->timestamps();
+            $table->timestamp('created_at')->useCurrent();
+            $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
         });
     }
 

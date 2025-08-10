@@ -28,7 +28,8 @@ return new class extends Migration
             $table->string('user_agent')->nullable();
             $table->json('metadata')->nullable(); // Additional form fields
             $table->timestamp('replied_at')->nullable();
-            $table->timestamps();
+            $table->timestamp('created_at')->useCurrent();
+            $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
             $table->index('status');
         });
     }

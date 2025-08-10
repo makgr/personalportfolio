@@ -26,7 +26,8 @@ return new class extends Migration
             $table->nullableMorphs('mediable'); // This creates mediable_id, mediable_type AND their index automatically
             $table->string('collection')->nullable(); // 'gallery', 'documents', etc
             $table->integer('order')->default(0);
-            $table->timestamps();
+            $table->timestamp('created_at')->useCurrent();
+            $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
         });
     }
 

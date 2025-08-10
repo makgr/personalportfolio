@@ -26,7 +26,8 @@ return new class extends Migration
             $table->string('twitter_image')->nullable();
             $table->json('structured_data')->nullable(); // JSON-LD
             $table->json('custom_meta')->nullable(); // Additional meta tags
-            $table->timestamps();
+            $table->timestamp('created_at')->useCurrent();
+            $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
         });
     }
 

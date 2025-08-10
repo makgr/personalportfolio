@@ -26,7 +26,8 @@ return new class extends Migration
             $table->json('social_links')->nullable();
             $table->json('meta_tags')->nullable();
             $table->boolean('is_active')->default(true);
-            $table->timestamps();
+            $table->timestamp('created_at')->useCurrent();
+            $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
         });
     }
 
