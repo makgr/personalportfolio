@@ -11,7 +11,6 @@ class ContactSubmission extends Model
     use HasFactory, Notifiable;
 
     protected $table = 'contact_submissions';
-    protected $guarded = [];
 
     protected $fillable = [
         'name',

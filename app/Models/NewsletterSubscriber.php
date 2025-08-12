@@ -12,7 +12,6 @@ class NewsletterSubscriber extends Model
     use HasFactory, Notifiable;
 
     protected $table = 'newsletter_subscribers';
-    protected $guarded = [];
 
     protected $fillable = [
         'email',

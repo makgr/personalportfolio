@@ -10,7 +10,6 @@ class Testimonial extends Model
     use HasFactory;
 
     protected $table = 'testimonials';
-    protected $guarded = [];
 
     protected $fillable = [
         'client_name',

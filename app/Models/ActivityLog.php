@@ -11,7 +11,6 @@ class ActivityLog extends Model
     use HasFactory;
 
     protected $table = 'activity_log';
-    protected $guarded = [];
 
     protected $fillable = [
         'log_name',

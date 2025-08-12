@@ -10,7 +10,6 @@ class SeoSetting extends Model
     use HasFactory;
 
     protected $table = 'seo_settings';
-    protected $guarded = [];
 
     protected $fillable = [
         'page',

@@ -10,7 +10,6 @@ class Certification extends Model
     use HasFactory;
 
     protected $table = 'certifications';
-    protected $guarded = [];
 
     protected $fillable = [
         'name',

@@ -10,7 +10,6 @@ class ProjectVersion extends Model
     use HasFactory;
 
     protected $table = 'project_versions';
-    protected $guarded = [];
 
     protected $fillable = [
         'project_id',

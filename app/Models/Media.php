@@ -11,7 +11,6 @@ class Media extends Model
     use HasFactory;
 
     protected $table = 'media';
-    protected $guarded = [];
 
     protected $fillable = [
         'filename',

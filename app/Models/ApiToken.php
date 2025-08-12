@@ -10,7 +10,6 @@ class ApiToken extends Model
     use HasFactory;
 
     protected $table = 'api_tokens';
-    protected $guarded = [];
 
     protected $fillable = [
         'name',

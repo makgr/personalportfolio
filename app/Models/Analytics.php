@@ -11,7 +11,6 @@ class Analytics extends Model
     use HasFactory;
 
     protected $table = 'analytics';
-    protected $guarded = [];
 
     protected $fillable = [
         'session_id',

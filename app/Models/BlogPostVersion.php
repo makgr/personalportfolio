@@ -10,7 +10,6 @@ class BlogPostVersion extends Model
     use HasFactory;
 
     protected $table = 'blog_post_versions';
-    protected $guarded = [];
 
     protected $fillable = [
         'blog_post_id',

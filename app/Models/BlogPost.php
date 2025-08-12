@@ -10,7 +10,6 @@ class BlogPost extends Model
     use HasFactory;
 
     protected $table = 'blog_posts';
-    protected $guarded = [];
 
     protected $fillable = [
         'title',
