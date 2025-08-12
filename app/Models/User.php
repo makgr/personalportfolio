@@ -21,6 +21,9 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'avatar',
+        'role',
+        'is_active',
     ];
 
     /**
@@ -42,7 +45,29 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
-            'password' => 'hashed',
+            'is_active' => 'boolean',
         ];
+    }
+
+    // Relationships
+    public function blogPosts()
+    {
+        return $this->hasMany(BlogPost::class, 'author_id');
+    }
+
+    public function activities()
+    {
+        return $this->morphMany(ActivityLog::class, 'causer');
+    }
+
+    // Scopes
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
+    }
+
+    public function scopeAdmins($query)
+    {
+        return $query->where('role', 'admin');
     }
 }
