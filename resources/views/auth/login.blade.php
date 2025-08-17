@@ -50,7 +50,7 @@
                     <div class="card-body">
                         <!-- Logo -->
                         <div class="app-brand justify-content-center">
-                            <a href="index.html" class="app-brand-link gap-2">
+                            <a href="{{ url('/') }}" class="app-brand-link gap-2">
                                 <span class="app-brand-logo demo">
 
                                 </span>
@@ -103,7 +103,7 @@
                                 </div>
                             </div>
                             <div class="mb-3">
-                                <button class="btn btn-primary d-grid w-100" type="submit">Sign in</button>
+                                <button class="btn btn-primary d-grid w-100 loginbtn" type="submit">Sign in</button>
                             </div>
                         </form>
                     </div>
@@ -138,6 +138,12 @@
 
     <!-- Place this tag in your head or just before your close body tag. -->
     <script async defer src="https://buttons.github.io/buttons.js"></script>
+
+    <script>
+        $('#formAuthentication').on('submit', function(e) {
+            $('.loginbtn').prop('disabled', true).text("Signing in...");
+        });
+    </script>
 </body>
 
 </html>
