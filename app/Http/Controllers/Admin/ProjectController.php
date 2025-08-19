@@ -3,63 +3,99 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Services\ProjectService;
+use App\Repositories\Contracts\ProjectRepositoryInterface;
+use App\Http\Requests\Admin\ProjectRequest;
+use App\Models\Category;
+use App\Models\Tag;
 use Illuminate\Http\Request;
 
 class ProjectController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    protected ProjectService $projectService;
+    protected ProjectRepositoryInterface $projectRepository;
+
+    public function __construct(
+        ProjectService $projectService,
+        ProjectRepositoryInterface $projectRepository
+    ) {
+        $this->middleware(['auth', 'admin']);
+        $this->projectService = $projectService;
+        $this->projectRepository = $projectRepository;
+    }
+
     public function index()
     {
-        //
+        $projects = $this->projectRepository->getAllProjects();
+        return view('admin.projects.index', compact('projects'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
-        //
+        $categories = Category::where('type', 'project')->get();
+        $tags = Tag::all();
+        return view('admin.projects.create', compact('categories', 'tags'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    public function store(ProjectRequest $request)
     {
-        //
+        try {
+            $project = $this->projectService->createProject(
+                $request->validated(),
+                $request->file('featured_image'),
+                $request->file('gallery', [])
+            );
+
+            return redirect()
+                ->route('admin.projects.index')
+                ->with('success', 'Project created successfully');
+        } catch (\Exception $e) {
+            return back()
+                ->withInput()
+                ->with('error', 'Failed to create project: ' . $e->getMessage());
+        }
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    public function edit($id)
     {
-        //
+        $project = $this->projectRepository->findOrFail($id);
+        $categories = Category::where('type', 'project')->get();
+        $tags = Tag::all();
+
+        return view('admin.projects.edit', compact('project', 'categories', 'tags'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
+    public function update(ProjectRequest $request, $id)
     {
-        //
+        try {
+            $project = $this->projectService->updateProject(
+                $id,
+                $request->validated(),
+                $request->file('featured_image'),
+                $request->file('gallery', [])
+            );
+
+            return redirect()
+                ->route('admin.projects.edit', $id)
+                ->with('success', 'Project updated successfully');
+        } catch (\Exception $e) {
+            return back()
+                ->withInput()
+                ->with('error', 'Failed to update project: ' . $e->getMessage());
+        }
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
+    public function destroy($id)
     {
-        //
-    }
+        try {
+            $this->projectService->deleteProject($id);
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+            return redirect()
+                ->route('admin.projects.index')
+                ->with('success', 'Project deleted successfully');
+        } catch (\Exception $e) {
+            return back()
+                ->with('error', 'Failed to delete project: ' . $e->getMessage());
+        }
     }
 }

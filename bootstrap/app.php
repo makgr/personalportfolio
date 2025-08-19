@@ -10,33 +10,24 @@ return Application::configure(basePath: dirname(__DIR__))
         web: __DIR__ . '/../routes/web.php',
         api: __DIR__ . '/../routes/api.php',
         commands: __DIR__ . '/../routes/console.php',
-        health: '/up',
-        then: function () {
-            // Register admin routes if you have a separate admin.php file
-            Route::middleware(['web', 'auth', 'admin'])
-                ->prefix('admin')
-                ->name('admin.')
-                ->group(base_path('routes/admin.php'));
-
-            // Configure API versioning
-            Route::prefix('api/v1')
-                ->middleware('api')
-                ->name('api.v1.')
-                ->group(base_path('routes/api.php'));
-        },
+        health: '/up'
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
             'admin' => \App\Http\Middleware\AdminMiddleware::class,
         ]);
 
-        // Configure rate limiting for API
+        // Configure API middleware
         $middleware->api(prepend: [
             \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
         ]);
 
         // Configure rate limiting
         $middleware->throttleApi();
+
+        // Set redirect after login (optional)
+        $middleware->redirectGuestsTo('/login');
+        $middleware->redirectUsersTo('/home');
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
