@@ -209,9 +209,31 @@ document.addEventListener('DOMContentLoaded', function () {
         fileInput.addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (file) {
+                // Validate file type
+                const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+                if (!allowedTypes.includes(file.type)) {
+                    toastr.error('Please select a valid image file (JPG, PNG)');
+                    fileInput.value = '';
+                    return;
+                }
+                
+                // Validate file size (2MB)
+                if (file.size > 2 * 1024 * 1024) {
+                    toastr.error('Image size must be less than 2MB');
+                    fileInput.value = '';
+                    return;
+                }
+                
+                // Show instant preview
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     previewImage.src = e.target.result;
+                    // Add visual feedback that image is selected but not uploaded yet
+                    previewImage.style.opacity = '0.7';
+                    previewImage.style.border = '2px dashed #007bff';
+                    
+                    // Show info message
+                    toastr.info('Image selected. Save changes to upload.', 'Image Ready');
                 };
                 reader.readAsDataURL(file);
             }
@@ -221,7 +243,10 @@ document.addEventListener('DOMContentLoaded', function () {
     if (resetBtn) {
         resetBtn.addEventListener('click', function() {
             previewImage.src = originalSrc;
+            previewImage.style.opacity = '1';
+            previewImage.style.border = 'none';
             fileInput.value = '';
+            toastr.info('Avatar reset to default');
         });
     }
 
@@ -229,9 +254,13 @@ document.addEventListener('DOMContentLoaded', function () {
     const profileForm = document.getElementById('profile-form');
     if (profileForm) {
         profileForm.dataset.onSuccess = `
-            // Update avatar if uploaded
+            // Update avatar if uploaded and remove visual feedback
             if (data.avatar_url) {
-                document.getElementById('uploadedAvatar').src = data.avatar_url;
+                const avatarImg = document.getElementById('uploadedAvatar');
+                avatarImg.src = data.avatar_url;
+                // Remove "pending upload" visual feedback
+                avatarImg.style.opacity = '1';
+                avatarImg.style.border = 'none';
             }
         `;
     }

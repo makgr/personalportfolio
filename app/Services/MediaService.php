@@ -7,12 +7,10 @@ use Illuminate\Support\Str;
 use Intervention\Image\ImageManager;
 use Intervention\Image\Drivers\Gd\Driver;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\File;
 
 class MediaService
 {
-    protected $disk = 'public';
-
     public function upload(UploadedFile $file, string $folder = 'uploads'): string
     {
         \Log::info('MediaService upload started', [
@@ -24,28 +22,41 @@ class MediaService
 
         // Generate unique filename
         $filename = Str::random(40) . '.' . $file->getClientOriginalExtension();
-        $path = $folder . '/' . date('Y/m');
+        $uploadPath = 'uploads/' . $folder;
+        $fullPath = public_path($uploadPath);
+        
+        // Create directory if it doesn't exist
+        if (!File::exists($fullPath)) {
+            File::makeDirectory($fullPath, 0755, true);
+            \Log::info('MediaService created directory', ['path' => $fullPath]);
+        }
 
         \Log::info('MediaService upload paths', [
             'filename' => $filename,
-            'path' => $path,
-            'disk' => $this->disk
+            'upload_path' => $uploadPath,
+            'full_path' => $fullPath
         ]);
 
-        // Store file
-        $filePath = $file->storeAs($path, $filename, $this->disk);
+        // Check if image before moving
+        $isImage = $this->isImage($file);
+        
+        // Move file to public/uploads/folder
+        $destinationPath = $fullPath . '/' . $filename;
+        $file->move($fullPath, $filename);
+        
+        $relativePath = $uploadPath . '/' . $filename;
 
         \Log::info('MediaService file stored', [
-            'file_path' => $filePath,
-            'exists' => \Storage::disk($this->disk)->exists($filePath)
+            'relative_path' => $relativePath,
+            'exists' => File::exists($destinationPath)
         ]);
 
         // Temporarily disable image optimization for debugging
-        // if ($this->isImage($file)) {
-        //     $this->optimizeImage($filePath);
+        // if ($isImage) {
+        //     $this->optimizeImage($destinationPath);
         // }
 
-        return $filePath;
+        return $relativePath;
     }
 
     public function uploadWithThumbnail(UploadedFile $file, string $folder = 'uploads'): array
@@ -72,8 +83,8 @@ class MediaService
             'original_name' => $file->getClientOriginalName(),
             'mime_type' => $file->getMimeType(),
             'path' => $path,
-            'disk' => $this->disk,
-            'url' => Storage::disk($this->disk)->url($path),
+            'disk' => 'public',
+            'url' => asset($path),
             'size' => $file->getSize(),
             'collection' => $collection,
             'mediable_type' => get_class($model),
@@ -89,13 +100,15 @@ class MediaService
         }
 
         \Log::info('MediaService deleting file', ['path' => $path]);
+        
+        $fullPath = public_path($path);
 
-        if (!Storage::disk($this->disk)->exists($path)) {
-            \Log::warning('MediaService file does not exist for deletion', ['path' => $path]);
+        if (!File::exists($fullPath)) {
+            \Log::warning('MediaService file does not exist for deletion', ['path' => $fullPath]);
             return false;
         }
 
-        return Storage::disk($this->disk)->delete($path);
+        return File::delete($fullPath);
     }
 
     protected function isImage(UploadedFile $file): bool
@@ -103,11 +116,9 @@ class MediaService
         return str_starts_with($file->getMimeType(), 'image/');
     }
 
-    protected function optimizeImage(string $path): void
+    protected function optimizeImage(string $fullPath): void
     {
         try {
-            $fullPath = Storage::disk($this->disk)->path($path);
-
             if (file_exists($fullPath)) {
                 $manager = new ImageManager(new Driver());
                 $image = $manager->read($fullPath);
@@ -119,13 +130,13 @@ class MediaService
 
                 // Save with quality optimization
                 $image->toJpeg(85)->save($fullPath);
-                \Log::info('MediaService image optimized', ['path' => $path]);
+                \Log::info('MediaService image optimized', ['path' => $fullPath]);
             } else {
                 \Log::warning('MediaService image file not found for optimization', ['path' => $fullPath]);
             }
         } catch (\Exception $e) {
             \Log::error('MediaService image optimization failed', [
-                'path' => $path,
+                'path' => $fullPath,
                 'error' => $e->getMessage()
             ]);
         }
@@ -134,9 +145,9 @@ class MediaService
     protected function createThumbnail(string $originalPath): string
     {
         try {
-            $fullPath = Storage::disk($this->disk)->path($originalPath);
+            $fullPath = public_path($originalPath);
             $thumbnailPath = str_replace('.', '_thumb.', $originalPath);
-            $thumbnailFullPath = Storage::disk($this->disk)->path($thumbnailPath);
+            $thumbnailFullPath = public_path($thumbnailPath);
 
             if (file_exists($fullPath)) {
                 $manager = new ImageManager(new Driver());

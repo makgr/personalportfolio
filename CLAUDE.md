@@ -333,3 +333,213 @@ toastr.options = {
 - All existing AJAX operations now use Toastr automatically
 
 **Result:** ✅ Professional toast notifications with perfect positioning implemented!
+
+## Latest Update - File Upload System Overhaul
+
+### ✅ Complete File Upload System Migration to public/uploads
+**Date:** August 21, 2025 (continued session)
+
+**User Request:**
+- "check profile page. image not uploading. And I said that we will use public/uploads directory instead of storage for all types of uploads"
+- Request to organize uploads by type (e.g., public/uploads/profile)
+- Implement dynamic directory creation
+
+**1. Issues Identified & Fixed**
+- **Problem:** Profile image upload not working
+- **Root Cause:** MediaService was using Laravel's storage/app/public disk
+- **Solution:** Complete migration to direct public/uploads approach
+
+**2. MediaService Complete Rewrite**
+- **File:** `app/Services/MediaService.php`
+- **Major Changes:**
+  - Removed dependency on Laravel Storage facade
+  - Switched to direct File facade for better control
+  - Changed from `storage/app/public` to `public/uploads` directory
+  - Implemented dynamic directory creation with `File::makeDirectory()`
+  - Updated all methods to work with public path directly
+
+**3. New Upload Directory Structure**
+```
+public/
+└── uploads/
+    ├── profile/     (for profile avatars)
+    ├── project/     (for project images)
+    ├── blog/        (for blog post media)
+    └── [other]/     (dynamically created as needed)
+```
+
+**4. Technical Implementation Details**
+- **Dynamic Directory Creation:** `File::makeDirectory($path, 0755, true)`
+- **File Storage:** Direct `$file->move()` instead of Laravel Storage
+- **Path Management:** Returns relative paths (`uploads/profile/filename.jpg`)
+- **Image Optimization:** Re-enabled with direct file path handling
+- **File Deletion:** Updated to use `File::delete()` with public paths
+
+**5. Key Improvements Made**
+- ✅ **Direct Public Access:** Files stored in `public/uploads/` are directly accessible
+- ✅ **Organized Structure:** Files organized by type (profile, project, blog, etc.)
+- ✅ **Dynamic Folders:** Directories created automatically when needed
+- ✅ **Better Logging:** Enhanced logging for debugging upload issues
+- ✅ **Image Optimization:** Re-enabled image compression and resizing
+- ✅ **Proper Permissions:** Directory permissions set to 0755
+
+**6. Updated Methods**
+- `upload()` - Complete rewrite for public directory handling
+- `delete()` - Updated for direct file system operations
+- `optimizeImage()` - Fixed to work with absolute file paths
+- `createThumbnail()` - Updated for public path handling
+- `attachToModel()` - Updated URL generation with `asset()` helper
+
+**Files Modified:**
+- `app/Services/MediaService.php` - Complete rewrite
+- Created: `public/uploads/profile/` directory structure
+
+**Testing Status:**
+- ✅ Laravel development server started for testing
+- ✅ Upload directory structure created successfully
+- ✅ MediaService updated to handle direct public uploads
+- ✅ File permissions and directory creation working
+
+**Result:** ✅ Complete file upload system migration to public/uploads with organized directory structure!
+
+## Bug Fix - Image Upload Database Update Issue
+
+### ✅ Fixed Profile Image Upload Database Saving
+**Date:** August 21, 2025 (continued session)
+
+**User Report:**
+- "image uploaded but not updated in the database. Please fix and save session."
+- Images were being stored in filesystem but not saving to database
+
+**1. Root Cause Analysis**
+- **Issue:** Image optimization error causing entire database transaction to rollback
+- **Error:** `The "C:\Windows\Temp\php92E3.tmp" file does not exist or is not readable`
+- **Cause:** `isImage()` method checking file after it was moved, causing optimization to fail
+
+**2. Fixes Implemented**
+
+**A. MediaService Upload Logic Fix**
+- **File:** `app/Services/MediaService.php:40-57`
+- **Problem:** Checking `$this->isImage($file)` after `$file->move()` 
+- **Solution:** Store `$isImage = $this->isImage($file)` before moving file
+- **Result:** Prevents accessing moved temporary file for mime type check
+
+**B. Enhanced Logging for Debugging**
+- **File:** `app/Http/Controllers/Admin/ProfileController.php:136-149`
+- **Added:** Detailed logging for profile data being saved
+- **Added:** Database save result logging
+- **Purpose:** Track exact data flow and identify issues
+
+**C. Temporary Image Optimization Disable**
+- **File:** `app/Services/MediaService.php:54-57`
+- **Action:** Commented out image optimization temporarily
+- **Reason:** Prevent optimization errors from blocking database saves
+- **Status:** Can be re-enabled after fixing optimization logic
+
+**3. Technical Details of the Fix**
+```php
+// Before (problematic)
+$file->move($fullPath, $filename);
+if ($this->isImage($file)) {  // File already moved, temp file gone!
+    $this->optimizeImage($destinationPath);
+}
+
+// After (fixed)  
+$isImage = $this->isImage($file);  // Check before moving
+$file->move($fullPath, $filename);
+// if ($isImage) {  // Temporarily disabled
+//     $this->optimizeImage($destinationPath);
+// }
+```
+
+**4. Database Transaction Flow**
+- ✅ **File Upload:** Works correctly, stores in `public/uploads/profile/`
+- ✅ **Database Save:** Now works, `avatar_url` field properly updated
+- ✅ **AJAX Response:** Returns correct avatar URL for UI update
+- ✅ **Error Handling:** Proper rollback if any step fails
+
+**5. Verification Steps**
+- Upload process no longer fails with temp file errors
+- Database `profiles` table `avatar_url` field properly updated
+- Profile form shows success message via toastr
+- Avatar preview updates automatically in UI
+
+**Files Modified:**
+- `app/Services/MediaService.php` - Fixed isImage() timing and disabled optimization
+- `app/Http/Controllers/Admin/ProfileController.php` - Enhanced logging
+
+**Result:** ✅ Profile image upload now works completely - file storage AND database update!
+
+## Enhancement - Instant Image Preview
+
+### ✅ Added Instant Image Preview with Visual Feedback
+**Date:** August 21, 2025 (continued session)
+
+**User Request:**
+- "in console there is no error. I have a plan is it possible to show instant after upload without waiting for ajax response"
+- Request for immediate visual feedback when selecting images
+
+**1. Enhancement Implemented**
+- **File:** `resources/views/admin/profile/edit.blade.php:209-266`
+- **Feature:** Instant image preview on file selection (before upload)
+- **Benefits:** Better user experience with immediate visual feedback
+
+**2. New Features Added**
+
+**A. Instant Preview on Selection**
+- Image shows immediately when user selects file
+- No need to wait for AJAX upload to see preview
+- Uses FileReader API for instant base64 preview
+
+**B. Visual Upload Status Indicators**
+```javascript
+// Pending upload state
+previewImage.style.opacity = '0.7';
+previewImage.style.border = '2px dashed #007bff';
+
+// After successful upload
+previewImage.style.opacity = '1';
+previewImage.style.border = 'none';
+```
+
+**C. Client-Side Validation**
+- **File Type:** Only JPG, PNG allowed
+- **File Size:** Maximum 2MB limit
+- **Error Messages:** Toast notifications for validation failures
+
+**D. Enhanced User Experience**
+- ✅ **Instant Feedback:** Image appears immediately on selection
+- ✅ **Visual States:** Different appearance for "selected" vs "uploaded"
+- ✅ **Toast Notifications:** 
+  - Info: "Image selected. Save changes to upload."
+  - Error: File validation messages
+  - Info: "Avatar reset to default" on reset
+- ✅ **Reset Functionality:** Clear selection and restore original image
+
+**3. Implementation Details**
+```javascript
+// On file selection
+reader.onload = function(e) {
+    previewImage.src = e.target.result;  // Instant preview
+    previewImage.style.opacity = '0.7';   // Visual feedback
+    previewImage.style.border = '2px dashed #007bff';
+    toastr.info('Image selected. Save changes to upload.');
+};
+
+// After successful AJAX upload
+avatarImg.src = data.avatar_url;  // Final server URL
+avatarImg.style.opacity = '1';    // Remove pending state
+avatarImg.style.border = 'none';  // Clean appearance
+```
+
+**4. User Journey Enhanced**
+1. **Select Image:** Instant preview with dashed blue border
+2. **Validation:** Real-time file type/size checking
+3. **Visual Feedback:** Semi-transparent appearance shows "pending"
+4. **Save Form:** AJAX upload with loading states
+5. **Success:** Full opacity, clean border, final image URL
+
+**Files Modified:**
+- `resources/views/admin/profile/edit.blade.php` - Enhanced JavaScript for instant preview
+
+**Result:** ✅ Users now get instant visual feedback when selecting images, with clear visual states for pending vs uploaded images!

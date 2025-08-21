@@ -133,8 +133,20 @@ class ProfileController extends Controller
                     return !str_starts_with($key, 'user_') && !in_array($key, ['current_password', 'new_password', 'new_password_confirmation', 'upload', 'resume']);
                 }, ARRAY_FILTER_USE_KEY);
 
+                Log::info('Profile update: Data being saved', [
+                    'profile_data' => $profileData,
+                    'has_avatar_url' => array_key_exists('avatar_url', $profileData),
+                    'avatar_url_value' => $profileData['avatar_url'] ?? 'NOT SET'
+                ]);
+
                 $profile->fill($profileData);
-                $profile->save();
+                $saved = $profile->save();
+                
+                Log::info('Profile update: Save result', [
+                    'save_result' => $saved,
+                    'profile_avatar_url' => $profile->avatar_url,
+                    'profile_id' => $profile->id
+                ]);
 
                 // Update user account if provided
                 $user = auth()->user();
