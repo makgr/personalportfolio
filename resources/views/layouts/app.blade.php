@@ -230,7 +230,7 @@
     <script src="{{ asset('assets/js/toastr/toastr.min.js') }}"></script>
 
     <!-- Admin AJAX Helper -->
-    <script src="{{ asset('assets/js/admin-ajax.js') }}?v=3"></script>
+    <script src="{{ asset('assets/js/admin-ajax.js') }}?v=4"></script>
 
     <!-- Page JS -->
     <script src="{{ asset('assets/js/dashboards-analytics.js') }}"></script>

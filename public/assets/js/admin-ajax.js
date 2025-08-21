@@ -136,6 +136,17 @@ class AdminAjax {
             
             console.log('AdminAjax: Submitting form to', url, 'with method', method);
             
+            // Log form data for debugging (excluding files for security)
+            const formDataEntries = {};
+            for (let [key, value] of formData.entries()) {
+                if (value instanceof File) {
+                    formDataEntries[key] = `File: ${value.name} (${value.size} bytes)`;
+                } else {
+                    formDataEntries[key] = value;
+                }
+            }
+            console.log('AdminAjax: Form data:', formDataEntries);
+            
             // Set loading state
             if (button) {
                 AdminAjax.setButtonLoading(button, true);

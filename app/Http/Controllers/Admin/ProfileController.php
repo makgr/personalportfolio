@@ -77,7 +77,7 @@ class ProfileController extends Controller
             'email' => 'required|email',
             'phone' => 'nullable|string|max:20',
             'location' => 'nullable|string|max:255',
-            'avatar' => 'nullable|image|max:2048',
+            'upload' => 'nullable|image|max:2048',
             'resume' => 'nullable|mimes:pdf|max:5120',
             'social_links' => 'nullable|array',
             'social_links.github' => 'nullable|url',
@@ -102,10 +102,22 @@ class ProfileController extends Controller
 
                 // Handle avatar upload
                 if ($request->hasFile('upload')) {
-                    if ($profile->avatar_url) {
+                    Log::info('Profile update: File upload detected', [
+                        'file_name' => $request->file('upload')->getClientOriginalName(),
+                        'file_size' => $request->file('upload')->getSize(),
+                        'file_type' => $request->file('upload')->getMimeType()
+                    ]);
+                    
+                    if ($profile->avatar_url && !empty($profile->avatar_url)) {
                         $this->mediaService->delete($profile->avatar_url);
                     }
                     $validated['avatar_url'] = $this->mediaService->upload($request->file('upload'), 'profile');
+                    Log::info('Profile update: File uploaded successfully', ['path' => $validated['avatar_url']]);
+                } else {
+                    Log::info('Profile update: No file upload detected', [
+                        'has_upload_file' => $request->hasFile('upload'),
+                        'files' => array_keys($request->allFiles())
+                    ]);
                 }
 
                 // Handle resume upload
@@ -118,7 +130,7 @@ class ProfileController extends Controller
 
                 // Update profile
                 $profileData = array_filter($validated, function ($key) {
-                    return !str_starts_with($key, 'user_') && !in_array($key, ['current_password', 'new_password', 'new_password_confirmation', 'avatar', 'resume']);
+                    return !str_starts_with($key, 'user_') && !in_array($key, ['current_password', 'new_password', 'new_password_confirmation', 'upload', 'resume']);
                 }, ARRAY_FILTER_USE_KEY);
 
                 $profile->fill($profileData);
@@ -148,10 +160,11 @@ class ProfileController extends Controller
 
             // Return appropriate response based on request type
             if ($request->expectsJson()) {
+                $profile = Profile::first(); // Refresh profile to get updated data
                 return response()->json([
                     'success' => true,
                     'message' => 'Profile updated successfully',
-                    'avatar_url' => $profile->avatar_url ?? null
+                    'avatar_url' => $profile->avatar_url ? asset($profile->avatar_url) : null
                 ]);
             }
 

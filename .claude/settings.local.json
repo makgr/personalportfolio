@@ -5,7 +5,9 @@
       "Bash(php artisan migrate:*)",
       "Bash(php artisan tinker:*)",
       "Bash(mkdir:*)",
-      "Bash(php artisan serve:*)"
+      "Bash(php artisan serve:*)",
+      "Bash(php artisan:*)",
+      "Bash(composer show:*)"
     ],
     "deny": [],
     "ask": []
