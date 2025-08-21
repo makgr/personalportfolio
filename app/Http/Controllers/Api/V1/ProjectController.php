@@ -3,47 +3,89 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\ProjectCollection;
+use App\Http\Resources\ProjectResource;
+use App\Services\ProjectService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class ProjectController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    protected ProjectService $projectService;
+
+    public function __construct(ProjectService $projectService)
     {
-        //
+        $this->projectService = $projectService;
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Get all published projects
      */
-    public function store(Request $request)
+    public function index(Request $request)
     {
-        //
+        try {
+            $projects = $this->projectService->getPublishedProjects();
+            
+            // Filter by category if provided
+            if ($request->filled('category')) {
+                $projects = $projects->where('category.slug', $request->category);
+            }
+            
+            // Filter by type if provided
+            if ($request->filled('type')) {
+                $projects = $projects->where('type', $request->type);
+            }
+            
+            // Limit results if requested
+            if ($request->filled('limit')) {
+                $projects = $projects->take((int) $request->limit);
+            }
+
+            return new ProjectCollection($projects);
+        } catch (\Exception $e) {
+            Log::error('Failed to fetch projects: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to fetch projects',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
-     * Display the specified resource.
+     * Get featured projects
      */
-    public function show(string $id)
+    public function featured(Request $request)
     {
-        //
+        try {
+            $limit = $request->get('limit', 6);
+            $projects = $this->projectService->getFeaturedProjects($limit);
+            
+            return new ProjectCollection($projects);
+        } catch (\Exception $e) {
+            Log::error('Failed to fetch featured projects: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to fetch featured projects'
+            ], 500);
+        }
     }
 
     /**
-     * Update the specified resource in storage.
+     * Get single project by slug
      */
-    public function update(Request $request, string $id)
+    public function show(string $slug)
     {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        try {
+            $project = $this->projectService->findBySlug($slug);
+            
+            return new ProjectResource($project);
+        } catch (\Exception $e) {
+            Log::error('Project not found: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Project not found'
+            ], 404);
+        }
     }
 }

@@ -4,10 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Traits\Sluggable;
+use App\Traits\HasSeo;
 
 class Project extends Model
 {
-    use HasFactory;
+    use HasFactory, Sluggable, HasSeo;
 
     protected $table = 'projects';
 

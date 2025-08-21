@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Repositories\Contracts\ProjectRepositoryInterface;
+use App\Models\Project;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
@@ -163,5 +164,45 @@ class ProjectService
         return $this->projectRepository->update([
             'status' => 'draft',
         ], $id);
+    }
+
+    public function bulkAction(string $action, array $ids)
+    {
+        return DB::transaction(function () use ($action, $ids) {
+            switch ($action) {
+                case 'delete':
+                    foreach ($ids as $id) {
+                        $this->deleteProject($id);
+                    }
+                    break;
+
+                case 'publish':
+                    foreach ($ids as $id) {
+                        $this->publishProject($id);
+                    }
+                    break;
+
+                case 'unpublish':
+                    foreach ($ids as $id) {
+                        $this->unpublishProject($id);
+                    }
+                    break;
+
+                case 'feature':
+                    Project::whereIn('id', $ids)
+                        ->update(['is_featured' => true]);
+                    break;
+
+                case 'unfeature':
+                    Project::whereIn('id', $ids)
+                        ->update(['is_featured' => false]);
+                    break;
+
+                default:
+                    throw new \InvalidArgumentException("Invalid bulk action: {$action}");
+            }
+
+            return ['affected_count' => count($ids)];
+        });
     }
 }
