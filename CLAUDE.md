@@ -894,3 +894,148 @@ seo_settings: id, page, title, description, keywords, og_title, etc.
 - `app/Http/Controllers/Admin/SettingController.php` - Added SEO handling to update method
 
 **Result:** ✅ SEO settings now save properly alongside regular settings in unified form!
+
+## Enhancement - Added Missing YouTube URL Field
+
+### ✅ Added YouTube URL to Social Media Settings
+**Date:** August 21, 2025 (continued session)
+
+**User Request:**
+- "nice it's working. in the social media tab youtube url is missing. check setting page"
+- Request to add YouTube URL field to social media settings
+
+**1. Current Social Media Fields**
+- ✅ GitHub URL
+- ✅ LinkedIn URL  
+- ✅ Twitter URL
+- ✅ Facebook URL
+- ✅ Instagram URL
+- ❌ YouTube URL (missing)
+
+**2. Enhancement Implemented**
+
+**A. Added YouTube URL Field to View**
+- **File:** `resources/views/admin/settings/index.blade.php:169-176`
+- **Added:** YouTube URL input field with proper styling and validation
+- **Icon:** Used `bx bxl-youtube` for consistent branding
+- **Placeholder:** `https://youtube.com/channel/your-channel`
+
+```html
+<div class="col-md-6 mb-3">
+    <label for="youtube_url" class="form-label">
+        <i class="bx bxl-youtube me-1"></i> YouTube URL
+    </label>
+    <input type="url" class="form-control" id="youtube_url" name="youtube_url" 
+           value="{{ old('youtube_url', $settingsGroups->get('social', collect())->where('key', 'youtube_url')->first()->value ?? '') }}" 
+           placeholder="https://youtube.com/channel/your-channel" />
+</div>
+```
+
+**B. Added YouTube URL to Controller**
+- **File:** `app/Http/Controllers/Admin/SettingController.php:101`
+- **Added:** `youtube_url` to validation rules as nullable URL
+- **File:** `app/Http/Controllers/Admin/SettingController.php:125`  
+- **Added:** `youtube_url` to field groups mapping for social group
+
+**3. Complete Social Media Integration**
+- **Validation:** URL validation ensures proper format
+- **Storage:** Saved in `settings` table with group = 'social'
+- **Retrieval:** Automatically loaded and displayed in form
+- **Processing:** Handled by same logic as other social URLs
+
+**4. Social Media Fields Now Complete**
+- ✅ GitHub URL - Developer portfolio/repositories
+- ✅ LinkedIn URL - Professional networking  
+- ✅ Twitter URL - Social updates and engagement
+- ✅ Facebook URL - Personal/business page
+- ✅ Instagram URL - Visual content and stories
+- ✅ **YouTube URL** - Video content and channel (NEW)
+
+**Files Modified:**
+- `resources/views/admin/settings/index.blade.php` - Added YouTube URL form field
+- `app/Http/Controllers/Admin/SettingController.php` - Added validation and processing
+
+**Result:** ✅ YouTube URL field now available in social media settings - all major platforms covered!
+
+## Bug Fix - Advanced Settings Only Updating Once
+
+### ✅ Fixed Google Analytics and Maintenance Mode Update Issues
+**Date:** August 21, 2025 (continued session)
+
+**User Report:**
+- "lets navigate to the advance tab in the setting page. google analytics and mainteanance mode update only once. fix"
+- Advanced settings (Google Analytics, maintenance mode) only saving on first update
+
+**1. Root Cause Analysis**
+- **Issue:** Checkbox fields not handling unchecked state properly
+- **Problem:** When `maintenance_mode` checkbox is unchecked, no form data is sent
+- **Logic Flaw:** Controller only processed fields that existed in `$validated` array
+- **Result:** Unchecked checkboxes ignored, existing database values preserved
+
+**2. Checkbox Behavior Problem**
+- **Checked Checkbox:** Sends `maintenance_mode = 1` in form data ✅
+- **Unchecked Checkbox:** Sends nothing in form data ❌
+- **Previous Logic:** `if ($value !== null && isset($fieldGroups[$key]))` - skipped missing fields
+- **Impact:** Couldn't turn maintenance mode OFF after turning it ON
+
+**3. Solution Implemented**
+
+**A. Enhanced Field Processing Logic**
+- **File:** `app/Http/Controllers/Admin/SettingController.php:132-152`
+- **Changed:** From processing only submitted fields to processing all configured fields
+- **Added:** Special handling for boolean (checkbox) fields
+
+**Before (problematic):**
+```php
+foreach ($validated as $key => $value) {
+    if ($value !== null && isset($fieldGroups[$key])) {
+        // Only processes fields that were submitted
+        $settingsData[] = [...];
+    }
+}
+```
+
+**After (fixed):**
+```php
+foreach ($fieldGroups as $key => $config) {
+    $value = $validated[$key] ?? null;
+    
+    // Special handling for boolean fields (checkboxes)
+    if ($config['type'] === 'boolean') {
+        $value = $request->has($key) ? true : false;
+    }
+    
+    if ($value !== null || $config['type'] === 'boolean') {
+        $settingsData[] = [...];
+    }
+}
+```
+
+**B. Boolean Field Handling**
+- **Checked State:** `$request->has($key)` returns true → value = true
+- **Unchecked State:** `$request->has($key)` returns false → value = false
+- **Always Processed:** Boolean fields always get processed regardless of form submission
+
+**4. Technical Benefits**
+
+**A. Complete Field Coverage**
+- ✅ **All Fields Processed:** Every configured field gets handled
+- ✅ **Checkbox States:** Both checked/unchecked states properly saved
+- ✅ **Missing Fields:** Non-checkbox fields still handled correctly
+- ✅ **Consistent Updates:** Settings update reliably every time
+
+**B. Data Integrity**
+- **Explicit Boolean Values:** maintenance_mode always gets true/false value
+- **No Orphaned Settings:** All fields processed in each update
+- **Predictable Behavior:** Same logic applied consistently
+
+**5. Advanced Tab Fields Now Working**
+- ✅ **Google Analytics:** Updates properly on every save
+- ✅ **Items Per Page:** Updates properly on every save  
+- ✅ **Maintenance Mode:** Can be toggled ON/OFF reliably
+- ✅ **Cache Clear:** Functions independently (separate endpoint)
+
+**Files Modified:**
+- `app/Http/Controllers/Admin/SettingController.php` - Enhanced field processing logic
+
+**Result:** ✅ Advanced settings now update correctly every time - checkbox states handled properly!

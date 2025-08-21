@@ -166,6 +166,14 @@
                                                    value="{{ old('instagram_url', $settingsGroups->get('social', collect())->where('key', 'instagram_url')->first()->value ?? '') }}" 
                                                    placeholder="https://instagram.com/username" />
                                         </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="youtube_url" class="form-label">
+                                                <i class="bx bxl-youtube me-1"></i> YouTube URL
+                                            </label>
+                                            <input type="url" class="form-control" id="youtube_url" name="youtube_url" 
+                                                   value="{{ old('youtube_url', $settingsGroups->get('social', collect())->where('key', 'youtube_url')->first()->value ?? '') }}" 
+                                                   placeholder="https://youtube.com/channel/your-channel" />
+                                        </div>
                                     </div>
                                 </div>
 

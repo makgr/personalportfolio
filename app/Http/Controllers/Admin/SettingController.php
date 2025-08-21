@@ -98,6 +98,7 @@ class SettingController extends Controller
                 'twitter_url' => 'nullable|url',
                 'facebook_url' => 'nullable|url',
                 'instagram_url' => 'nullable|url',
+                'youtube_url' => 'nullable|url',
                 'google_analytics' => 'nullable|string',
                 'maintenance_mode' => 'nullable|boolean',
                 'items_per_page' => 'nullable|integer|min:1|max:100',
@@ -121,19 +122,30 @@ class SettingController extends Controller
                 'twitter_url' => ['group' => 'social', 'type' => 'string'],
                 'facebook_url' => ['group' => 'social', 'type' => 'string'],
                 'instagram_url' => ['group' => 'social', 'type' => 'string'],
+                'youtube_url' => ['group' => 'social', 'type' => 'string'],
                 'google_analytics' => ['group' => 'analytics', 'type' => 'string'],
                 'maintenance_mode' => ['group' => 'site', 'type' => 'boolean'],
                 'items_per_page' => ['group' => 'site', 'type' => 'integer']
                 // Note: SEO settings are handled separately in the SeoSetting model
             ];
 
-            foreach ($validated as $key => $value) {
-                if ($value !== null && isset($fieldGroups[$key])) {
+            // Handle all configured fields, including unchecked checkboxes
+            foreach ($fieldGroups as $key => $config) {
+                $value = $validated[$key] ?? null;
+                
+                // Special handling for boolean fields (checkboxes)
+                if ($config['type'] === 'boolean') {
+                    // For checkboxes, if not in request, it means unchecked (false)
+                    $value = $request->has($key) ? true : false;
+                }
+                
+                // Only process if we have a value or it's a boolean field
+                if ($value !== null || $config['type'] === 'boolean') {
                     $settingsData[] = [
                         'key' => $key,
                         'value' => $value,
-                        'type' => $fieldGroups[$key]['type'],
-                        'group' => $fieldGroups[$key]['group'],
+                        'type' => $config['type'],
+                        'group' => $config['group'],
                         'is_public' => in_array($key, ['site_name', 'site_tagline', 'site_description'])
                     ];
                 }
