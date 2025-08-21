@@ -41,7 +41,7 @@
     <link rel="stylesheet" href="{{ asset('assets/css/toastr/toastr.min.css') }}" />
 
     <!-- Page CSS -->
-
+    @yield('css')
     <!-- Toastr Custom Styles -->
     <style>
         /* Toastr customization for admin theme */
@@ -237,6 +237,9 @@
 
     <!-- Place this tag in your head or just before your close body tag. -->
     <script async defer src="https://buttons.github.io/buttons.js"></script>
+
+    <!-- Custom JS -->
+    @stack('scripts')
 </body>
 
 </html>

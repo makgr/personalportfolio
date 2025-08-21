@@ -543,3 +543,85 @@ avatarImg.style.border = 'none';  // Clean appearance
 - `resources/views/admin/profile/edit.blade.php` - Enhanced JavaScript for instant preview
 
 **Result:** ✅ Users now get instant visual feedback when selecting images, with clear visual states for pending vs uploaded images!
+
+## Bug Fix - Image Preview Not Working + UI Cleanup
+
+### ✅ Fixed Image Preview and Removed Reset Button
+**Date:** August 21, 2025 (continued session)
+
+**User Report:**
+- "not working. please check and fix it. Also remove reset button. I don't need it."
+- Image preview not showing when selecting files
+- Request to remove reset button for cleaner UI
+
+**1. Root Cause Identified**
+- **Issue:** File input was inside form, label was outside form
+- **HTML Structure Problem:** `<label for="upload">` couldn't access `<input id="upload">` properly
+- **JavaScript Scope:** Event listeners not finding correct elements
+
+**2. Fixes Implemented**
+
+**A. HTML Structure Reorganization**
+- **File:** `resources/views/admin/profile/edit.blade.php:52-61`
+- **Moved:** File input inside the form near the submit button (line 173)
+- **Fixed:** Label-input relationship for proper click handling
+- **Removed:** Reset button completely (lines 57-60 deleted)
+
+**B. Simplified JavaScript Logic**
+- **File:** `resources/views/admin/profile/edit.blade.php:239-252`
+- **Removed:** Complex form manipulation and temporary input creation
+- **Simplified:** Direct AJAX handling without external file management
+- **Clean:** Removed reset button event handlers
+
+**C. Enhanced Client-Side Validation**
+- **File Type Check:** Validates JPG/PNG before preview
+- **File Size Check:** Enforces 2MB limit with user feedback
+- **Error Handling:** Clear toast messages for validation failures
+
+**3. Technical Implementation**
+```html
+<!-- Before (problematic) -->
+<div class="button-wrapper">
+    <input type="file" id="upload" /> <!-- Outside form -->
+    <button type="button" class="account-image-reset">Reset</button>
+</div>
+<form id="profile-form">
+    <!-- Form fields here -->
+</form>
+
+<!-- After (fixed) -->
+<div class="button-wrapper">
+    <label for="upload">Upload new photo</label>
+    <!-- Reset button removed -->
+</div>
+<form id="profile-form">
+    <!-- Form fields here -->
+    <input type="file" id="upload" name="upload" class="d-none" />
+</form>
+```
+
+**4. User Experience Improvements**
+- ✅ **Instant Preview:** Image appears immediately on selection
+- ✅ **Visual Feedback:** Semi-transparent with dashed border when pending
+- ✅ **Clean UI:** Reset button removed for simpler interface
+- ✅ **Proper Validation:** Client-side checks before showing preview
+- ✅ **Toast Notifications:** Clear feedback for all states
+- ✅ **Seamless Upload:** Form submission includes file properly
+
+**5. Image Preview States**
+```javascript
+// On file selection (instant)
+previewImage.src = e.target.result;  // Base64 preview
+previewImage.style.opacity = '0.7';  // Pending state
+previewImage.style.border = '2px dashed #007bff';
+
+// After successful upload
+avatarImg.src = data.avatar_url;     // Server URL
+avatarImg.style.opacity = '1';       // Final state
+avatarImg.style.border = 'none';     // Clean appearance
+```
+
+**Files Modified:**
+- `resources/views/admin/profile/edit.blade.php` - Fixed HTML structure and JavaScript
+
+**Result:** ✅ Image preview now works instantly with clean UI (no reset button) and proper form integration!
