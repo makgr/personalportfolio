@@ -27,35 +27,40 @@ class ProjectController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $projects = $this->projectRepository->getAllProjects();
-            return response()->json([
-                'success' => true,
-                'data' => $projects->map(function ($project) {
-                    return [
-                        'id' => $project->id,
-                        'title' => $project->title,
-                        'status' => $project->status,
-                        'category' => $project->category?->name,
-                        'is_featured' => $project->is_featured,
-                        'views' => $project->views,
-                        'created_at' => $project->created_at->format('M d, Y'),
-                        'actions' => [
-                            'edit' => route('projects.edit', $project->id),
-                            'delete' => route('projects.destroy', $project->id)
-                        ]
+            $query = $this->projectRepository->getAllProjects();
+            
+            return datatables($query)
+                ->addColumn('status_badge', function ($project) {
+                    $colors = [
+                        'published' => 'success',
+                        'draft' => 'warning', 
+                        'archived' => 'secondary'
                     ];
+                    $color = $colors[$project->status] ?? 'primary';
+                    return '<span class="badge bg-' . $color . '">' . ucfirst($project->status) . '</span>';
                 })
-            ]);
+                ->addColumn('featured_badge', function ($project) {
+                    return $project->is_featured 
+                        ? '<span class="badge bg-info"><i class="bx bx-star"></i> Featured</span>'
+                        : '';
+                })
+                ->addColumn('actions', function ($project) {
+                    return view('admin.projects.partials.actions', compact('project'));
+                })
+                ->editColumn('created_at', function ($project) {
+                    return $project->created_at->format('M d, Y');
+                })
+                ->rawColumns(['status_badge', 'featured_badge', 'actions'])
+                ->make(true);
         }
         
-        $projects = $this->projectRepository->getAllProjects();
-        return view('admin.projects.index', compact('projects'));
+        return view('admin.projects.index');
     }
 
     public function create()
     {
-        $categories = Category::where('type', 'project')->get();
-        $tags = Tag::all();
+        $categories = Category::where('type', 'project')->active()->get();
+        $tags = Tag::orderBy('name')->get();
         return view('admin.projects.create', compact('categories', 'tags'));
     }
 
@@ -97,8 +102,8 @@ class ProjectController extends Controller
     public function edit($id)
     {
         $project = $this->projectRepository->findOrFail($id);
-        $categories = Category::where('type', 'project')->get();
-        $tags = Tag::all();
+        $categories = Category::where('type', 'project')->active()->get();
+        $tags = Tag::orderBy('name')->get();
 
         return view('admin.projects.edit', compact('project', 'categories', 'tags'));
     }

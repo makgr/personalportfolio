@@ -23,9 +23,21 @@ class DashboardController extends Controller
     }
 
     /**
-     * Get dashboard data
+     * Display dashboard
      */
     public function index(Request $request)
+    {
+        if ($request->ajax()) {
+            return $this->getDashboardData($request);
+        }
+        
+        return view('admin.dashboard');
+    }
+
+    /**
+     * Get dashboard data
+     */
+    public function getDashboardData(Request $request)
     {
         try {
             // Date range for analytics
