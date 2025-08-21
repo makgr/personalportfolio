@@ -57,58 +57,102 @@
 
     <ul class="menu-inner py-1">
         <!-- Dashboard -->
-        <li class="menu-item active">
-            <a href="index.html" class="menu-link">
+        <li class="menu-item {{ request()->routeIs('home') ? 'active' : '' }}">
+            <a href="{{ route('home') }}" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-home-circle"></i>
                 <div data-i18n="Analytics">Dashboard</div>
             </a>
         </li>
 
-        <!-- Forms & Tables -->
-        <li class="menu-header small text-uppercase"><span class="menu-header-text">Forms &amp;
-                Tables</span></li>
-        <!-- Forms -->
-        <li class="menu-item">
+        <!-- Portfolio Management -->
+        <li class="menu-header small text-uppercase"><span class="menu-header-text">Portfolio Management</span></li>
+        
+        <!-- Projects -->
+        <li class="menu-item {{ request()->routeIs('projects.*') ? 'active open' : '' }}">
             <a href="javascript:void(0);" class="menu-link menu-toggle">
-                <i class="menu-icon tf-icons bx bx-detail"></i>
-                <div data-i18n="Form Elements">Form Elements</div>
+                <i class="menu-icon tf-icons bx bx-folder"></i>
+                <div data-i18n="Projects">Projects</div>
             </a>
             <ul class="menu-sub">
-                <li class="menu-item">
-                    <a href="forms-basic-inputs.html" class="menu-link">
-                        <div data-i18n="Basic Inputs">Basic Inputs</div>
+                <li class="menu-item {{ request()->routeIs('projects.index') ? 'active' : '' }}">
+                    <a href="{{ route('projects.index') }}" class="menu-link">
+                        <div data-i18n="All Projects">All Projects</div>
                     </a>
                 </li>
-                <li class="menu-item">
-                    <a href="forms-input-groups.html" class="menu-link">
-                        <div data-i18n="Input groups">Input groups</div>
+                <li class="menu-item {{ request()->routeIs('projects.create') ? 'active' : '' }}">
+                    <a href="{{ route('projects.create') }}" class="menu-link">
+                        <div data-i18n="Add Project">Add Project</div>
                     </a>
                 </li>
             </ul>
         </li>
-        <li class="menu-item">
+
+        <!-- Blog Posts -->
+        <li class="menu-item {{ request()->routeIs('blog-posts.*') ? 'active open' : '' }}">
             <a href="javascript:void(0);" class="menu-link menu-toggle">
-                <i class="menu-icon tf-icons bx bx-detail"></i>
-                <div data-i18n="Form Layouts">Form Layouts</div>
+                <i class="menu-icon tf-icons bx bx-edit"></i>
+                <div data-i18n="Blog Posts">Blog Posts</div>
             </a>
             <ul class="menu-sub">
-                <li class="menu-item">
-                    <a href="form-layouts-vertical.html" class="menu-link">
-                        <div data-i18n="Vertical Form">Vertical Form</div>
+                <li class="menu-item {{ request()->routeIs('blog-posts.index') ? 'active' : '' }}">
+                    <a href="{{ route('blog-posts.index') }}" class="menu-link">
+                        <div data-i18n="All Posts">All Posts</div>
                     </a>
                 </li>
-                <li class="menu-item">
-                    <a href="form-layouts-horizontal.html" class="menu-link">
-                        <div data-i18n="Horizontal Form">Horizontal Form</div>
+                <li class="menu-item {{ request()->routeIs('blog-posts.create') ? 'active' : '' }}">
+                    <a href="{{ route('blog-posts.create') }}" class="menu-link">
+                        <div data-i18n="Add Post">Add Post</div>
                     </a>
                 </li>
             </ul>
         </li>
-        <!-- Tables -->
-        <li class="menu-item">
-            <a href="tables-basic.html" class="menu-link">
-                <i class="menu-icon tf-icons bx bx-table"></i>
-                <div data-i18n="Tables">Tables</div>
+
+        <!-- Skills -->
+        <li class="menu-item {{ request()->routeIs('skills.*') ? 'active' : '' }}">
+            <a href="{{ route('skills.index') }}" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-cog"></i>
+                <div data-i18n="Skills">Skills</div>
+            </a>
+        </li>
+
+        <!-- Services -->
+        <li class="menu-item {{ request()->routeIs('services.*') ? 'active' : '' }}">
+            <a href="{{ route('services.index') }}" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-briefcase"></i>
+                <div data-i18n="Services">Services</div>
+            </a>
+        </li>
+
+        <!-- Experience -->
+        <li class="menu-item {{ request()->routeIs('experiences.*') ? 'active' : '' }}">
+            <a href="{{ route('experiences.index') }}" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-time"></i>
+                <div data-i18n="Experience">Experience</div>
+            </a>
+        </li>
+
+        <!-- Contact Messages -->
+        <li class="menu-item {{ request()->routeIs('contacts.*') ? 'active' : '' }}">
+            <a href="{{ route('contacts.index') }}" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-envelope"></i>
+                <div data-i18n="Messages">Messages</div>
+            </a>
+        </li>
+
+        <!-- Settings -->
+        <li class="menu-header small text-uppercase"><span class="menu-header-text">Settings</span></li>
+        
+        <li class="menu-item {{ request()->routeIs('profile.*') ? 'active' : '' }}">
+            <a href="{{ route('profile.edit') }}" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-user"></i>
+                <div data-i18n="Profile">Profile</div>
+            </a>
+        </li>
+
+        <li class="menu-item {{ request()->routeIs('settings.*') ? 'active' : '' }}">
+            <a href="{{ route('settings.index') }}" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-cog"></i>
+                <div data-i18n="Settings">Settings</div>
             </a>
         </li>
     </ul>

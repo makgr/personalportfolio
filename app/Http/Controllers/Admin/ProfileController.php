@@ -23,7 +23,22 @@ class ProfileController extends Controller
     }
 
     /**
-     * Get profile
+     * Show the profile edit form
+     */
+    public function edit()
+    {
+        try {
+            $profile = Profile::first() ?? new Profile();
+            $user = Auth::user();
+
+            return view('admin.profile.edit', compact('profile', 'user'));
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Failed to load profile: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Get profile (API)
      */
     public function show()
     {
@@ -86,11 +101,11 @@ class ProfileController extends Controller
                 $profile = Profile::firstOrNew();
 
                 // Handle avatar upload
-                if ($request->hasFile('avatar')) {
+                if ($request->hasFile('upload')) {
                     if ($profile->avatar_url) {
                         $this->mediaService->delete($profile->avatar_url);
                     }
-                    $validated['avatar_url'] = $this->mediaService->upload($request->file('avatar'), 'profile');
+                    $validated['avatar_url'] = $this->mediaService->upload($request->file('upload'), 'profile');
                 }
 
                 // Handle resume upload
@@ -131,19 +146,43 @@ class ProfileController extends Controller
                 $user->save();
             });
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Profile updated successfully'
-            ]);
+            // Return appropriate response based on request type
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Profile updated successfully',
+                    'avatar_url' => $profile->avatar_url ?? null
+                ]);
+            }
+
+            return redirect()->route('profile.edit')->with('success', 'Profile updated successfully');
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validation failed',
+                    'errors' => $e->errors()
+                ], 422);
+            }
+            throw $e;
+            
         } catch (\Exception $e) {
             Log::error('Failed to update profile: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage() === 'Current password is incorrect'
-                    ? 'Current password is incorrect'
-                    : 'Failed to update profile',
-                'error' => $e->getMessage()
-            ], 500);
+            
+            $errorMessage = $e->getMessage() === 'Current password is incorrect'
+                ? 'Current password is incorrect'
+                : 'Failed to update profile';
+
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $errorMessage,
+                    'error' => $e->getMessage()
+                ], 500);
+            }
+
+            return redirect()->back()->withInput()->with('error', $errorMessage);
         }
     }
 }

@@ -1,0 +1,354 @@
+/**
+ * Admin AJAX Helper Functions
+ * Reusable functions for consistent AJAX operations across admin panels
+ */
+
+class AdminAjax {
+    
+    /**
+     * Show message to user
+     */
+    static showMessage(type, message) {
+        const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+        const alertHtml = `
+            <div class="alert ${alertClass} alert-dismissible fade show" role="alert">
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        `;
+        
+        const container = document.querySelector('.container-xxl');
+        const firstRow = container.querySelector('.row');
+        firstRow.insertAdjacentHTML('beforebegin', alertHtml);
+        
+        // Scroll to top to show message
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        
+        // Auto-hide success messages after 5 seconds
+        if (type === 'success') {
+            setTimeout(() => {
+                const alert = container.querySelector('.alert-success');
+                if (alert) {
+                    const bsAlert = new bootstrap.Alert(alert);
+                    bsAlert.close();
+                }
+            }, 5000);
+        }
+    }
+
+    /**
+     * Clear all existing messages
+     */
+    static clearMessages() {
+        const alerts = document.querySelectorAll('.alert');
+        alerts.forEach(alert => {
+            try {
+                const bsAlert = new bootstrap.Alert(alert);
+                bsAlert.close();
+            } catch (e) {
+                alert.remove();
+            }
+        });
+    }
+
+    /**
+     * Set button loading state
+     */
+    static setButtonLoading(button, loading = true) {
+        const btnText = button.querySelector('.btn-text');
+        const btnLoading = button.querySelector('.btn-loading');
+        
+        if (loading) {
+            button.disabled = true;
+            if (btnText) btnText.classList.add('d-none');
+            if (btnLoading) btnLoading.classList.remove('d-none');
+        } else {
+            button.disabled = false;
+            if (btnText) btnText.classList.remove('d-none');
+            if (btnLoading) btnLoading.classList.add('d-none');
+        }
+    }
+
+    /**
+     * Handle form submission with AJAX
+     */
+    static submitForm(formElement, url, options = {}) {
+        return new Promise((resolve, reject) => {
+            const formData = new FormData(formElement);
+            const button = options.button;
+            
+            // Determine the actual HTTP method to use
+            let method = options.method || formElement.method || 'POST';
+            
+            // Check for Laravel method spoofing (_method field)
+            const methodField = formData.get('_method');
+            if (methodField) {
+                // For Laravel method spoofing (PUT, PATCH, DELETE), always use POST
+                method = 'POST';
+                console.log('AdminAjax: Using POST method for Laravel method spoofing:', methodField);
+            }
+            
+            console.log('AdminAjax: Submitting form to', url, 'with method', method);
+            
+            // Set loading state
+            if (button) {
+                AdminAjax.setButtonLoading(button, true);
+            }
+            
+            // Clear previous messages
+            AdminAjax.clearMessages();
+            
+            // Make AJAX request
+            fetch(url, {
+                method: method,
+                body: formData,
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    ...options.headers
+                }
+            })
+            .then(response => {
+                console.log('AdminAjax: Response status:', response.status, response.statusText);
+                if (!response.ok) {
+                    return response.json().then(data => {
+                        console.log('AdminAjax: Error response data:', data);
+                        return Promise.reject(data);
+                    }).catch(() => {
+                        // If response is not JSON
+                        return Promise.reject({
+                            success: false,
+                            message: `HTTP ${response.status}: ${response.statusText}`
+                        });
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    AdminAjax.showMessage('success', data.message || 'Operation completed successfully!');
+                    resolve(data);
+                } else {
+                    AdminAjax.showMessage('error', data.message || 'Operation failed');
+                    
+                    // Show validation errors if any
+                    if (data.errors) {
+                        let errorList = '<ul class="mb-0">';
+                        Object.values(data.errors).forEach(errors => {
+                            errors.forEach(error => {
+                                errorList += `<li>${error}</li>`;
+                            });
+                        });
+                        errorList += '</ul>';
+                        AdminAjax.showMessage('error', errorList);
+                    }
+                    reject(data);
+                }
+            })
+            .catch(error => {
+                console.error('AJAX Error:', error);
+                const errorMessage = error.message || 'An unexpected error occurred. Please try again.';
+                AdminAjax.showMessage('error', errorMessage);
+                reject(error);
+            })
+            .finally(() => {
+                // Reset loading state
+                if (button) {
+                    AdminAjax.setButtonLoading(button, false);
+                }
+            });
+        });
+    }
+
+    /**
+     * Handle simple AJAX request (for buttons, links, etc.)
+     */
+    static makeRequest(url, options = {}) {
+        return new Promise((resolve, reject) => {
+            const button = options.button;
+            let originalButtonContent = '';
+            
+            // Set loading state for button
+            if (button) {
+                originalButtonContent = button.innerHTML;
+                button.disabled = true;
+                button.innerHTML = `
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    ${options.loadingText || 'Loading...'}
+                `;
+            }
+            
+            // Clear messages if requested
+            if (options.clearMessages !== false) {
+                AdminAjax.clearMessages();
+            }
+            
+            fetch(url, {
+                method: options.method || 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    ...options.headers
+                },
+                body: options.body ? JSON.stringify(options.body) : null
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(data => Promise.reject(data));
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    if (options.showMessage !== false) {
+                        AdminAjax.showMessage('success', data.message || 'Operation completed successfully!');
+                    }
+                    resolve(data);
+                } else {
+                    AdminAjax.showMessage('error', data.message || 'Operation failed');
+                    reject(data);
+                }
+            })
+            .catch(error => {
+                console.error('AJAX Error:', error);
+                const errorMessage = error.message || 'An unexpected error occurred. Please try again.';
+                AdminAjax.showMessage('error', errorMessage);
+                reject(error);
+            })
+            .finally(() => {
+                // Reset button state
+                if (button) {
+                    button.disabled = false;
+                    button.innerHTML = originalButtonContent;
+                }
+            });
+        });
+    }
+
+    /**
+     * Confirm action with SweetAlert or browser confirm
+     */
+    static confirmAction(message, title = 'Are you sure?') {
+        // Use browser confirm for now, can be upgraded to SweetAlert later
+        return Promise.resolve(confirm(`${title}\n\n${message}`));
+    }
+
+    /**
+     * Handle delete operations with confirmation
+     */
+    static deleteItem(url, options = {}) {
+        const message = options.message || 'This item will be permanently deleted.';
+        const title = options.title || 'Delete Item';
+        
+        return AdminAjax.confirmAction(message, title)
+            .then(confirmed => {
+                if (confirmed) {
+                    return AdminAjax.makeRequest(url, {
+                        method: 'DELETE',
+                        button: options.button,
+                        loadingText: 'Deleting...',
+                        ...options
+                    });
+                } else {
+                    return Promise.reject({ cancelled: true });
+                }
+            });
+    }
+
+    /**
+     * Handle toggle operations (publish/unpublish, enable/disable, etc.)
+     */
+    static toggleStatus(url, options = {}) {
+        return AdminAjax.makeRequest(url, {
+            method: 'POST',
+            button: options.button,
+            loadingText: options.loadingText || 'Updating...',
+            showMessage: options.showMessage !== false,
+            ...options
+        });
+    }
+}
+
+// Auto-setup common event listeners when DOM is ready
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-handle forms with data-ajax attribute
+    document.querySelectorAll('form[data-ajax]').forEach(form => {
+        const submitButton = form.querySelector('button[type="submit"]');
+        const url = form.getAttribute('action') || form.dataset.ajax;
+        
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            AdminAjax.submitForm(this, url, {
+                button: submitButton
+                // Method will be determined automatically by submitForm
+            }).then(data => {
+                // Custom success callback if defined
+                if (form.dataset.onSuccess) {
+                    try {
+                        const callback = new Function('data', form.dataset.onSuccess);
+                        callback(data);
+                    } catch (e) {
+                        console.error('Success callback error:', e);
+                    }
+                }
+            }).catch(error => {
+                // Custom error callback if defined
+                if (form.dataset.onError) {
+                    try {
+                        const callback = new Function('error', form.dataset.onError);
+                        callback(error);
+                    } catch (e) {
+                        console.error('Error callback error:', e);
+                    }
+                }
+            });
+        });
+    });
+
+    // Auto-handle buttons with data-ajax attribute
+    document.querySelectorAll('[data-ajax]').forEach(element => {
+        if (element.tagName === 'FORM') return; // Skip forms, handled above
+        
+        element.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            const url = this.dataset.ajax;
+            const method = this.dataset.method || 'POST';
+            const confirmMessage = this.dataset.confirm;
+            const loadingText = this.dataset.loading;
+            
+            const makeRequest = () => {
+                AdminAjax.makeRequest(url, {
+                    method: method,
+                    button: this,
+                    loadingText: loadingText
+                }).then(data => {
+                    // Custom success callback if defined
+                    if (this.dataset.onSuccess) {
+                        try {
+                            const callback = new Function('data', this.dataset.onSuccess);
+                            callback(data);
+                        } catch (e) {
+                            console.error('Success callback error:', e);
+                        }
+                    }
+                });
+            };
+
+            if (confirmMessage) {
+                AdminAjax.confirmAction(confirmMessage).then(confirmed => {
+                    if (confirmed) makeRequest();
+                });
+            } else {
+                makeRequest();
+            }
+        });
+    });
+});
+
+// Export for use in modules
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = AdminAjax;
+}

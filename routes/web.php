@@ -56,6 +56,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
     // Settings
     Route::get('settings', [SettingController::class, 'index'])->name('settings.index');
     Route::post('settings', [SettingController::class, 'update'])->name('settings.update');
+    Route::post('settings/clear-cache', [SettingController::class, 'clearCache'])->name('settings.clear-cache');
 
     // Profile
     Route::get('profile', [ProfileController::class, 'edit'])->name('profile.edit');

@@ -197,6 +197,9 @@
     <!-- Main JS -->
     <script src="{{ asset('assets/js/main.js') }}"></script>
 
+    <!-- Admin AJAX Helper -->
+    <script src="{{ asset('assets/js/admin-ajax.js') }}"></script>
+
     <!-- Page JS -->
     <script src="{{ asset('assets/js/dashboards-analytics.js') }}"></script>
 
