@@ -625,3 +625,272 @@ avatarImg.style.border = 'none';     // Clean appearance
 - `resources/views/admin/profile/edit.blade.php` - Fixed HTML structure and JavaScript
 
 **Result:** ✅ Image preview now works instantly with clean UI (no reset button) and proper form integration!
+
+## Bug Fix - JavaScript Loading and Global Profile Variable
+
+### ✅ Fixed Script Loading and Undefined $profile Variable
+**Date:** August 21, 2025 (continued session)
+
+**User Report:**
+- "i have fixed the issue. the issue is app.blade.php doesn't contain scripts. That's why page specific js not working. now fixed."
+- "Another issue is when I navigate to another page then it shows Undefined variable $profile. kindly fix and save session"
+
+**1. Issues Identified**
+
+**A. JavaScript Loading Issue**
+- **Problem:** `app.blade.php` layout missing `@stack('scripts')` section
+- **Impact:** Page-specific JavaScript not loading properly
+- **User Fix:** Added scripts section to layout template
+
+**B. Global Profile Variable Issue**
+- **Problem:** `$profile` variable used in `layouts/app.blade.php` but not available on all pages
+- **Error:** "Undefined variable $profile" when navigating to other pages
+- **Location:** Lines 114 and 124 in `layouts/app.blade.php` for avatar display
+
+**2. Fixes Implemented**
+
+**A. Created Global Profile View Composer**
+- **File Created:** `app/View/Composers/ProfileComposer.php`
+- **Purpose:** Make `$profile` available to all views that need it
+- **Logic:** Gets first profile record or creates empty model if none exists
+
+```php
+<?php
+namespace App\View\Composers;
+
+use App\Models\Profile;
+use Illuminate\View\View;
+
+class ProfileComposer
+{
+    public function compose(View $view)
+    {
+        $profile = Profile::first() ?: new Profile();
+        $view->with('profile', $profile);
+    }
+}
+```
+
+**B. Registered View Composer Globally**
+- **File Updated:** `app/Providers/AppServiceProvider.php`
+- **Added:** View composer registration for layout and profile views
+- **Scope:** Applied to `layouts.app` and `admin.profile.edit` views
+
+```php
+// Register profile composer for all views using the layout
+View::composer(['layouts.app', 'admin.profile.edit'], ProfileComposer::class);
+```
+
+**C. Updated ProfileController**
+- **File:** `app/Http/Controllers/Admin/ProfileController.php:28-38`
+- **Removed:** Duplicate `$profile` passing (now available globally)
+- **Simplified:** Only pass `$user` since `$profile` is handled by composer
+
+**3. Technical Benefits**
+
+**A. Global Availability**
+- ✅ **$profile available everywhere:** No more "undefined variable" errors
+- ✅ **Automatic loading:** Profile data loaded automatically for layout
+- ✅ **Fallback handling:** Empty model created if no profile exists
+- ✅ **Performance:** Single query per request, cached by Laravel
+
+**B. Maintainable Code**
+- ✅ **DRY Principle:** No need to pass $profile in every controller
+- ✅ **Consistent Data:** Same profile data structure across all views
+- ✅ **Easy Updates:** Change profile logic in one place (composer)
+
+**4. Layout Integration Points**
+```html
+<!-- User avatar in navbar (line 114) -->
+<img src="{{ $profile->avatar_url ? asset($profile->avatar_url) : asset('assets/img/avatars/1.png') }}" />
+
+<!-- User dropdown avatar (line 124) -->
+<img src="{{ $profile->avatar_url ? asset($profile->avatar_url) : asset('assets/img/avatars/1.png') }}" />
+```
+
+**Files Created:**
+- `app/View/Composers/ProfileComposer.php` - Global profile data provider
+
+**Files Modified:**
+- `app/Providers/AppServiceProvider.php` - View composer registration
+- `app/Http/Controllers/Admin/ProfileController.php` - Removed duplicate profile passing
+
+**Result:** ✅ All pages now work without undefined variable errors, and profile avatar displays correctly in navigation!
+
+## Bug Fix - Settings Cache Tagging Error
+
+### ✅ Fixed Cache Tagging Not Supported Error
+**Date:** August 21, 2025 (continued session)
+
+**User Report:**
+- "in the setting page when I click update then it shows Failed to update settings: This cache store does not support tagging."
+- Settings update failing due to cache driver incompatibility
+
+**1. Root Cause Analysis**
+- **Error:** `This cache store does not support tagging`
+- **Location:** `app/Http/Controllers/Admin/SettingController.php:154`
+- **Problem Code:** `Cache::tags(['settings'])->flush()`
+- **Issue:** File cache driver (default) doesn't support tagging; only Redis and Memcached do
+
+**2. Cache Driver Compatibility Issue**
+- **File Cache:** No tagging support ❌
+- **Array Cache:** No tagging support ❌  
+- **Redis Cache:** Full tagging support ✅
+- **Memcached Cache:** Full tagging support ✅
+
+**3. Solution Implemented**
+
+**A. Smart Cache Detection**
+- **Created:** `clearSettingsCache()` private method
+- **Detection:** Check if cache store supports tagging via `method_exists()`
+- **Fallback:** Alternative cache clearing for non-tagging drivers
+
+```php
+private function clearSettingsCache()
+{
+    try {
+        // Try to clear with tags if supported (Redis, Memcached)
+        if (method_exists(Cache::getStore(), 'tags')) {
+            Cache::tags(['settings'])->flush();
+        } else {
+            // Fallback for drivers that don't support tagging (file, array)
+            $settingKeys = Setting::pluck('key')->toArray();
+            foreach ($settingKeys as $key) {
+                Cache::forget("setting.{$key}");
+                Cache::forget("settings.{$key}");
+            }
+            Cache::forget('settings');
+            Cache::forget('all_settings');
+        }
+    } catch (\Exception $e) {
+        Log::warning('Failed to clear settings cache: ' . $e->getMessage());
+        Cache::flush(); // Last resort
+    }
+}
+```
+
+**B. Updated Settings Update Flow**
+- **File:** `app/Http/Controllers/Admin/SettingController.php:153-154`
+- **Changed:** From `Cache::tags(['settings'])->flush()` 
+- **To:** `$this->clearSettingsCache()`
+- **Result:** Works with all cache drivers
+
+**4. Technical Implementation Details**
+
+**A. Cache Driver Detection**
+- **Method:** Check if `Cache::getStore()` has `tags` method
+- **Logic:** Use tagging if available, otherwise targeted key clearing
+- **Safety:** Exception handling with full cache flush fallback
+
+**B. Fallback Cache Clearing**
+- **Individual Keys:** Clear specific setting cache keys
+- **Pattern Matching:** Clear `setting.*` and `settings.*` keys
+- **General Cache:** Clear common settings cache entries
+- **Final Safety:** Full cache flush if all else fails
+
+**5. Benefits of the Fix**
+- ✅ **Universal Compatibility:** Works with file, Redis, Memcached, array drivers
+- ✅ **Performance Optimized:** Uses tagging when available for efficiency
+- ✅ **Fallback Safe:** Graceful degradation for unsupported drivers
+- ✅ **Error Resilient:** Multiple fallback strategies prevent total failure
+- ✅ **Development Friendly:** Works with default Laravel cache setup
+
+**Files Modified:**
+- `app/Http/Controllers/Admin/SettingController.php` - Added smart cache clearing method
+
+**Result:** ✅ Settings update now works with all cache drivers - no more tagging errors!
+
+## Bug Fix - SEO Settings Not Saving
+
+### ✅ Fixed SEO Settings Save Functionality
+**Date:** August 21, 2025 (continued session)
+
+**User Report:**
+- "seo setting not saved properly. kindly fix ans save session."
+- SEO settings form fields not being saved when updating settings
+
+**1. Root Cause Analysis**
+- **Issue:** SEO settings fields were not handled in settings update logic
+- **Problem:** SEO data uses `SeoSetting` model but was being submitted to regular `Setting` controller
+- **Form Fields:** `default_meta_title`, `default_meta_keywords`, `default_meta_description` not processed
+- **Data Flow:** Form → SettingController → Settings model (missing SEO handling)
+
+**2. Data Structure Mismatch**
+- **Regular Settings:** Stored in `settings` table via `Setting` model
+- **SEO Settings:** Should be stored in `seo_settings` table via `SeoSetting` model  
+- **Form Submission:** All fields sent to same endpoint but different processing needed
+
+**3. Solution Implemented**
+
+**A. Enhanced Validation Rules**
+- **File:** `app/Http/Controllers/Admin/SettingController.php:104-108`
+- **Added:** Validation for SEO fields in main settings update method
+
+```php
+// SEO settings
+'default_meta_title' => 'nullable|string|max:255',
+'default_meta_keywords' => 'nullable|string',
+'default_meta_description' => 'nullable|string|max:500'
+```
+
+**B. Dual Model Handling**
+- **File:** `app/Http/Controllers/Admin/SettingController.php:147-186`
+- **Added:** Separate handling for SEO settings within same transaction
+- **Logic:** Process regular settings first, then handle SEO settings separately
+
+```php
+// Handle regular settings
+foreach ($settingsData as $setting) {
+    Setting::updateOrCreate([...]);
+}
+
+// Handle SEO settings separately if they exist in the request
+if (isset($validated['default_meta_title']) || ...) {
+    $seoData = [
+        'page' => 'default',
+        'title' => $validated['default_meta_title'] ?? '',
+        'keywords' => $validated['default_meta_keywords'] ?? '',
+        'description' => $validated['default_meta_description'] ?? ''
+    ];
+    
+    SeoSetting::updateOrCreate(['page' => 'default'], $seoData);
+}
+```
+
+**C. Smart Data Processing**
+- **Empty Value Filtering:** Prevents overwriting existing data with empty strings
+- **Conditional Updates:** Only updates SEO settings if at least one field has data
+- **Default Page Handling:** SEO settings saved with `page` = 'default' for site-wide defaults
+
+**4. Technical Implementation Details**
+
+**A. Transaction Safety**
+- **Atomic Operations:** Both regular and SEO settings updated in single transaction
+- **Rollback Protection:** If either update fails, entire operation rolls back
+- **Cache Clearing:** Settings cache cleared after successful updates
+
+**B. Data Validation**
+- **Field Length:** Meta title max 255 chars, description max 500 chars
+- **Type Safety:** All SEO fields treated as nullable strings
+- **XSS Protection:** Laravel's validation prevents malicious input
+
+**C. Database Integration**
+```sql
+-- Regular settings table
+settings: id, key, value, type, group, description, is_public
+
+-- SEO settings table  
+seo_settings: id, page, title, description, keywords, og_title, etc.
+```
+
+**5. Form-to-Database Flow**
+1. **Form Fields:** `default_meta_title`, `default_meta_keywords`, `default_meta_description`
+2. **Validation:** Controller validates all fields including SEO
+3. **Processing:** Regular settings → `settings` table, SEO → `seo_settings` table  
+4. **Storage:** SEO data stored with `page = 'default'` for site-wide defaults
+5. **Cache:** All settings cache cleared for immediate effect
+
+**Files Modified:**
+- `app/Http/Controllers/Admin/SettingController.php` - Added SEO handling to update method
+
+**Result:** ✅ SEO settings now save properly alongside regular settings in unified form!

@@ -100,7 +100,11 @@ class SettingController extends Controller
                 'instagram_url' => 'nullable|url',
                 'google_analytics' => 'nullable|string',
                 'maintenance_mode' => 'nullable|boolean',
-                'items_per_page' => 'nullable|integer|min:1|max:100'
+                'items_per_page' => 'nullable|integer|min:1|max:100',
+                // SEO settings
+                'default_meta_title' => 'nullable|string|max:255',
+                'default_meta_keywords' => 'nullable|string',
+                'default_meta_description' => 'nullable|string|max:500'
             ]);
 
             // Convert form data to settings format
@@ -120,6 +124,7 @@ class SettingController extends Controller
                 'google_analytics' => ['group' => 'analytics', 'type' => 'string'],
                 'maintenance_mode' => ['group' => 'site', 'type' => 'boolean'],
                 'items_per_page' => ['group' => 'site', 'type' => 'integer']
+                // Note: SEO settings are handled separately in the SeoSetting model
             ];
 
             foreach ($validated as $key => $value) {
@@ -136,7 +141,8 @@ class SettingController extends Controller
         }
 
         try {
-            DB::transaction(function () use ($settingsData) {
+            DB::transaction(function () use ($settingsData, $validated) {
+                // Handle regular settings
                 foreach ($settingsData as $setting) {
                     Setting::updateOrCreate(
                         ['key' => $setting['key']],
@@ -149,9 +155,31 @@ class SettingController extends Controller
                         ]
                     );
                 }
+                
+                // Handle SEO settings separately if they exist in the request
+                if (isset($validated['default_meta_title']) || isset($validated['default_meta_keywords']) || isset($validated['default_meta_description'])) {
+                    $seoData = [
+                        'page' => 'default',
+                        'title' => $validated['default_meta_title'] ?? '',
+                        'keywords' => $validated['default_meta_keywords'] ?? '',
+                        'description' => $validated['default_meta_description'] ?? ''
+                    ];
+                    
+                    // Remove empty values to avoid overwriting existing data with empty strings
+                    $seoData = array_filter($seoData, function($value, $key) {
+                        return $key === 'page' || !empty($value);
+                    }, ARRAY_FILTER_USE_BOTH);
+                    
+                    if (count($seoData) > 1) { // More than just the 'page' key
+                        SeoSetting::updateOrCreate(
+                            ['page' => 'default'],
+                            $seoData
+                        );
+                    }
+                }
 
-                // Clear settings cache
-                Cache::tags(['settings'])->flush();
+                // Clear settings cache (compatible with all cache drivers)
+                $this->clearSettingsCache();
             });
 
             if ($request->expectsJson()) {
@@ -278,7 +306,35 @@ class SettingController extends Controller
     }
 
     /**
-     * Clear cache
+     * Clear settings cache (compatible with all cache drivers)
+     */
+    private function clearSettingsCache()
+    {
+        try {
+            // Try to clear with tags if supported (Redis, Memcached)
+            if (method_exists(Cache::getStore(), 'tags')) {
+                Cache::tags(['settings'])->flush();
+            } else {
+                // Fallback for drivers that don't support tagging (file, array)
+                // Clear specific setting keys or just flush all cache
+                $settingKeys = Setting::pluck('key')->toArray();
+                foreach ($settingKeys as $key) {
+                    Cache::forget("setting.{$key}");
+                    Cache::forget("settings.{$key}");
+                }
+                // Also clear any general settings cache
+                Cache::forget('settings');
+                Cache::forget('all_settings');
+            }
+        } catch (\Exception $e) {
+            Log::warning('Failed to clear settings cache: ' . $e->getMessage());
+            // If all else fails, flush entire cache
+            Cache::flush();
+        }
+    }
+
+    /**
+     * Clear all cache
      */
     public function clearCache()
     {

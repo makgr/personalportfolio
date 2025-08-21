@@ -28,10 +28,10 @@ class ProfileController extends Controller
     public function edit()
     {
         try {
-            $profile = Profile::first() ?? new Profile();
             $user = Auth::user();
-
-            return view('admin.profile.edit', compact('profile', 'user'));
+            
+            // Note: $profile is now available globally via ProfileComposer
+            return view('admin.profile.edit', compact('user'));
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Failed to load profile: ' . $e->getMessage());
         }
