@@ -33,9 +33,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->redirectUsersTo('/home');
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        $exceptions->render(function (\Illuminate\Http\Exceptions\ThrottleRequestsException $e, Request $request) {
-            return response()->json([
-                'message' => 'Too many requests. Please try again later.'
-            ], 429);
-        });
+        // $exceptions->render(function (\Illuminate\Http\Exceptions\ThrottleRequestsException $e, Request $request) {
+        //     return response()->json([
+        //         'message' => 'Too many requests. Please try again later.'
+        //     ], 429);
+        // });
     })->create();
