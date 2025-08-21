@@ -37,7 +37,36 @@
 
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/apex-charts/apex-charts.css') }}" />
 
+    <!-- Toastr CSS -->
+    <link rel="stylesheet" href="{{ asset('assets/css/toastr/toastr.min.css') }}" />
+
     <!-- Page CSS -->
+
+    <!-- Toastr Custom Styles -->
+    <style>
+        /* Toastr customization for admin theme */
+        .toast-success {
+            background-color: #28a745 !important;
+        }
+
+        .toast-error {
+            background-color: #dc3545 !important;
+        }
+
+        .toast-info {
+            background-color: #17a2b8 !important;
+        }
+
+        .toast-warning {
+            background-color: #ffc107 !important;
+            color: #212529 !important;
+        }
+
+        #toast-container>div {
+            border-radius: 0.375rem;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        }
+    </style>
 </head>
 
 <body>
@@ -197,8 +226,11 @@
     <!-- Main JS -->
     <script src="{{ asset('assets/js/main.js') }}"></script>
 
+    <!-- Toastr JS -->
+    <script src="{{ asset('assets/js/toastr/toastr.min.js') }}"></script>
+
     <!-- Admin AJAX Helper -->
-    <script src="{{ asset('assets/js/admin-ajax.js') }}"></script>
+    <script src="{{ asset('assets/js/admin-ajax.js') }}?v=3"></script>
 
     <!-- Page JS -->
     <script src="{{ asset('assets/js/dashboards-analytics.js') }}"></script>

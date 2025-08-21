@@ -6,33 +6,66 @@
 class AdminAjax {
     
     /**
-     * Show message to user
+     * Initialize Toastr configuration
+     */
+    static initToastr() {
+        if (typeof toastr !== 'undefined') {
+            toastr.options = {
+                "closeButton": true,
+                "debug": false,
+                "newestOnTop": true,
+                "progressBar": true,
+                "positionClass": "toast-top-right",
+                "preventDuplicates": false,
+                "onclick": null,
+                "showDuration": "300",
+                "hideDuration": "1000",
+                "timeOut": "5000",
+                "extendedTimeOut": "1000",
+                "showEasing": "swing",
+                "hideEasing": "linear",
+                "showMethod": "fadeIn",
+                "hideMethod": "fadeOut"
+            };
+        }
+    }
+    
+    /**
+     * Show message to user using Toastr
      */
     static showMessage(type, message) {
-        const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
-        const alertHtml = `
-            <div class="alert ${alertClass} alert-dismissible fade show" role="alert">
-                ${message}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        `;
+        // Initialize Toastr if not already done
+        AdminAjax.initToastr();
         
-        const container = document.querySelector('.container-xxl');
-        const firstRow = container.querySelector('.row');
-        firstRow.insertAdjacentHTML('beforebegin', alertHtml);
-        
-        // Scroll to top to show message
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        
-        // Auto-hide success messages after 5 seconds
-        if (type === 'success') {
-            setTimeout(() => {
-                const alert = container.querySelector('.alert-success');
-                if (alert) {
-                    const bsAlert = new bootstrap.Alert(alert);
-                    bsAlert.close();
-                }
-            }, 5000);
+        // Use Toastr if available, otherwise fallback to alert
+        if (typeof toastr !== 'undefined') {
+            // Clear any existing duplicates
+            toastr.clear();
+            
+            // Show the appropriate toast
+            switch (type) {
+                case 'success':
+                    toastr.success(message);
+                    break;
+                case 'error':
+                case 'danger':
+                    toastr.error(message);
+                    break;
+                case 'warning':
+                    toastr.warning(message);
+                    break;
+                case 'info':
+                    toastr.info(message);
+                    break;
+                default:
+                    toastr.info(message);
+            }
+            
+            console.log('AdminAjax: Toastr message shown:', type, message);
+        } else {
+            // Fallback to browser alert if Toastr is not available
+            console.warn('Toastr not available, using browser alert');
+            alert(message);
         }
     }
 
@@ -40,12 +73,25 @@ class AdminAjax {
      * Clear all existing messages
      */
     static clearMessages() {
+        // Clear Toastr messages if available
+        if (typeof toastr !== 'undefined') {
+            toastr.clear();
+        }
+        
+        // Also clear any remaining Bootstrap alerts
         const alerts = document.querySelectorAll('.alert');
         alerts.forEach(alert => {
             try {
-                const bsAlert = new bootstrap.Alert(alert);
-                bsAlert.close();
+                // Try Bootstrap's close method first
+                if (typeof bootstrap !== 'undefined' && bootstrap.Alert) {
+                    const bsAlert = new bootstrap.Alert(alert);
+                    bsAlert.close();
+                } else {
+                    // Fallback to manual removal
+                    alert.remove();
+                }
             } catch (e) {
+                // If anything fails, just remove the element
                 alert.remove();
             }
         });
@@ -267,6 +313,13 @@ class AdminAjax {
             showMessage: options.showMessage !== false,
             ...options
         });
+    }
+
+    /**
+     * Test message display (for debugging)
+     */
+    static testMessage(type = 'success', message = 'Test message') {
+        AdminAjax.showMessage(type, message);
     }
 }
 

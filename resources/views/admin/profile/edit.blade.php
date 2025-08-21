@@ -223,7 +223,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // Profile form is now handled automatically by admin-ajax.js
     // Add custom success callback to update avatar preview
     const profileForm = document.getElementById('profile-form');
     if (profileForm) {
