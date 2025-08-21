@@ -8,9 +8,11 @@ use App\Http\Controllers\Api\V1\ContactController as ApiContactController;
 use App\Http\Controllers\Api\V1\ProfileController as ApiProfileController;
 use App\Http\Controllers\Api\V1\SkillController as ApiSkillController;
 use App\Http\Controllers\Api\V1\ServiceController as ApiServiceController;
+use Illuminate\Http\Exceptions\ThrottleRequestsException;
+use Illuminate\Support\Facades\Response;
 
 // API Version 1
-Route::prefix('v1')->name('api.v1.')->group(function () {
+Route::prefix('v1')->name('api.v1.')->middleware('throttle:60,1')->group(function () {
 
     // Public API endpoints
     Route::get('profile', [ApiProfileController::class, 'index']);
