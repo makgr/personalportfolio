@@ -56,10 +56,32 @@
 <script>
 $(document).ready(function() {
     // Initialize DataTable
-    $('#blogPostsTable').DataTable({
+    var table = $('#blogPostsTable').DataTable({
         processing: true,
         serverSide: true,
-        ajax: '{{ route("blog-posts.index") }}',
+        ajax: {
+            url: '{{ route("blog-posts.index") }}',
+            beforeSend: function() {
+                // Show loading overlay
+                $('#blogPostsTable_wrapper').addClass('position-relative');
+                if (!$('#blogPostsTable_wrapper .loading-overlay').length) {
+                    $('#blogPostsTable_wrapper').append(`
+                        <div class="loading-overlay position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center bg-white bg-opacity-75" style="z-index: 999;">
+                            <div class="text-center">
+                                <div class="spinner-border text-primary mb-2" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                                <div class="text-muted">Loading blog posts...</div>
+                            </div>
+                        </div>
+                    `);
+                }
+            },
+            complete: function() {
+                // Hide loading overlay
+                $('#blogPostsTable_wrapper .loading-overlay').remove();
+            }
+        },
         columns: [
             {data: 'title', name: 'title'},
             {data: 'author_name', name: 'author.name', orderable: false, searchable: false},
@@ -74,7 +96,29 @@ $(document).ready(function() {
         order: [[7, 'desc']], // Order by created_at desc
         responsive: true,
         language: {
-            processing: '<div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>'
+            processing: `
+                <div class="d-flex align-items-center justify-content-center p-4">
+                    <div class="spinner-border text-primary me-3" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <div class="text-muted">Loading blog posts...</div>
+                </div>
+            `,
+            loadingRecords: `
+                <div class="d-flex align-items-center justify-content-center p-4">
+                    <div class="spinner-border text-primary me-3" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <div class="text-muted">Loading records...</div>
+                </div>
+            `,
+            emptyTable: `
+                <div class="text-center p-4">
+                    <i class="bx bx-file text-muted" style="font-size: 3rem;"></i>
+                    <div class="mt-2">No blog posts found</div>
+                    <div class="text-muted">Create your first blog post to get started</div>
+                </div>
+            `
         },
         dom: '<"row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6 d-flex justify-content-center justify-content-md-end"f>>' +
              '<"table-responsive"t>' +
@@ -85,13 +129,13 @@ $(document).ready(function() {
 // Publish post function
 function publishPost(id) {
     if (confirm('Are you sure you want to publish this blog post?')) {
-        $.post(`/blog-posts/${id}/publish`, {
+        $.post(`{{ url('/blog-posts') }}/${id}/publish`, {
             _token: $('meta[name="csrf-token"]').attr('content')
         })
         .done(function(response) {
             if (response.success) {
                 toastr.success(response.message);
-                $('#blogPostsTable').DataTable().ajax.reload();
+                table.ajax.reload(null, false); // Keep current page
             } else {
                 toastr.error(response.message);
             }
@@ -105,13 +149,13 @@ function publishPost(id) {
 // Unpublish post function
 function unpublishPost(id) {
     if (confirm('Are you sure you want to unpublish this blog post?')) {
-        $.post(`/blog-posts/${id}/unpublish`, {
+        $.post(`{{ url('/blog-posts') }}/${id}/unpublish`, {
             _token: $('meta[name="csrf-token"]').attr('content')
         })
         .done(function(response) {
             if (response.success) {
                 toastr.success(response.message);
-                $('#blogPostsTable').DataTable().ajax.reload();
+                table.ajax.reload(null, false); // Keep current page
             } else {
                 toastr.error(response.message);
             }
@@ -125,23 +169,37 @@ function unpublishPost(id) {
 // Delete post function
 function deletePost(id) {
     if (confirm('Are you sure you want to delete this blog post? This action cannot be undone.')) {
+        const deleteUrl = `{{ url('/blog-posts') }}/${id}`;
+        console.log('Attempting to delete blog post ID:', id);
+        console.log('Delete URL:', deleteUrl);
         $.ajax({
-            url: `/blog-posts/${id}`,
-            type: 'DELETE',
+            url: deleteUrl,
+            type: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
+                'X-Requested-With': 'XMLHttpRequest'
+            },
             data: {
-                _token: $('meta[name="csrf-token"]').attr('content')
+                _token: $('meta[name="csrf-token"]').attr('content'),
+                _method: 'DELETE'
             }
         })
         .done(function(response) {
+            console.log('Delete response:', response);
             if (response.success) {
                 toastr.success(response.message);
-                $('#blogPostsTable').DataTable().ajax.reload();
+                table.ajax.reload(null, false); // Keep current page
             } else {
                 toastr.error(response.message);
             }
         })
-        .fail(function() {
-            toastr.error('Failed to delete blog post');
+        .fail(function(xhr, status, error) {
+            console.error('Delete request failed:', xhr.responseText, status, error);
+            if (xhr.responseJSON && xhr.responseJSON.message) {
+                toastr.error(xhr.responseJSON.message);
+            } else {
+                toastr.error('Failed to delete blog post: ' + error);
+            }
         });
     }
 }

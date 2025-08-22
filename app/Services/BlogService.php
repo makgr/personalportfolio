@@ -31,13 +31,13 @@ class BlogService
         // Calculate reading time
         $data['reading_time'] = $this->calculateReadingTime($data['content']);
 
+        // Handle tags - store directly in tags JSON field
+        if (!empty($tags)) {
+            $data['tags'] = $tags;
+        }
+
         // Create blog post
         $post = BlogPost::create($data);
-
-        // Attach tags
-        if (!empty($tags)) {
-            $post->tagModels()->sync($tags);
-        }
 
         // Create initial version
         $post->createVersion('Initial creation');
@@ -70,13 +70,13 @@ class BlogService
             $data['reading_time'] = $this->calculateReadingTime($data['content']);
         }
 
+        // Handle tags - store directly in tags JSON field
+        if (isset($tags)) {
+            $data['tags'] = $tags;
+        }
+
         // Update post
         $post->update($data);
-
-        // Sync tags
-        if (!empty($tags)) {
-            $post->tagModels()->sync($tags);
-        }
 
         return $post->fresh();
     }
@@ -85,13 +85,23 @@ class BlogService
     {
         $post = BlogPost::findOrFail($id);
 
-        // Delete featured image
+        // Delete featured image with error handling
         if ($post->featured_image) {
-            $this->mediaService->delete($post->featured_image);
+            try {
+                $this->mediaService->delete($post->featured_image);
+            } catch (\Exception $e) {
+                // Log error but continue with post deletion
+                \Log::warning('Failed to delete featured image: ' . $e->getMessage());
+            }
         }
 
-        // Delete media
-        $post->media()->delete();
+        // Delete media with error handling
+        try {
+            $post->media()->delete();
+        } catch (\Exception $e) {
+            // Log error but continue with post deletion
+            \Log::warning('Failed to delete media: ' . $e->getMessage());
+        }
 
         // Delete post
         return $post->delete();

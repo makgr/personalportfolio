@@ -32,12 +32,13 @@ class BlogRequest extends FormRequest
             'category_id' => 'nullable|exists:categories,id',
             'featured_image' => 'nullable|image|max:2048',
             'status' => 'required|in:draft,published,scheduled,archived',
-            'tags' => 'nullable|array',
-            'tags.*' => 'exists:tags,id',
+            'tags' => 'nullable|string', // Changed: JSON string of tag names
             'meta_tags' => 'nullable|array',
-            'is_featured' => 'boolean',
-            'allow_comments' => 'boolean',
-            'scheduled_at' => 'nullable|date|after:now',
+            'meta_tags.title' => 'nullable|string|max:255',
+            'meta_tags.description' => 'nullable|string|max:500',
+            'is_featured' => 'sometimes|boolean',
+            'allow_comments' => 'sometimes|boolean',
+            'scheduled_at' => 'nullable|date|after_or_equal:now',
         ];
     }
 

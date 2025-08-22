@@ -131,6 +131,10 @@ class BlogController extends Controller
         try {
             $result = DB::transaction(function () use ($request) {
                 $data = $request->validated();
+                
+                // Handle checkboxes (they won't be in request if unchecked)
+                $data['is_featured'] = $request->has('is_featured');
+                $data['allow_comments'] = $request->has('allow_comments');
 
                 // Set author
                 $data['author_id'] = Auth::user()->id;
@@ -139,7 +143,8 @@ class BlogController extends Controller
                 $featuredImage = $request->file('featured_image');
 
                 // Handle tags
-                $tags = $request->input('tags', []);
+                $tagsJson = $request->input('tags', '[]');
+                $tags = is_string($tagsJson) ? json_decode($tagsJson, true) : $tagsJson;
 
                 // Create blog post
                 $post = $this->blogService->createBlogPost(
@@ -187,12 +192,17 @@ class BlogController extends Controller
         try {
             $result = DB::transaction(function () use ($request, $id) {
                 $data = $request->validated();
+                
+                // Handle checkboxes (they won't be in request if unchecked)
+                $data['is_featured'] = $request->has('is_featured');
+                $data['allow_comments'] = $request->has('allow_comments');
 
                 // Handle featured image
                 $featuredImage = $request->file('featured_image');
 
                 // Handle tags
-                $tags = $request->input('tags', []);
+                $tagsJson = $request->input('tags', '[]');
+                $tags = is_string($tagsJson) ? json_decode($tagsJson, true) : $tagsJson;
 
                 // Update blog post
                 $post = $this->blogService->updateBlogPost(
@@ -236,11 +246,14 @@ class BlogController extends Controller
     /**
      * Delete blog post
      */
-    public function destroy(Request $request, $id)
+    public function destroy(Request $request, $blog_post)
     {
         try {
-            DB::transaction(function () use ($id) {
-                $this->blogService->deleteBlogPost($id);
+            // $blog_post is the ID from the route, not the model instance
+            $postId = (int) $blog_post;
+            
+            DB::transaction(function () use ($postId) {
+                $this->blogService->deleteBlogPost($postId);
             });
 
             if ($request->ajax()) {
@@ -272,10 +285,11 @@ class BlogController extends Controller
     /**
      * Publish blog post
      */
-    public function publish($id)
+    public function publish($post)
     {
         try {
-            $post = $this->blogService->publishBlogPost($id);
+            $postId = $post instanceof BlogPost ? $post->id : $post;
+            $post = $this->blogService->publishBlogPost($postId);
 
             return response()->json([
                 'success' => true,
@@ -294,10 +308,11 @@ class BlogController extends Controller
     /**
      * Unpublish blog post
      */
-    public function unpublish($id)
+    public function unpublish($post)
     {
         try {
-            $post = $this->blogService->unpublishBlogPost($id);
+            $postId = $post instanceof BlogPost ? $post->id : $post;
+            $post = $this->blogService->unpublishBlogPost($postId);
 
             return response()->json([
                 'success' => true,

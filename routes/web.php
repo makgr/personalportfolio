@@ -36,6 +36,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
     // Blog Posts (directly accessible at /blog-posts)
     Route::resource('blog-posts', BlogController::class);
     Route::post('blog-posts/{post}/publish', [BlogController::class, 'publish'])->name('blog-posts.publish');
+    Route::post('blog-posts/{post}/unpublish', [BlogController::class, 'unpublish'])->name('blog-posts.unpublish');
 
     // Skills (directly accessible at /skills)
     Route::resource('skills', SkillController::class);

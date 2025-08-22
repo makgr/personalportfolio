@@ -228,7 +228,7 @@
 <script>
 function publishPost(id) {
     if (confirm('Are you sure you want to publish this blog post?')) {
-        $.post(`/blog-posts/${id}/publish`, {
+        $.post(`{{ url('/blog-posts') }}/${id}/publish`, {
             _token: $('meta[name="csrf-token"]').attr('content')
         })
         .done(function(response) {
@@ -247,7 +247,7 @@ function publishPost(id) {
 
 function unpublishPost(id) {
     if (confirm('Are you sure you want to unpublish this blog post?')) {
-        $.post(`/blog-posts/${id}/unpublish`, {
+        $.post(`{{ url('/blog-posts') }}/${id}/unpublish`, {
             _token: $('meta[name="csrf-token"]').attr('content')
         })
         .done(function(response) {
@@ -266,14 +266,23 @@ function unpublishPost(id) {
 
 function deletePost(id) {
     if (confirm('Are you sure you want to delete this blog post? This action cannot be undone.')) {
+        const deleteUrl = `{{ url('/blog-posts') }}/${id}`;
+        console.log('Attempting to delete blog post ID:', id);
+        console.log('Delete URL:', deleteUrl);
         $.ajax({
-            url: `/blog-posts/${id}`,
-            type: 'DELETE',
+            url: deleteUrl,
+            type: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
+                'X-Requested-With': 'XMLHttpRequest'
+            },
             data: {
-                _token: $('meta[name="csrf-token"]').attr('content')
+                _token: $('meta[name="csrf-token"]').attr('content'),
+                _method: 'DELETE'
             }
         })
         .done(function(response) {
+            console.log('Delete response:', response);
             if (response.success) {
                 toastr.success(response.message);
                 setTimeout(() => window.location.href = '/blog-posts', 1000);
@@ -281,8 +290,13 @@ function deletePost(id) {
                 toastr.error(response.message);
             }
         })
-        .fail(function() {
-            toastr.error('Failed to delete blog post');
+        .fail(function(xhr, status, error) {
+            console.error('Delete request failed:', xhr.responseText, status, error);
+            if (xhr.responseJSON && xhr.responseJSON.message) {
+                toastr.error(xhr.responseJSON.message);
+            } else {
+                toastr.error('Failed to delete blog post: ' + error);
+            }
         });
     }
 }
