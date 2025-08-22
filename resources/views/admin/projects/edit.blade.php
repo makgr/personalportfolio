@@ -319,7 +319,7 @@
                             <div class="mb-3">
                                 <label class="form-label">Current Featured Image</label>
                                 <div class="text-center">
-                                    <img src="{{ asset('storage/' . $project->featured_image) }}" 
+                                    <img src="{{ asset($project->featured_image) }}" 
                                          alt="{{ $project->title }}" class="img-fluid rounded" style="max-height: 200px;">
                                     <div class="form-text">Current featured image</div>
                                 </div>

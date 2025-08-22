@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Requests\Admin\BlogRequest;
+use Yajra\DataTables\Facades\DataTables;
 
 class BlogController extends Controller
 {
@@ -28,79 +29,97 @@ class BlogController extends Controller
      */
     public function index(Request $request)
     {
-        try {
+        if ($request->ajax()) {
             $query = BlogPost::with(['category', 'author', 'tagModels']);
-
-            // Search filter
-            if ($request->filled('search')) {
-                $search = $request->search;
-                $query->where(function ($q) use ($search) {
-                    $q->where('title', 'like', "%{$search}%")
-                        ->orWhere('excerpt', 'like', "%{$search}%")
-                        ->orWhere('content', 'like', "%{$search}%");
-                });
-            }
-
-            // Status filter
-            if ($request->filled('status')) {
-                $query->where('status', $request->status);
-            }
-
-            // Category filter
-            if ($request->filled('category_id')) {
-                $query->where('category_id', $request->category_id);
-            }
-
-            // Date range filter
-            if ($request->filled('date_from')) {
-                $query->whereDate('created_at', '>=', $request->date_from);
-            }
-            if ($request->filled('date_to')) {
-                $query->whereDate('created_at', '<=', $request->date_to);
-            }
-
-            // Sorting
-            $sortBy = $request->get('sort_by', 'created_at');
-            $sortOrder = $request->get('sort_order', 'desc');
-            $query->orderBy($sortBy, $sortOrder);
-
-            // Pagination
-            $perPage = $request->get('per_page', 15);
-            $posts = $query->paginate($perPage);
-
-            return response()->json([
-                'success' => true,
-                'data' => $posts,
-                'message' => 'Blog posts retrieved successfully'
-            ]);
-        } catch (\Exception $e) {
-            Log::error('Failed to fetch blog posts: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to fetch blog posts',
-                'error' => $e->getMessage()
-            ], 500);
+            
+            return DataTables::of($query)
+                ->addColumn('status_badge', function ($post) {
+                    $colors = [
+                        'published' => 'success',
+                        'draft' => 'warning', 
+                        'scheduled' => 'info',
+                        'archived' => 'secondary'
+                    ];
+                    $color = $colors[$post->status] ?? 'primary';
+                    return '<span class="badge bg-' . $color . '">' . ucfirst($post->status) . '</span>';
+                })
+                ->addColumn('featured_badge', function ($post) {
+                    return $post->is_featured 
+                        ? '<span class="badge bg-info"><i class="bx bx-star"></i> Featured</span>'
+                        : '';
+                })
+                ->addColumn('author_name', function ($post) {
+                    return $post->author ? $post->author->name : 'Unknown';
+                })
+                ->addColumn('category_name', function ($post) {
+                    return $post->category ? $post->category->name : 'Uncategorized';
+                })
+                ->addColumn('reading_time', function ($post) {
+                    return $post->reading_time . ' min read';
+                })
+                ->addColumn('actions', function ($post) {
+                    return view('admin.blog-posts.partials.actions', compact('post'));
+                })
+                ->editColumn('created_at', function ($post) {
+                    return $post->created_at->format('M d, Y');
+                })
+                ->editColumn('views', function ($post) {
+                    return number_format($post->views);
+                })
+                ->rawColumns(['status_badge', 'featured_badge', 'actions'])
+                ->make(true);
         }
+        
+        return view('admin.blog-posts.index');
+    }
+
+    /**
+     * Show create form
+     */
+    public function create()
+    {
+        $categories = Category::where('type', 'blog')->active()->get();
+        $tags = Tag::orderBy('name')->get();
+        return view('admin.blog-posts.create', compact('categories', 'tags'));
+    }
+
+    /**
+     * Show edit form
+     */
+    public function edit($id)
+    {
+        $post = BlogPost::with(['category', 'tagModels', 'media'])->findOrFail($id);
+        $categories = Category::where('type', 'blog')->active()->get();
+        $tags = Tag::orderBy('name')->get();
+        return view('admin.blog-posts.edit', compact('post', 'categories', 'tags'));
     }
 
     /**
      * Get single blog post
      */
-    public function show($id)
+    public function show(Request $request, $id)
     {
         try {
             $post = BlogPost::with(['category', 'author', 'tagModels', 'media', 'versions'])
                 ->findOrFail($id);
 
-            return response()->json([
-                'success' => true,
-                'data' => $post
-            ]);
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'data' => $post
+                ]);
+            }
+
+            return view('admin.blog-posts.show', compact('post'));
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Blog post not found'
-            ], 404);
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Blog post not found'
+                ], 404);
+            }
+
+            return back()->with('error', 'Blog post not found');
         }
     }
 
@@ -132,18 +151,31 @@ class BlogController extends Controller
                 return $post;
             });
 
-            return response()->json([
-                'success' => true,
-                'data' => $result->load(['category', 'author', 'tagModels']),
-                'message' => 'Blog post created successfully'
-            ], 201);
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'data' => $result->load(['category', 'author', 'tagModels']),
+                    'message' => 'Blog post created successfully'
+                ]);
+            }
+
+            return redirect()
+                ->route('blog-posts.index')
+                ->with('success', 'Blog post created successfully');
         } catch (\Exception $e) {
             Log::error('Failed to create blog post: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to create blog post',
-                'error' => $e->getMessage()
-            ], 500);
+            
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to create blog post',
+                    'error' => $e->getMessage()
+                ], 422);
+            }
+
+            return back()
+                ->withInput()
+                ->with('error', 'Failed to create blog post: ' . $e->getMessage());
         }
     }
 
@@ -173,42 +205,67 @@ class BlogController extends Controller
                 return $post;
             });
 
-            return response()->json([
-                'success' => true,
-                'data' => $result->load(['category', 'author', 'tagModels']),
-                'message' => 'Blog post updated successfully'
-            ]);
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'data' => $result->load(['category', 'author', 'tagModels']),
+                    'message' => 'Blog post updated successfully'
+                ]);
+            }
+
+            return redirect()
+                ->route('blog-posts.edit', $id)
+                ->with('success', 'Blog post updated successfully');
         } catch (\Exception $e) {
             Log::error('Failed to update blog post: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to update blog post',
-                'error' => $e->getMessage()
-            ], 500);
+            
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to update blog post',
+                    'error' => $e->getMessage()
+                ], 422);
+            }
+
+            return back()
+                ->withInput()
+                ->with('error', 'Failed to update blog post: ' . $e->getMessage());
         }
     }
 
     /**
      * Delete blog post
      */
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
         try {
             DB::transaction(function () use ($id) {
                 $this->blogService->deleteBlogPost($id);
             });
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Blog post deleted successfully'
-            ]);
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Blog post deleted successfully'
+                ]);
+            }
+
+            return redirect()
+                ->route('blog-posts.index')
+                ->with('success', 'Blog post deleted successfully');
         } catch (\Exception $e) {
             Log::error('Failed to delete blog post: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to delete blog post',
-                'error' => $e->getMessage()
-            ], 500);
+            
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to delete blog post',
+                    'error' => $e->getMessage()
+                ], 500);
+            }
+
+            return back()
+                ->with('error', 'Failed to delete blog post: ' . $e->getMessage());
         }
     }
 
