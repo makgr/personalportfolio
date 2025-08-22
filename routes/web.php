@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\ServiceController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\ExperienceController;
+use App\Http\Controllers\Admin\EducationController;
 
 
 Route::get('/', function () {
@@ -53,6 +54,12 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::resource('experiences', ExperienceController::class);
     Route::post('experiences/reorder', [ExperienceController::class, 'reorder'])->name('experiences.reorder');
     Route::post('experiences/{experience}/toggle-status', [ExperienceController::class, 'toggleStatus'])->name('experiences.toggle-status');
+
+    // Education
+    Route::resource('education', EducationController::class);
+    Route::post('education/reorder', [EducationController::class, 'reorder'])->name('education.reorder');
+    Route::post('education/{education}/toggle-status', [EducationController::class, 'toggleStatus'])->name('education.toggle-status');
+    Route::post('education/bulk-action', [EducationController::class, 'bulkAction'])->name('education.bulk-action');
 
     // Contacts/Messages
     Route::get('contacts', [ContactController::class, 'index'])->name('contacts.index');

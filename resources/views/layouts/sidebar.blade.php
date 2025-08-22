@@ -167,6 +167,26 @@
             </ul>
         </li>
 
+        <!-- Education -->
+        <li class="menu-item {{ request()->routeIs('education.*') ? 'active open' : '' }}">
+            <a href="javascript:void(0);" class="menu-link menu-toggle">
+                <i class="menu-icon tf-icons bx bx-book"></i>
+                <div data-i18n="Education">Education</div>
+            </a>
+            <ul class="menu-sub">
+                <li class="menu-item {{ request()->routeIs('education.index') ? 'active' : '' }}">
+                    <a href="{{ route('education.index') }}" class="menu-link">
+                        <div data-i18n="All Education">All Education</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('education.create') ? 'active' : '' }}">
+                    <a href="{{ route('education.create') }}" class="menu-link">
+                        <div data-i18n="Add Education">Add Education</div>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
         <!-- Contact Messages -->
         <li class="menu-item {{ request()->routeIs('contacts.*') ? 'active' : '' }}">
             <a href="{{ route('contacts.index') }}" class="menu-link">
