@@ -148,11 +148,23 @@
         </li>
 
         <!-- Experience -->
-        <li class="menu-item {{ request()->routeIs('experiences.*') ? 'active' : '' }}">
-            <a href="{{ route('experiences.index') }}" class="menu-link">
+        <li class="menu-item {{ request()->routeIs('experiences.*') ? 'active open' : '' }}">
+            <a href="javascript:void(0);" class="menu-link menu-toggle">
                 <i class="menu-icon tf-icons bx bx-time"></i>
                 <div data-i18n="Experience">Experience</div>
             </a>
+            <ul class="menu-sub">
+                <li class="menu-item {{ request()->routeIs('experiences.index') ? 'active' : '' }}">
+                    <a href="{{ route('experiences.index') }}" class="menu-link">
+                        <div data-i18n="All Experience">All Experience</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('experiences.create') ? 'active' : '' }}">
+                    <a href="{{ route('experiences.create') }}" class="menu-link">
+                        <div data-i18n="Add Experience">Add Experience</div>
+                    </a>
+                </li>
+            </ul>
         </li>
 
         <!-- Contact Messages -->
