@@ -54,9 +54,11 @@
 
 @push('scripts')
 <script>
+var table; // Declare table variable in global scope
+
 $(document).ready(function() {
     // Initialize DataTable
-    var table = $('#skillsTable').DataTable({
+    table = $('#skillsTable').DataTable({
         processing: true,
         serverSide: true,
         ajax: {

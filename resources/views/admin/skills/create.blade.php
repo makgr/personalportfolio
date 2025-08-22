@@ -161,8 +161,8 @@
 
                         <div class="d-flex justify-content-end gap-2">
                             <a href="{{ route('skills.index') }}" class="btn btn-secondary">Cancel</a>
-                            <button type="submit" class="btn btn-primary">
-                                <i class="bx bx-check me-1"></i>Create Skill
+                            <button type="submit" class="btn btn-primary" id="submitBtn">
+                                <i class="bx bx-check me-1"></i><span class="btn-text">Create Skill</span>
                             </button>
                         </div>
                     </form>
@@ -197,6 +197,66 @@
 
 @push('scripts')
 <script>
+// AJAX Form Submission
+$(document).ready(function() {
+    $('#skillForm').on('submit', function(e) {
+        e.preventDefault();
+        
+        const submitBtn = $('#submitBtn');
+        const btnText = submitBtn.find('.btn-text');
+        const originalText = btnText.text();
+        
+        // Show loading state
+        submitBtn.prop('disabled', true);
+        btnText.html('<span class="spinner-border spinner-border-sm me-1" role="status"></span>Creating...');
+        
+        // Clear previous errors
+        $('.is-invalid').removeClass('is-invalid');
+        $('.invalid-feedback').remove();
+        
+        $.ajax({
+            url: $(this).attr('action'),
+            type: 'POST',
+            data: $(this).serialize(),
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .done(function(response) {
+            if (response.success) {
+                toastr.success(response.message || 'Skill created successfully!');
+                // Redirect to skills index after short delay
+                setTimeout(function() {
+                    window.location.href = '{{ route("skills.index") }}';
+                }, 1500);
+            } else {
+                toastr.error(response.message || 'Failed to create skill');
+            }
+        })
+        .fail(function(xhr) {
+            if (xhr.status === 422) {
+                // Handle validation errors
+                const errors = xhr.responseJSON.errors;
+                if (errors) {
+                    Object.keys(errors).forEach(function(field) {
+                        const input = $(`[name="${field}"]`);
+                        input.addClass('is-invalid');
+                        input.after(`<div class="invalid-feedback">${errors[field][0]}</div>`);
+                    });
+                }
+                toastr.error('Please check the form for errors');
+            } else {
+                toastr.error('Failed to create skill. Please try again.');
+            }
+        })
+        .always(function() {
+            // Reset button state
+            submitBtn.prop('disabled', false);
+            btnText.text(originalText);
+        });
+    });
+});
+
 function updateProficiencyDisplay(value) {
     document.getElementById('proficiencyValue').textContent = value;
     updatePreview();

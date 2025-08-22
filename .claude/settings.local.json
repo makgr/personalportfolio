@@ -13,6 +13,9 @@
       "Bash(php -l:*)"
     ],
     "deny": [],
-    "ask": []
+    "ask": [],
+    "additionalDirectories": [
+      "G:\\g\\laragon\\www"
+    ]
   }
 }
