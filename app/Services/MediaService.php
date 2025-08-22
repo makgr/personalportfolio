@@ -51,23 +51,26 @@ class MediaService
             'exists' => File::exists($destinationPath)
         ]);
 
-        // Temporarily disable image optimization for debugging
-        // if ($isImage) {
-        //     $this->optimizeImage($destinationPath);
-        // }
+        // Optimize image if it's an image file
+        if ($isImage) {
+            $this->optimizeImage($destinationPath);
+        }
 
         return $relativePath;
     }
 
     public function uploadWithThumbnail(UploadedFile $file, string $folder = 'uploads'): array
     {
+        // Check if image before moving
+        $isImage = $this->isImage($file);
+        
         $mainPath = $this->upload($file, $folder);
         $thumbnailPath = null;
 
-        // Temporarily disable thumbnail creation to prevent temp file errors
-        // if ($this->isImage($file)) {
-        //     $thumbnailPath = $this->createThumbnail($mainPath);
-        // }
+        // Create thumbnail if it's an image
+        if ($isImage) {
+            $thumbnailPath = $this->createThumbnail($mainPath);
+        }
 
         return [
             'main' => $mainPath,
@@ -77,16 +80,21 @@ class MediaService
 
     public function attachToModel($model, UploadedFile $file, string $collection = 'default'): Media
     {
+        // Store file properties before moving the file
+        $originalName = $file->getClientOriginalName();
+        $mimeType = $file->getMimeType();
+        $fileSize = $file->getSize();
+        
         $path = $this->upload($file, strtolower(class_basename($model)));
 
         return Media::create([
             'filename' => basename($path),
-            'original_name' => $file->getClientOriginalName(),
-            'mime_type' => $file->getMimeType(),
+            'original_name' => $originalName,
+            'mime_type' => $mimeType,
             'path' => $path,
             'disk' => 'public',
             'url' => asset($path),
-            'size' => $file->getSize(),
+            'size' => $fileSize,
             'collection' => $collection,
             'mediable_type' => get_class($model),
             'mediable_id' => $model->id,
