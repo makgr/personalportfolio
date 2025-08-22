@@ -40,6 +40,10 @@
     <!-- Toastr CSS -->
     <link rel="stylesheet" href="{{ asset('assets/css/toastr/toastr.min.css') }}" />
 
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css">
+
     <!-- Page CSS -->
     @yield('css')
     <!-- Toastr Custom Styles -->
@@ -228,6 +232,12 @@
 
     <!-- Toastr JS -->
     <script src="{{ asset('assets/js/toastr/toastr.min.js') }}"></script>
+
+    <!-- DataTables JS -->
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.5.0/js/responsive.bootstrap5.min.js"></script>
 
     <!-- Admin AJAX Helper -->
     <script src="{{ asset('assets/js/admin-ajax.js') }}?v=4"></script>

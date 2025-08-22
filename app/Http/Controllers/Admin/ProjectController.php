@@ -9,6 +9,7 @@ use App\Http\Requests\Admin\ProjectRequest;
 use App\Models\Category;
 use App\Models\Tag;
 use Illuminate\Http\Request;
+use Yajra\DataTables\Facades\DataTables;
 
 class ProjectController extends Controller
 {
@@ -29,7 +30,7 @@ class ProjectController extends Controller
         if ($request->ajax()) {
             $query = $this->projectRepository->getAllProjects();
             
-            return datatables($query)
+            return DataTables::of($query)
                 ->addColumn('status_badge', function ($project) {
                     $colors = [
                         'published' => 'success',

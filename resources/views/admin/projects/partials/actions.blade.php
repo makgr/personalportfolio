@@ -29,15 +29,6 @@
             </li>
         @endif
         
-        <li>
-            <button class="dropdown-item btn-feature" 
-                    data-url="{{ route('projects.feature', $project->id) }}"
-                    data-featured="{{ $project->is_featured ? 'true' : 'false' }}">
-                <i class="bx {{ $project->is_featured ? 'bx-star' : 'bx-star-half' }} me-2"></i>
-                {{ $project->is_featured ? 'Remove Featured' : 'Mark Featured' }}
-            </button>
-        </li>
-        
         <li><hr class="dropdown-divider"></li>
         <li>
             <button class="dropdown-item text-danger btn-delete" 
