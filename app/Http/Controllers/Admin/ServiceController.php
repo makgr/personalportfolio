@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Yajra\DataTables\Facades\DataTables;
 
 class ServiceController extends Controller
 {
@@ -21,46 +22,135 @@ class ServiceController extends Controller
     }
 
     /**
-     * Get all services
+     * Display a listing of services
      */
     public function index(Request $request)
     {
-        try {
-            $query = Service::with('media');
-
-            // Search filter
-            if ($request->filled('search')) {
-                $search = $request->search;
-                $query->where(function ($q) use ($search) {
-                    $q->where('title', 'like', "%{$search}%")
-                        ->orWhere('short_description', 'like', "%{$search}%");
-                });
-            }
-
-            // Active filter
-            if ($request->filled('is_active')) {
-                $query->where('is_active', $request->boolean('is_active'));
-            }
-
-            // Sorting
-            $sortBy = $request->get('sort_by', 'order');
-            $sortOrder = $request->get('sort_order', 'asc');
-            $query->orderBy($sortBy, $sortOrder);
-
-            $services = $request->has('all') ? $query->get() : $query->paginate($request->get('per_page', 15));
-
-            return response()->json([
-                'success' => true,
-                'data' => $services
-            ]);
-        } catch (\Exception $e) {
-            Log::error('Failed to fetch services: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to fetch services',
-                'error' => $e->getMessage()
-            ], 500);
+        if ($request->ajax()) {
+            $query = Service::query();
+            
+            return DataTables::of($query)
+                ->addColumn('price_display', function ($service) {
+                    if (!$service->starting_price) {
+                        return '<span class="badge bg-info">Contact for pricing</span>';
+                    }
+                    
+                    $price = '$' . number_format($service->starting_price, 2);
+                    if ($service->price_unit) {
+                        $price .= ' / ' . ucfirst($service->price_unit);
+                    }
+                    
+                    return '<span class="badge bg-primary">' . $price . '</span>';
+                })
+                ->addColumn('status_badge', function ($service) {
+                    return $service->is_active 
+                        ? '<span class="badge bg-success">Active</span>'
+                        : '<span class="badge bg-secondary">Inactive</span>';
+                })
+                ->addColumn('icon_display', function ($service) {
+                    if ($service->icon) {
+                        // Handle Boxicons (bx-*)
+                        if (str_starts_with($service->icon, 'bx-')) {
+                            return '<i class="bx ' . $service->icon . ' text-primary" style="font-size: 1.5rem;"></i>';
+                        }
+                        // Handle Font Awesome (fa*, fab, fas, far, fal, fad)
+                        elseif (preg_match('/^(fa[a-z]?-|fa\s)/', $service->icon)) {
+                            // If it starts with fa- but no prefix, assume fas (solid)
+                            if (str_starts_with($service->icon, 'fa-')) {
+                                return '<i class="fas ' . $service->icon . ' text-primary" style="font-size: 1.5rem;"></i>';
+                            } else {
+                                return '<i class="' . $service->icon . ' text-primary" style="font-size: 1.5rem;"></i>';
+                            }
+                        }
+                        // Handle any other icon class
+                        else {
+                            return '<i class="' . $service->icon . ' text-primary" style="font-size: 1.5rem;"></i>';
+                        }
+                    }
+                    return '<i class="bx bx-briefcase text-muted" style="font-size: 1.5rem;"></i>';
+                })
+                ->addColumn('features_count', function ($service) {
+                    $count = is_array($service->features) ? count($service->features) : 0;
+                    return '<span class="badge bg-info">' . $count . ' features</span>';
+                })
+                ->addColumn('technologies_count', function ($service) {
+                    $count = is_array($service->technologies) ? count($service->technologies) : 0;
+                    return '<span class="badge bg-warning">' . $count . ' techs</span>';
+                })
+                ->addColumn('actions', function ($service) {
+                    return view('admin.services.partials.actions', compact('service'));
+                })
+                ->editColumn('created_at', function ($service) {
+                    return $service->created_at->format('M d, Y');
+                })
+                ->editColumn('short_description', function ($service) {
+                    return Str::limit($service->short_description, 50);
+                })
+                ->rawColumns(['price_display', 'status_badge', 'icon_display', 'features_count', 'technologies_count', 'actions'])
+                ->make(true);
         }
+        
+        return view('admin.services.index');
+    }
+
+    /**
+     * Show the form for creating a new service
+     */
+    public function create()
+    {
+        $priceUnits = [
+            'hour' => 'Hour',
+            'project' => 'Project', 
+            'month' => 'Month',
+            'year' => 'Year'
+        ];
+        
+        return view('admin.services.create', compact('priceUnits'));
+    }
+
+    /**
+     * Display the specified service
+     */
+    public function show(Request $request, $id)
+    {
+        try {
+            $service = Service::with('media')->findOrFail($id);
+
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'data' => $service
+                ]);
+            }
+
+            return view('admin.services.show', compact('service'));
+        } catch (\Exception $e) {
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Service not found'
+                ], 404);
+            }
+
+            return back()->with('error', 'Service not found');
+        }
+    }
+
+    /**
+     * Show the form for editing the specified service
+     */
+    public function edit($id)
+    {
+        $service = Service::with('media')->findOrFail($id);
+        
+        $priceUnits = [
+            'hour' => 'Hour',
+            'project' => 'Project', 
+            'month' => 'Month',
+            'year' => 'Year'
+        ];
+        
+        return view('admin.services.edit', compact('service', 'priceUnits'));
     }
 
     /**
@@ -74,10 +164,8 @@ class ServiceController extends Controller
             'description' => 'required|string',
             'icon' => 'nullable|string|max:255',
             'image' => 'nullable|image|max:2048',
-            'features' => 'nullable|array',
-            'features.*' => 'string|max:255',
-            'technologies' => 'nullable|array',
-            'technologies.*' => 'string|max:100',
+            'features' => 'nullable|string',
+            'technologies' => 'nullable|string',
             'starting_price' => 'nullable|numeric|min:0',
             'price_unit' => 'nullable|string|in:hour,project,month,year',
             'is_active' => 'boolean',
@@ -87,6 +175,17 @@ class ServiceController extends Controller
             DB::transaction(function () use (&$service, $request, $validated) {
                 $validated['slug'] = Str::slug($validated['title']);
                 $validated['order'] = Service::max('order') + 1;
+
+                // Handle checkboxes
+                $validated['is_active'] = $request->has('is_active');
+
+                // Handle arrays from form input (comma-separated strings)
+                if (isset($validated['features']) && is_string($validated['features'])) {
+                    $validated['features'] = array_filter(array_map('trim', explode(',', $validated['features'])));
+                }
+                if (isset($validated['technologies']) && is_string($validated['technologies'])) {
+                    $validated['technologies'] = array_filter(array_map('trim', explode(',', $validated['technologies'])));
+                }
 
                 // Handle image upload
                 if ($request->hasFile('image')) {
@@ -103,18 +202,31 @@ class ServiceController extends Controller
                 }
             });
 
-            return response()->json([
-                'success' => true,
-                'data' => $service->load('media'),
-                'message' => 'Service created successfully'
-            ], 201);
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'data' => $service->load('media'),
+                    'message' => 'Service created successfully'
+                ], 201);
+            }
+
+            return redirect()
+                ->route('services.index')
+                ->with('success', 'Service created successfully');
         } catch (\Exception $e) {
             Log::error('Failed to create service: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to create service',
-                'error' => $e->getMessage()
-            ], 500);
+            
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to create service',
+                    'error' => $e->getMessage()
+                ], 500);
+            }
+
+            return back()
+                ->withInput()
+                ->with('error', 'Failed to create service: ' . $e->getMessage());
         }
     }
 
@@ -131,10 +243,8 @@ class ServiceController extends Controller
             'description' => 'required|string',
             'icon' => 'nullable|string|max:255',
             'image' => 'nullable|image|max:2048',
-            'features' => 'nullable|array',
-            'features.*' => 'string|max:255',
-            'technologies' => 'nullable|array',
-            'technologies.*' => 'string|max:100',
+            'features' => 'nullable|string',
+            'technologies' => 'nullable|string',
             'starting_price' => 'nullable|numeric|min:0',
             'price_unit' => 'nullable|string|in:hour,project,month,year',
             'is_active' => 'boolean',
@@ -144,6 +254,17 @@ class ServiceController extends Controller
             DB::transaction(function () use ($service, $request, $validated) {
                 if ($validated['title'] !== $service->title) {
                     $validated['slug'] = Str::slug($validated['title']);
+                }
+
+                // Handle checkboxes
+                $validated['is_active'] = $request->has('is_active');
+
+                // Handle arrays from form input (comma-separated strings)
+                if (isset($validated['features']) && is_string($validated['features'])) {
+                    $validated['features'] = array_filter(array_map('trim', explode(',', $validated['features'])));
+                }
+                if (isset($validated['technologies']) && is_string($validated['technologies'])) {
+                    $validated['technologies'] = array_filter(array_map('trim', explode(',', $validated['technologies'])));
                 }
 
                 // Handle image upload
@@ -158,50 +279,104 @@ class ServiceController extends Controller
                 $service->update($validated);
             });
 
-            return response()->json([
-                'success' => true,
-                'data' => $service->fresh()->load('media'),
-                'message' => 'Service updated successfully'
-            ]);
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'data' => $service->fresh()->load('media'),
+                    'message' => 'Service updated successfully'
+                ]);
+            }
+
+            return redirect()
+                ->route('services.edit', $id)
+                ->with('success', 'Service updated successfully');
         } catch (\Exception $e) {
             Log::error('Failed to update service: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to update service',
-                'error' => $e->getMessage()
-            ], 500);
+            
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to update service',
+                    'error' => $e->getMessage()
+                ], 500);
+            }
+
+            return back()
+                ->withInput()
+                ->with('error', 'Failed to update service: ' . $e->getMessage());
         }
     }
 
     /**
      * Delete service
      */
-    public function destroy($id)
+    public function destroy(Request $request, $service)
     {
         try {
-            DB::transaction(function () use ($id) {
-                $service = Service::findOrFail($id);
+            $serviceId = (int) $service;
+            $serviceRecord = Service::findOrFail($serviceId);
 
+            DB::transaction(function () use ($serviceRecord) {
                 // Delete image
-                if ($service->image) {
-                    $this->mediaService->delete($service->image);
+                if ($serviceRecord->image) {
+                    try {
+                        $this->mediaService->delete($serviceRecord->image);
+                    } catch (\Exception $e) {
+                        Log::warning('Failed to delete service image: ' . $e->getMessage());
+                    }
                 }
 
                 // Delete associated media
-                $service->media()->delete();
+                $serviceRecord->media()->delete();
 
-                $service->delete();
+                $serviceRecord->delete();
             });
+
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Service deleted successfully'
+                ]);
+            }
+
+            return redirect()
+                ->route('services.index')
+                ->with('success', 'Service deleted successfully');
+        } catch (\Exception $e) {
+            Log::error('Failed to delete service: ' . $e->getMessage());
+            
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to delete service',
+                    'error' => $e->getMessage()
+                ], 500);
+            }
+
+            return back()
+                ->with('error', 'Failed to delete service: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Toggle service status
+     */
+    public function toggleStatus($id)
+    {
+        try {
+            $service = Service::findOrFail($id);
+            $service->is_active = !$service->is_active;
+            $service->save();
 
             return response()->json([
                 'success' => true,
-                'message' => 'Service deleted successfully'
+                'data' => $service,
+                'message' => $service->is_active ? 'Service activated' : 'Service deactivated'
             ]);
         } catch (\Exception $e) {
-            Log::error('Failed to delete service: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to delete service',
+                'message' => 'Failed to toggle service status',
                 'error' => $e->getMessage()
             ], 500);
         }

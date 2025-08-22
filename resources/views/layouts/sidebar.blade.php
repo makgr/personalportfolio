@@ -128,11 +128,23 @@
         </li>
 
         <!-- Services -->
-        <li class="menu-item {{ request()->routeIs('services.*') ? 'active' : '' }}">
-            <a href="{{ route('services.index') }}" class="menu-link">
+        <li class="menu-item {{ request()->routeIs('services.*') ? 'active open' : '' }}">
+            <a href="javascript:void(0);" class="menu-link menu-toggle">
                 <i class="menu-icon tf-icons bx bx-briefcase"></i>
                 <div data-i18n="Services">Services</div>
             </a>
+            <ul class="menu-sub">
+                <li class="menu-item {{ request()->routeIs('services.index') ? 'active' : '' }}">
+                    <a href="{{ route('services.index') }}" class="menu-link">
+                        <div data-i18n="All Services">All Services</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('services.create') ? 'active' : '' }}">
+                    <a href="{{ route('services.create') }}" class="menu-link">
+                        <div data-i18n="Add Service">Add Service</div>
+                    </a>
+                </li>
+            </ul>
         </li>
 
         <!-- Experience -->

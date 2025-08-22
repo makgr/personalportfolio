@@ -46,6 +46,8 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
     // Services
     Route::resource('services', ServiceController::class);
+    Route::post('services/reorder', [ServiceController::class, 'reorder'])->name('services.reorder');
+    Route::post('services/{service}/toggle-status', [ServiceController::class, 'toggleStatus'])->name('services.toggle-status');
 
     // Experience
     Route::resource('experiences', ExperienceController::class);

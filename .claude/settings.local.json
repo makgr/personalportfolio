@@ -10,7 +10,8 @@
       "Bash(composer show:*)",
       "Bash(curl:*)",
       "Bash(cat:*)",
-      "Bash(php -l:*)"
+      "Bash(php -l:*)",
+      "Bash(rm:*)"
     ],
     "deny": [],
     "ask": [],
