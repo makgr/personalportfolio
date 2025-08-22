@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
+use Yajra\DataTables\Facades\DataTables;
 
 class ContactController extends Controller
 {
@@ -17,74 +19,97 @@ class ContactController extends Controller
     }
 
     /**
-     * Get all contact submissions
+     * Display a listing of contact submissions
      */
     public function index(Request $request)
     {
-        try {
+        if ($request->ajax()) {
             $query = ContactSubmission::query();
-
-            // Search filter
-            if ($request->filled('search')) {
-                $search = $request->search;
-                $query->where(function ($q) use ($search) {
-                    $q->where('name', 'like', "%{$search}%")
-                        ->orWhere('email', 'like', "%{$search}%")
-                        ->orWhere('subject', 'like', "%{$search}%")
-                        ->orWhere('message', 'like', "%{$search}%")
-                        ->orWhere('company', 'like', "%{$search}%");
-                });
-            }
-
-            // Status filter
-            if ($request->filled('status')) {
-                $query->where('status', $request->status);
-            }
-
-            // Type filter
-            if ($request->filled('type')) {
-                $query->where('type', $request->type);
-            }
-
-            // Date range filter
-            if ($request->filled('date_from')) {
-                $query->whereDate('created_at', '>=', $request->date_from);
-            }
-            if ($request->filled('date_to')) {
-                $query->whereDate('created_at', '<=', $request->date_to);
-            }
-
-            // Sorting
-            $sortBy = $request->get('sort_by', 'created_at');
-            $sortOrder = $request->get('sort_order', 'desc');
-            $query->orderBy($sortBy, $sortOrder);
-
-            $contacts = $query->paginate($request->get('per_page', 15));
-
-            return response()->json([
-                'success' => true,
-                'data' => $contacts,
-                'statistics' => [
-                    'new' => ContactSubmission::where('status', 'new')->count(),
-                    'read' => ContactSubmission::where('status', 'read')->count(),
-                    'replied' => ContactSubmission::where('status', 'replied')->count(),
-                    'archived' => ContactSubmission::where('status', 'archived')->count(),
-                ]
-            ]);
-        } catch (\Exception $e) {
-            Log::error('Failed to fetch contact submissions: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to fetch contact submissions',
-                'error' => $e->getMessage()
-            ], 500);
+            
+            return DataTables::of($query)
+                ->addColumn('sender_info', function ($contact) {
+                    $html = '<div>';
+                    $html .= '<div class="fw-bold">' . e($contact->name) . '</div>';
+                    $html .= '<div class="text-muted small">' . e($contact->email) . '</div>';
+                    if ($contact->company) {
+                        $html .= '<div class="text-muted small"><i class="bx bx-buildings me-1"></i>' . e($contact->company) . '</div>';
+                    }
+                    $html .= '</div>';
+                    return $html;
+                })
+                ->addColumn('type_badge', function ($contact) {
+                    $colors = [
+                        'general' => 'secondary',
+                        'project' => 'primary',
+                        'job' => 'success',
+                        'collaboration' => 'info',
+                        'other' => 'warning'
+                    ];
+                    $color = $colors[$contact->type] ?? 'secondary';
+                    return '<span class="badge bg-' . $color . '">' . ucfirst($contact->type) . '</span>';
+                })
+                ->addColumn('status_badge', function ($contact) {
+                    $colors = [
+                        'new' => 'danger',
+                        'read' => 'info', 
+                        'replied' => 'success',
+                        'archived' => 'secondary'
+                    ];
+                    $icons = [
+                        'new' => 'bx-envelope',
+                        'read' => 'bx-envelope-open',
+                        'replied' => 'bx-check-circle',
+                        'archived' => 'bx-archive'
+                    ];
+                    $color = $colors[$contact->status] ?? 'secondary';
+                    $icon = $icons[$contact->status] ?? 'bx-envelope';
+                    return '<span class="badge bg-' . $color . '"><i class="bx ' . $icon . ' me-1"></i>' . ucfirst($contact->status) . '</span>';
+                })
+                ->addColumn('priority_indicator', function ($contact) {
+                    // High priority for new messages from project/job inquiries
+                    if ($contact->status === 'new' && in_array($contact->type, ['project', 'job'])) {
+                        return '<i class="bx bx-error text-danger" title="High Priority"></i>';
+                    }
+                    return '';
+                })
+                ->addColumn('budget_display', function ($contact) {
+                    return $contact->budget_range ? '<span class="badge bg-success">' . e($contact->budget_range) . '</span>' : '';
+                })
+                ->addColumn('actions', function ($contact) {
+                    return view('admin.contacts.partials.actions', compact('contact'));
+                })
+                ->editColumn('subject', function ($contact) {
+                    return Str::limit($contact->subject, 40);
+                })
+                ->editColumn('message', function ($contact) {
+                    return Str::limit($contact->message, 50);
+                })
+                ->editColumn('created_at', function ($contact) {
+                    return $contact->created_at->format('M d, Y H:i');
+                })
+                ->rawColumns(['sender_info', 'type_badge', 'status_badge', 'priority_indicator', 'budget_display', 'actions'])
+                ->make(true);
         }
+
+        // Statistics for dashboard cards
+        $statistics = [
+            'new' => ContactSubmission::where('status', 'new')->count(),
+            'read' => ContactSubmission::where('status', 'read')->count(),
+            'replied' => ContactSubmission::where('status', 'replied')->count(),
+            'archived' => ContactSubmission::where('status', 'archived')->count(),
+            'total' => ContactSubmission::count(),
+            'today' => ContactSubmission::whereDate('created_at', today())->count(),
+            'this_week' => ContactSubmission::where('created_at', '>=', now()->startOfWeek())->count(),
+            'this_month' => ContactSubmission::where('created_at', '>=', now()->startOfMonth())->count(),
+        ];
+        
+        return view('admin.contacts.index', compact('statistics'));
     }
 
     /**
-     * Get single contact submission
+     * Display the specified contact submission
      */
-    public function show($id)
+    public function show(Request $request, $id)
     {
         try {
             $contact = ContactSubmission::findOrFail($id);
@@ -94,15 +119,23 @@ class ContactController extends Controller
                 $contact->markAsRead();
             }
 
-            return response()->json([
-                'success' => true,
-                'data' => $contact
-            ]);
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'data' => $contact
+                ]);
+            }
+
+            return view('admin.contacts.show', compact('contact'));
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Contact submission not found'
-            ], 404);
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Contact submission not found'
+                ], 404);
+            }
+
+            return back()->with('error', 'Contact submission not found');
         }
     }
 
@@ -182,23 +215,36 @@ class ContactController extends Controller
     /**
      * Delete contact submission
      */
-    public function destroy($id)
+    public function destroy(Request $request, $contact)
     {
         try {
-            $contact = ContactSubmission::findOrFail($id);
-            $contact->delete();
+            $contactId = (int) $contact;
+            $contactRecord = ContactSubmission::findOrFail($contactId);
+            $contactRecord->delete();
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Contact submission deleted successfully'
-            ]);
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Contact submission deleted successfully'
+                ]);
+            }
+
+            return redirect()
+                ->route('contacts.index')
+                ->with('success', 'Contact submission deleted successfully');
         } catch (\Exception $e) {
             Log::error('Failed to delete contact submission: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to delete contact submission',
-                'error' => $e->getMessage()
-            ], 500);
+            
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to delete contact submission',
+                    'error' => $e->getMessage()
+                ], 500);
+            }
+
+            return back()
+                ->with('error', 'Failed to delete contact submission: ' . $e->getMessage());
         }
     }
 

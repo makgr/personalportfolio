@@ -58,6 +58,9 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('contacts', [ContactController::class, 'index'])->name('contacts.index');
     Route::get('contacts/{contact}', [ContactController::class, 'show'])->name('contacts.show');
     Route::post('contacts/{contact}/mark-as-read', [ContactController::class, 'markAsRead'])->name('contacts.mark-as-read');
+    Route::post('contacts/{contact}/mark-as-replied', [ContactController::class, 'markAsReplied'])->name('contacts.mark-as-replied');
+    Route::post('contacts/{contact}/archive', [ContactController::class, 'archive'])->name('contacts.archive');
+    Route::post('contacts/bulk-action', [ContactController::class, 'bulkAction'])->name('contacts.bulk-action');
     Route::delete('contacts/{contact}', [ContactController::class, 'destroy'])->name('contacts.destroy');
 
     // Settings
