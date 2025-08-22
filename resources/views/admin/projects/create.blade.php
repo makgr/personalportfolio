@@ -20,7 +20,7 @@
         </div>
     </div>
 
-    <form id="projectForm" action="{{ route('projects.store') }}" method="POST" enctype="multipart/form-data">
+    <form id="projectForm" data-ajax="{{ route('projects.store') }}" enctype="multipart/form-data">
         @csrf
         <div class="row">
             <!-- Main Form -->
@@ -275,11 +275,21 @@
                         <div class="mb-3">
                             <label class="form-label" for="featured_image">Featured Image</label>
                             <input type="file" class="form-control @error('featured_image') is-invalid @enderror" 
-                                   id="featured_image" name="featured_image" accept="image/*">
+                                   id="featured_image" name="featured_image" accept="image/png,image/jpeg">
                             <div class="form-text">Recommended size: 1200x800px, Max: 2MB</div>
                             @error('featured_image')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
+                            <!-- Image Preview -->
+                            <div class="mt-3" id="featured-image-preview" style="display: none;">
+                                <img id="featured-image-display" class="img-fluid rounded" style="max-height: 200px; opacity: 0.7; border: 2px dashed #007bff;">
+                                <div class="mt-2">
+                                    <small class="text-info">
+                                        <i class="bx bx-info-circle me-1"></i>
+                                        Image selected. Save project to upload.
+                                    </small>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- Gallery -->
@@ -300,7 +310,13 @@
                     <div class="card-body">
                         <div class="d-grid gap-2">
                             <button type="submit" class="btn btn-primary">
-                                <i class="bx bx-save me-1"></i>Create Project
+                                <span class="btn-text">
+                                    <i class="bx bx-save me-1"></i>Create Project
+                                </span>
+                                <span class="btn-loading d-none">
+                                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                    Creating...
+                                </span>
                             </button>
                             <a href="{{ route('projects.index') }}" class="btn btn-secondary">
                                 <i class="bx bx-x me-1"></i>Cancel
@@ -398,12 +414,53 @@ $(document).ready(function() {
         }
     }
 
-    // Form submission with loading state
-    $('#projectForm').on('submit', function() {
-        const submitBtn = $(this).find('button[type="submit"]');
-        submitBtn.prop('disabled', true)
-                 .html('<span class="spinner-border spinner-border-sm me-2" role="status"></span>Creating...');
+    // Featured Image Preview
+    $('#featured_image').on('change', function(e) {
+        const file = e.target.files[0];
+        const preview = $('#featured-image-preview');
+        const display = $('#featured-image-display');
+        
+        if (file) {
+            // Validate file type
+            const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+            if (!allowedTypes.includes(file.type)) {
+                toastr.error('Please select a valid image file (JPG, PNG)');
+                this.value = '';
+                preview.hide();
+                return;
+            }
+            
+            // Validate file size (2MB)
+            if (file.size > 2 * 1024 * 1024) {
+                toastr.error('Image size must be less than 2MB');
+                this.value = '';
+                preview.hide();
+                return;
+            }
+            
+            // Show instant preview
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                display.attr('src', e.target.result);
+                preview.show();
+                toastr.info('Featured image selected. Save project to upload.', 'Image Ready');
+            };
+            reader.readAsDataURL(file);
+        } else {
+            preview.hide();
+        }
     });
+
+    // Add AJAX success callback to redirect to projects list
+    const projectForm = document.getElementById('projectForm');
+    if (projectForm) {
+        projectForm.dataset.onSuccess = `
+            toastr.success(data.message || 'Project created successfully!');
+            setTimeout(() => {
+                window.location.href = '{{ route("projects.index") }}';
+            }, 1500);
+        `;
+    }
 
     // Initialize character count
     $('#desc-count').text($('#short_description').val().length);

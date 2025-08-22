@@ -51,10 +51,18 @@ class ProjectService
                 if (!isset($data['slug']) || empty($data['slug'])) {
                     $data['slug'] = Str::slug($data['title']);
                 }
+                
+                // Process tech_stack JSON string to array
+                if (isset($data['tech_stack']) && is_string($data['tech_stack'])) {
+                    $data['tech_stack'] = json_decode($data['tech_stack'], true) ?: [];
+                }
+                
+                // Handle boolean fields that might not be present
+                $data['is_featured'] = isset($data['is_featured']) && $data['is_featured'] ? true : false;
 
                 // Handle featured image
                 if ($featuredImage) {
-                    $data['featured_image'] = $this->mediaService->upload($featuredImage, 'projects');
+                    $data['featured_image'] = $this->mediaService->upload($featuredImage, 'project');
                 }
 
                 // Create project
@@ -95,6 +103,14 @@ class ProjectService
                         $data['slug'] = Str::slug($data['title']);
                     }
                 }
+                
+                // Process tech_stack JSON string to array
+                if (isset($data['tech_stack']) && is_string($data['tech_stack'])) {
+                    $data['tech_stack'] = json_decode($data['tech_stack'], true) ?: [];
+                }
+                
+                // Handle boolean fields that might not be present
+                $data['is_featured'] = isset($data['is_featured']) && $data['is_featured'] ? true : false;
 
                 // Handle featured image
                 if ($featuredImage) {
@@ -102,7 +118,7 @@ class ProjectService
                     if ($project->featured_image) {
                         $this->mediaService->delete($project->featured_image);
                     }
-                    $data['featured_image'] = $this->mediaService->upload($featuredImage, 'projects');
+                    $data['featured_image'] = $this->mediaService->upload($featuredImage, 'project');
                 }
 
                 // Update project

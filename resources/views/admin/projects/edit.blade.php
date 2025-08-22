@@ -25,7 +25,7 @@
         </div>
     </div>
 
-    <form id="projectForm" action="{{ route('projects.update', $project->id) }}" method="POST" enctype="multipart/form-data">
+    <form id="projectForm" data-ajax="{{ route('projects.update', $project->id) }}" enctype="multipart/form-data">
         @csrf
         @method('PUT')
         
@@ -357,7 +357,13 @@
                     <div class="card-body">
                         <div class="d-grid gap-2">
                             <button type="submit" class="btn btn-primary">
-                                <i class="bx bx-save me-1"></i>Update Project
+                                <span class="btn-text">
+                                    <i class="bx bx-save me-1"></i>Update Project
+                                </span>
+                                <span class="btn-loading d-none">
+                                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                    Updating...
+                                </span>
                             </button>
                             <a href="{{ route('projects.index') }}" class="btn btn-secondary">
                                 <i class="bx bx-x me-1"></i>Cancel
@@ -464,12 +470,13 @@ $(document).ready(function() {
     // Initialize remove buttons
     updateRemoveButtons();
 
-    // Form submission
-    $('#projectForm').on('submit', function() {
-        const submitBtn = $(this).find('button[type="submit"]');
-        submitBtn.prop('disabled', true)
-                 .html('<span class="spinner-border spinner-border-sm me-2" role="status"></span>Updating...');
-    });
+    // Add AJAX success callback to stay on edit page with success message
+    const projectForm = document.getElementById('projectForm');
+    if (projectForm) {
+        projectForm.dataset.onSuccess = `
+            toastr.success(data.message || 'Project updated successfully!');
+        `;
+    }
 });
 </script>
 @endpush

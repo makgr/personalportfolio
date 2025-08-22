@@ -64,9 +64,10 @@ class MediaService
         $mainPath = $this->upload($file, $folder);
         $thumbnailPath = null;
 
-        if ($this->isImage($file)) {
-            $thumbnailPath = $this->createThumbnail($mainPath);
-        }
+        // Temporarily disable thumbnail creation to prevent temp file errors
+        // if ($this->isImage($file)) {
+        //     $thumbnailPath = $this->createThumbnail($mainPath);
+        // }
 
         return [
             'main' => $mainPath,

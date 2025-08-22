@@ -22,7 +22,7 @@ class ProjectRequest extends FormRequest
         return [
             'title' => ['required', 'string', 'max:255'],
             'slug' => [
-                'required',
+                'nullable',
                 'string',
                 'max:255',
                 Rule::unique('projects')->ignore($projectId)
@@ -39,14 +39,13 @@ class ProjectRequest extends FormRequest
             'project_url' => ['nullable', 'url', 'max:255'],
             'github_url' => ['nullable', 'url', 'max:255'],
             'demo_url' => ['nullable', 'url', 'max:255'],
-            'tech_stack' => ['nullable', 'array'],
-            'tech_stack.*' => ['string', 'max:50'],
+            'tech_stack' => ['nullable', 'string'],
             'features' => ['nullable', 'array'],
             'features.*' => ['string', 'max:255'],
             'duration_weeks' => ['nullable', 'integer', 'min:1'],
             'team_size' => ['nullable', 'string', 'max:50'],
             'my_role' => ['nullable', 'string', 'max:255'],
-            'is_featured' => ['boolean'],
+            'is_featured' => ['nullable', 'boolean'],
             'tags' => ['nullable', 'array'],
             'tags.*' => ['exists:tags,id'],
             'meta_tags' => ['nullable', 'array'],

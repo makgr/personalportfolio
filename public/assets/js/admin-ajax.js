@@ -123,17 +123,19 @@ class AdminAjax {
             const formData = new FormData(formElement);
             const button = options.button;
             
-            // Determine the actual HTTP method to use
-            let method = options.method || formElement.method || 'POST';
-            
-            // Check for Laravel method spoofing (_method field)
+            // Check for Laravel method spoofing (_method field) first
             const methodField = formData.get('_method');
+            let method;
+            
             if (methodField) {
                 // For Laravel method spoofing (PUT, PATCH, DELETE), always use POST
                 method = 'POST';
-                console.log('AdminAjax: Using POST method for Laravel method spoofing:', methodField);
+                console.log('AdminAjax: Laravel method spoofing detected:', methodField, '- using POST');
+            } else {
+                // Use provided method or default to POST for form submissions
+                method = options.method || 'POST';
+                console.log('AdminAjax: No method spoofing, using method:', method);
             }
-            
             console.log('AdminAjax: Submitting form to', url, 'with method', method);
             
             // Log form data for debugging (excluding files for security)
