@@ -61,9 +61,21 @@ class SkillController extends Controller
                 })
                 ->addColumn('icon_display', function ($skill) {
                     if ($skill->icon) {
+                        // Handle Boxicons (bx-*)
                         if (str_starts_with($skill->icon, 'bx-')) {
                             return '<i class="bx ' . $skill->icon . ' text-primary" style="font-size: 1.5rem;"></i>';
-                        } else {
+                        }
+                        // Handle Font Awesome (fa*, fab, fas, far, fal, fad)
+                        elseif (preg_match('/^(fa[a-z]?-|fa\s)/', $skill->icon)) {
+                            // If it starts with fa- but no prefix, assume fas (solid)
+                            if (str_starts_with($skill->icon, 'fa-')) {
+                                return '<i class="fas ' . $skill->icon . ' text-primary" style="font-size: 1.5rem;"></i>';
+                            } else {
+                                return '<i class="' . $skill->icon . ' text-primary" style="font-size: 1.5rem;"></i>';
+                            }
+                        }
+                        // Handle any other icon class
+                        else {
                             return '<i class="' . $skill->icon . ' text-primary" style="font-size: 1.5rem;"></i>';
                         }
                     }

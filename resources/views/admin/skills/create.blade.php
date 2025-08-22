@@ -87,8 +87,8 @@
                                 <label for="icon" class="form-label">Icon Class</label>
                                 <input type="text" class="form-control @error('icon') is-invalid @enderror" 
                                        id="icon" name="icon" value="{{ old('icon') }}" 
-                                       placeholder="e.g., bx-code, fab fa-php">
-                                <small class="text-muted">Use Boxicons (bx-*) or Font Awesome classes</small>
+                                       placeholder="e.g., bx-code, fa-code, fab fa-php, fas fa-laptop">
+                                <small class="text-muted">Use Boxicons (bx-*) or Font Awesome (fa-, fab, fas, far, fal)</small>
                                 @error('icon')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
@@ -278,8 +278,16 @@ function updatePreview() {
     const iconElement = document.getElementById('previewIcon');
     iconElement.className = '';
     if (icon.startsWith('bx-')) {
+        // Boxicons
         iconElement.className = 'bx ' + icon;
+    } else if (icon.startsWith('fa-')) {
+        // Font Awesome without prefix - assume solid
+        iconElement.className = 'fas ' + icon;
+    } else if (icon.match(/^(fab|fas|far|fal|fad)\s/)) {
+        // Font Awesome with prefix
+        iconElement.className = icon;
     } else if (icon) {
+        // Any other icon class
         iconElement.className = icon;
     } else {
         iconElement.className = 'bx bx-code text-muted';
