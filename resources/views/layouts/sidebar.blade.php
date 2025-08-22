@@ -108,11 +108,23 @@
         </li>
 
         <!-- Skills -->
-        <li class="menu-item {{ request()->routeIs('skills.*') ? 'active' : '' }}">
-            <a href="{{ route('skills.index') }}" class="menu-link">
-                <i class="menu-icon tf-icons bx bx-cog"></i>
+        <li class="menu-item {{ request()->routeIs('skills.*') ? 'active open' : '' }}">
+            <a href="javascript:void(0);" class="menu-link menu-toggle">
+                <i class="menu-icon tf-icons bx bx-code-alt"></i>
                 <div data-i18n="Skills">Skills</div>
             </a>
+            <ul class="menu-sub">
+                <li class="menu-item {{ request()->routeIs('skills.index') ? 'active' : '' }}">
+                    <a href="{{ route('skills.index') }}" class="menu-link">
+                        <div data-i18n="All Skills">All Skills</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('skills.create') ? 'active' : '' }}">
+                    <a href="{{ route('skills.create') }}" class="menu-link">
+                        <div data-i18n="Add Skill">Add Skill</div>
+                    </a>
+                </li>
+            </ul>
         </li>
 
         <!-- Services -->
@@ -151,7 +163,7 @@
 
         <li class="menu-item {{ request()->routeIs('settings.*') ? 'active' : '' }}">
             <a href="{{ route('settings.index') }}" class="menu-link">
-                <i class="menu-icon tf-icons bx bx-cog"></i>
+                <i class="menu-icon tf-icons bx bx-slider"></i>
                 <div data-i18n="Settings">Settings</div>
             </a>
         </li>

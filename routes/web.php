@@ -41,6 +41,8 @@ Route::middleware(['auth', 'admin'])->group(function () {
     // Skills (directly accessible at /skills)
     Route::resource('skills', SkillController::class);
     Route::post('skills/reorder', [SkillController::class, 'reorder'])->name('skills.reorder');
+    Route::post('skills/{skill}/toggle-status', [SkillController::class, 'toggleStatus'])->name('skills.toggle-status');
+    Route::post('skills/{skill}/toggle-primary', [SkillController::class, 'togglePrimary'])->name('skills.toggle-primary');
 
     // Services
     Route::resource('services', ServiceController::class);
