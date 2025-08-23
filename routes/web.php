@@ -15,6 +15,7 @@ use App\Http\Controllers\Admin\ExperienceController;
 use App\Http\Controllers\Admin\EducationController;
 use App\Http\Controllers\Admin\TrainingController;
 use App\Http\Controllers\Admin\TestimonialController;
+use App\Http\Controllers\Admin\TeamController;
 
 
 Route::get('/', function () {
@@ -73,6 +74,12 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::resource('admin/testimonials', TestimonialController::class, ['as' => 'admin']);
     Route::post('admin/testimonials/reorder', [TestimonialController::class, 'reorder'])->name('admin.testimonials.reorder');
     Route::post('admin/testimonials/{testimonial}/toggle-featured', [TestimonialController::class, 'toggleFeatured'])->name('admin.testimonials.toggle-featured');
+
+    // Teams (directly accessible at /teams)
+    Route::resource('teams', TeamController::class);
+    Route::post('teams/reorder', [TeamController::class, 'updateOrder'])->name('teams.reorder');
+    Route::post('teams/{team}/toggle-status', [TeamController::class, 'toggleStatus'])->name('teams.toggle-status');
+    Route::post('teams/{team}/toggle-featured', [TeamController::class, 'toggleFeatured'])->name('teams.toggle-featured');
 
     // Contacts/Messages
     Route::get('contacts', [ContactController::class, 'index'])->name('contacts.index');

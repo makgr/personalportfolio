@@ -227,6 +227,26 @@
             </ul>
         </li>
 
+        <!-- Teams -->
+        <li class="menu-item {{ request()->routeIs('teams.*') ? 'active open' : '' }}">
+            <a href="javascript:void(0);" class="menu-link menu-toggle">
+                <i class="menu-icon tf-icons bx bx-group"></i>
+                <div data-i18n="Teams">Teams</div>
+            </a>
+            <ul class="menu-sub">
+                <li class="menu-item {{ request()->routeIs('teams.index') ? 'active' : '' }}">
+                    <a href="{{ route('teams.index') }}" class="menu-link">
+                        <div data-i18n="All Team Members">All Team Members</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('teams.create') ? 'active' : '' }}">
+                    <a href="{{ route('teams.create') }}" class="menu-link">
+                        <div data-i18n="Add Team Member">Add Team Member</div>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
         <!-- Contact Messages -->
         <li class="menu-item {{ request()->routeIs('contacts.*') ? 'active' : '' }}">
             <a href="{{ route('contacts.index') }}" class="menu-link">
