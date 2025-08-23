@@ -31,7 +31,7 @@ class TeamController extends Controller
     {
         if ($request->ajax()) {
             $query = Team::query()->orderBy('order', 'asc');
-            
+
             return DataTables::of($query)
                 ->addColumn('member_info', function ($team) {
                     $html = '<div class="d-flex align-items-center">';
@@ -74,7 +74,7 @@ class TeamController extends Controller
                     $socialLinks = $team->social_links;
                     if (!empty($socialLinks)) {
                         foreach ($socialLinks as $platform => $url) {
-                            $icon = match($platform) {
+                            $icon = match ($platform) {
                                 'linkedin' => 'bxl-linkedin',
                                 'twitter' => 'bxl-twitter',
                                 'github' => 'bxl-github',
@@ -102,24 +102,24 @@ class TeamController extends Controller
                     $actions = '<div class="btn-group" role="group">';
                     $actions .= '<a href="' . route('teams.show', $team->id) . '" class="btn btn-sm btn-outline-info" title="View"><i class="bx bx-show"></i></a>';
                     $actions .= '<a href="' . route('teams.edit', $team->id) . '" class="btn btn-sm btn-outline-primary" title="Edit"><i class="bx bx-edit"></i></a>';
-                    
+
                     // Toggle Active/Inactive
                     if ($team->is_active) {
                         $actions .= '<button class="btn btn-sm btn-outline-warning" data-ajax="' . route('teams.toggle-status', $team->id) . '" data-method="POST" data-loading="Updating..." title="Deactivate"><i class="bx bx-pause"></i></button>';
                     } else {
                         $actions .= '<button class="btn btn-sm btn-outline-success" data-ajax="' . route('teams.toggle-status', $team->id) . '" data-method="POST" data-loading="Updating..." title="Activate"><i class="bx bx-play"></i></button>';
                     }
-                    
+
                     // Toggle Featured
                     if ($team->is_featured) {
                         $actions .= '<button class="btn btn-sm btn-outline-secondary" data-ajax="' . route('teams.toggle-featured', $team->id) . '" data-method="POST" data-loading="Updating..." title="Remove from Featured"><i class="bx bx-star"></i></button>';
                     } else {
                         $actions .= '<button class="btn btn-sm btn-outline-warning" data-ajax="' . route('teams.toggle-featured', $team->id) . '" data-method="POST" data-loading="Updating..." title="Mark as Featured"><i class="bx bx-star"></i></button>';
                     }
-                    
+
                     $actions .= '<button class="btn btn-sm btn-outline-danger" data-ajax="' . route('teams.destroy', $team->id) . '" data-method="DELETE" data-confirm="Are you sure you want to delete this team member?" data-loading="Deleting..." data-on-success="location.reload()" title="Delete"><i class="bx bx-trash"></i></button>';
                     $actions .= '</div>';
-                    
+
                     return $actions;
                 })
                 ->rawColumns(['member_info', 'department_badge', 'employment_badge', 'contact_info', 'social_links', 'join_info', 'status_badges', 'action'])
@@ -128,7 +128,7 @@ class TeamController extends Controller
 
         $stats = [
             'total' => Team::count(),
-            'active' => Team::where('is_active', true)->count(), 
+            'active' => Team::where('is_active', true)->count(),
             'featured' => Team::where('is_featured', true)->count(),
             'full_time' => Team::where('employment_type', 'full_time')->count(),
         ];
@@ -168,7 +168,7 @@ class TeamController extends Controller
     {
         $data = $request->validated();
         $data['image'] = $request->file('image');
-        
+
         $result = $this->teamService->createTeam($data);
 
         if ($request->ajax()) {
@@ -238,8 +238,8 @@ class TeamController extends Controller
         ];
 
         // Convert skills array to comma-separated string for form
-        $team->skills_string = is_array($team->skills) 
-            ? implode(', ', $team->skills) 
+        $team->skills_string = is_array($team->skills)
+            ? implode(', ', $team->skills)
             : '';
 
         return view('admin.teams.edit', compact('team', 'departments', 'employmentTypes'));
@@ -253,7 +253,7 @@ class TeamController extends Controller
         $teamId = is_object($team) ? $team->id : $team;
         $data = $request->validated();
         $data['image'] = $request->file('image');
-        
+
         $result = $this->teamService->updateTeam($teamId, $data);
 
         if ($request->ajax()) {
@@ -317,7 +317,7 @@ class TeamController extends Controller
     public function toggleStatus($id)
     {
         $result = $this->teamRepository->toggleStatus($id);
-        
+
         if ($result) {
             $team = $this->teamRepository->find($id);
             $status = $team->is_active ? 'activated' : 'deactivated';
@@ -340,7 +340,7 @@ class TeamController extends Controller
     public function toggleFeatured($id)
     {
         $result = $this->teamRepository->toggleFeatured($id);
-        
+
         if ($result) {
             $team = $this->teamRepository->find($id);
             $status = $team->is_featured ? 'marked as featured' : 'removed from featured';
@@ -369,7 +369,7 @@ class TeamController extends Controller
         ]);
 
         $result = $this->teamRepository->updateOrder($request->items);
-        
+
         if ($result) {
             return response()->json([
                 'success' => true,
