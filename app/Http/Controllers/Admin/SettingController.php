@@ -102,6 +102,15 @@ class SettingController extends Controller
                 'google_analytics' => 'nullable|string',
                 'maintenance_mode' => 'nullable|boolean',
                 'items_per_page' => 'nullable|integer|min:1|max:100',
+                // Email settings
+                'mail_driver' => 'nullable|string|in:mail,smtp',
+                'mail_from_address' => 'nullable|email',
+                'mail_from_name' => 'nullable|string|max:255',
+                'mail_host' => 'nullable|string|max:255',
+                'mail_port' => 'nullable|integer|min:1|max:65535',
+                'mail_username' => 'nullable|string|max:255',
+                'mail_password' => 'nullable|string|max:255',
+                'mail_encryption' => 'nullable|string|in:tls,ssl,',
                 // SEO settings
                 'default_meta_title' => 'nullable|string|max:255',
                 'default_meta_keywords' => 'nullable|string',
@@ -125,7 +134,16 @@ class SettingController extends Controller
                 'youtube_url' => ['group' => 'social', 'type' => 'string'],
                 'google_analytics' => ['group' => 'analytics', 'type' => 'string'],
                 'maintenance_mode' => ['group' => 'site', 'type' => 'boolean'],
-                'items_per_page' => ['group' => 'site', 'type' => 'integer']
+                'items_per_page' => ['group' => 'site', 'type' => 'integer'],
+                // Email settings
+                'mail_driver' => ['group' => 'email', 'type' => 'string'],
+                'mail_from_address' => ['group' => 'email', 'type' => 'string'],
+                'mail_from_name' => ['group' => 'email', 'type' => 'string'],
+                'mail_host' => ['group' => 'email', 'type' => 'string'],
+                'mail_port' => ['group' => 'email', 'type' => 'integer'],
+                'mail_username' => ['group' => 'email', 'type' => 'string'],
+                'mail_password' => ['group' => 'email', 'type' => 'string'],
+                'mail_encryption' => ['group' => 'email', 'type' => 'string']
                 // Note: SEO settings are handled separately in the SeoSetting model
             ];
 
@@ -374,6 +392,81 @@ class SettingController extends Controller
                 'success' => false,
                 'message' => 'Failed to clear cache',
                 'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Send test email
+     */
+    public function testEmail(Request $request)
+    {
+        $validated = $request->validate([
+            'test_email' => 'required|email',
+            'mail_driver' => 'nullable|string|in:mail,smtp',
+            'mail_from_address' => 'nullable|email',
+            'mail_from_name' => 'nullable|string|max:255',
+            'mail_host' => 'nullable|string|max:255',
+            'mail_port' => 'nullable|integer|min:1|max:65535',
+            'mail_username' => 'nullable|string|max:255',
+            'mail_password' => 'nullable|string|max:255',
+            'mail_encryption' => 'nullable|string|in:tls,ssl,'
+        ]);
+
+        try {
+            // Temporarily configure mail settings
+            $originalConfig = config('mail');
+            
+            if ($validated['mail_driver'] === 'smtp' && $validated['mail_host']) {
+                config([
+                    'mail.default' => 'smtp',
+                    'mail.mailers.smtp.transport' => 'smtp',
+                    'mail.mailers.smtp.host' => $validated['mail_host'],
+                    'mail.mailers.smtp.port' => $validated['mail_port'] ?? 587,
+                    'mail.mailers.smtp.encryption' => $validated['mail_encryption'] ?? 'tls',
+                    'mail.mailers.smtp.username' => $validated['mail_username'] ?? '',
+                    'mail.mailers.smtp.password' => $validated['mail_password'] ?? '',
+                    'mail.from.address' => $validated['mail_from_address'] ?? config('mail.from.address'),
+                    'mail.from.name' => $validated['mail_from_name'] ?? config('mail.from.name'),
+                ]);
+            } else {
+                // Use simple mail
+                config([
+                    'mail.default' => 'sendmail',
+                    'mail.from.address' => $validated['mail_from_address'] ?? config('mail.from.address'),
+                    'mail.from.name' => $validated['mail_from_name'] ?? config('mail.from.name'),
+                ]);
+            }
+
+            // Send test email
+            $testMessage = [
+                'subject' => 'Test Email from ' . config('app.name'),
+                'from_name' => $validated['mail_from_name'] ?? config('app.name'),
+                'from_email' => $validated['mail_from_address'] ?? config('mail.from.address'),
+                'to_email' => $validated['test_email'],
+                'body' => 'This is a test email to verify your email configuration. If you received this email, your settings are working correctly!'
+            ];
+
+            \Mail::raw($testMessage['body'], function ($message) use ($testMessage) {
+                $message->to($testMessage['to_email'])
+                       ->subject($testMessage['subject'])
+                       ->from($testMessage['from_email'], $testMessage['from_name']);
+            });
+
+            // Restore original config
+            config(['mail' => $originalConfig]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Test email sent successfully to ' . $validated['test_email']
+            ]);
+
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Failed to send test email: ' . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to send test email: ' . $e->getMessage()
             ], 500);
         }
     }

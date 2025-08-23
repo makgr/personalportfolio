@@ -72,6 +72,14 @@
                                 </button>
                             </li>
                             <li class="nav-item" role="presentation">
+                                <button class="nav-link {{ $activeTab === 'email' ? 'active' : '' }}" 
+                                        id="email-tab" data-bs-toggle="pill" data-bs-target="#email" 
+                                        type="button" role="tab" aria-controls="email" aria-selected="false">
+                                    <i class="bx bx-envelope me-1"></i>
+                                    Email
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
                                 <button class="nav-link {{ $activeTab === 'advanced' ? 'active' : '' }}" 
                                         id="advanced-tab" data-bs-toggle="pill" data-bs-target="#advanced" 
                                         type="button" role="tab" aria-controls="advanced" aria-selected="false">
@@ -209,6 +217,119 @@
                                     </div>
                                 </div>
 
+                                <!-- Email Tab -->
+                                <div class="tab-pane fade {{ $activeTab === 'email' ? 'show active' : '' }}" 
+                                     id="email" role="tabpanel" aria-labelledby="email-tab">
+                                    <div class="row">
+                                        <div class="col-12 mb-4">
+                                            <h6>Email Configuration</h6>
+                                            <p class="text-muted">Configure email settings for contact forms and notifications.</p>
+                                        </div>
+                                        
+                                        <!-- Mail Driver Selection -->
+                                        <div class="col-12 mb-4">
+                                            <label class="form-label">Email Driver</label>
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="radio" name="mail_driver" id="mail_simple" 
+                                                               value="mail" {{ old('mail_driver', $settingsGroups->get('email', collect())->where('key', 'mail_driver')->first()->value ?? 'mail') === 'mail' ? 'checked' : '' }}>
+                                                        <label class="form-check-label" for="mail_simple">
+                                                            <strong>Simple Mail</strong>
+                                                            <small class="text-muted d-block">Use PHP's built-in mail() function</small>
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="radio" name="mail_driver" id="mail_smtp" 
+                                                               value="smtp" {{ old('mail_driver', $settingsGroups->get('email', collect())->where('key', 'mail_driver')->first()->value ?? 'mail') === 'smtp' ? 'checked' : '' }}>
+                                                        <label class="form-check-label" for="mail_smtp">
+                                                            <strong>SMTP</strong>
+                                                            <small class="text-muted d-block">Use SMTP server for reliable delivery</small>
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Common Email Settings -->
+                                        <div class="col-md-6 mb-3">
+                                            <label for="mail_from_address" class="form-label">From Email Address</label>
+                                            <input type="email" class="form-control" id="mail_from_address" name="mail_from_address" 
+                                                   value="{{ old('mail_from_address', $settingsGroups->get('email', collect())->where('key', 'mail_from_address')->first()->value ?? '') }}" 
+                                                   placeholder="noreply@yoursite.com" />
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="mail_from_name" class="form-label">From Name</label>
+                                            <input type="text" class="form-control" id="mail_from_name" name="mail_from_name" 
+                                                   value="{{ old('mail_from_name', $settingsGroups->get('email', collect())->where('key', 'mail_from_name')->first()->value ?? '') }}" 
+                                                   placeholder="Your Site Name" />
+                                        </div>
+
+                                        <!-- SMTP Settings (conditionally shown) -->
+                                        <div id="smtp-settings" class="col-12" style="display: none;">
+                                            <hr>
+                                            <h6>SMTP Server Configuration</h6>
+                                            <div class="row">
+                                                <div class="col-md-6 mb-3">
+                                                    <label for="mail_host" class="form-label">SMTP Host</label>
+                                                    <input type="text" class="form-control" id="mail_host" name="mail_host" 
+                                                           value="{{ old('mail_host', $settingsGroups->get('email', collect())->where('key', 'mail_host')->first()->value ?? '') }}" 
+                                                           placeholder="smtp.gmail.com" />
+                                                </div>
+                                                <div class="col-md-6 mb-3">
+                                                    <label for="mail_port" class="form-label">SMTP Port</label>
+                                                    <select class="form-control" id="mail_port" name="mail_port">
+                                                        <option value="587" {{ old('mail_port', $settingsGroups->get('email', collect())->where('key', 'mail_port')->first()->value ?? '587') == '587' ? 'selected' : '' }}>587 (TLS)</option>
+                                                        <option value="465" {{ old('mail_port', $settingsGroups->get('email', collect())->where('key', 'mail_port')->first()->value ?? '587') == '465' ? 'selected' : '' }}>465 (SSL)</option>
+                                                        <option value="25" {{ old('mail_port', $settingsGroups->get('email', collect())->where('key', 'mail_port')->first()->value ?? '587') == '25' ? 'selected' : '' }}>25 (No encryption)</option>
+                                                        <option value="2525" {{ old('mail_port', $settingsGroups->get('email', collect())->where('key', 'mail_port')->first()->value ?? '587') == '2525' ? 'selected' : '' }}>2525 (Alternative)</option>
+                                                    </select>
+                                                </div>
+                                                <div class="col-md-6 mb-3">
+                                                    <label for="mail_username" class="form-label">SMTP Username</label>
+                                                    <input type="text" class="form-control" id="mail_username" name="mail_username" 
+                                                           value="{{ old('mail_username', $settingsGroups->get('email', collect())->where('key', 'mail_username')->first()->value ?? '') }}" 
+                                                           placeholder="your.email@gmail.com" />
+                                                </div>
+                                                <div class="col-md-6 mb-3">
+                                                    <label for="mail_password" class="form-label">SMTP Password</label>
+                                                    <input type="password" class="form-control" id="mail_password" name="mail_password" 
+                                                           value="{{ old('mail_password', $settingsGroups->get('email', collect())->where('key', 'mail_password')->first()->value ?? '') }}" 
+                                                           placeholder="••••••••••••" />
+                                                </div>
+                                                <div class="col-md-6 mb-3">
+                                                    <label for="mail_encryption" class="form-label">Encryption</label>
+                                                    <select class="form-control" id="mail_encryption" name="mail_encryption">
+                                                        <option value="tls" {{ old('mail_encryption', $settingsGroups->get('email', collect())->where('key', 'mail_encryption')->first()->value ?? 'tls') == 'tls' ? 'selected' : '' }}>TLS</option>
+                                                        <option value="ssl" {{ old('mail_encryption', $settingsGroups->get('email', collect())->where('key', 'mail_encryption')->first()->value ?? 'tls') == 'ssl' ? 'selected' : '' }}>SSL</option>
+                                                        <option value="" {{ old('mail_encryption', $settingsGroups->get('email', collect())->where('key', 'mail_encryption')->first()->value ?? 'tls') == '' ? 'selected' : '' }}>None</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Test Email -->
+                                        <div class="col-12 mb-3">
+                                            <hr>
+                                            <h6>Test Email Configuration</h6>
+                                            <p class="text-muted">Send a test email to verify your email settings.</p>
+                                            <div class="row">
+                                                <div class="col-md-8 mb-3">
+                                                    <input type="email" class="form-control" id="test_email" name="test_email" 
+                                                           placeholder="Enter email address to send test email" />
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <button type="button" class="btn btn-outline-info w-100" id="send-test-email">
+                                                        <i class="bx bx-envelope me-1"></i>Send Test Email
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
                                 <!-- Advanced Tab -->
                                 <div class="tab-pane fade {{ $activeTab === 'advanced' ? 'show active' : '' }}" 
                                      id="advanced" role="tabpanel" aria-labelledby="advanced-tab">
@@ -287,6 +408,91 @@ document.addEventListener('DOMContentLoaded', function () {
     const settingsForm = document.getElementById('settings-form');
     if (settingsForm) {
         settingsForm.dataset.onSuccess = 'console.log("Settings updated successfully!", data)';
+    }
+    
+    // Email settings tab functionality
+    const mailDriverRadios = document.querySelectorAll('input[name="mail_driver"]');
+    const smtpSettings = document.getElementById('smtp-settings');
+    
+    // Function to toggle SMTP settings visibility
+    function toggleSmtpSettings() {
+        const selectedDriver = document.querySelector('input[name="mail_driver"]:checked').value;
+        if (selectedDriver === 'smtp') {
+            smtpSettings.style.display = 'block';
+        } else {
+            smtpSettings.style.display = 'none';
+        }
+    }
+    
+    // Initial toggle on page load
+    if (mailDriverRadios.length > 0) {
+        toggleSmtpSettings();
+    }
+    
+    // Add event listeners to radio buttons
+    mailDriverRadios.forEach(radio => {
+        radio.addEventListener('change', toggleSmtpSettings);
+    });
+    
+    // Test email functionality
+    const sendTestEmailBtn = document.getElementById('send-test-email');
+    if (sendTestEmailBtn) {
+        sendTestEmailBtn.addEventListener('click', function() {
+            const testEmail = document.getElementById('test_email').value;
+            if (!testEmail) {
+                AdminAjax.showMessage('error', 'Please enter an email address');
+                return;
+            }
+            
+            // Validate email format
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(testEmail)) {
+                AdminAjax.showMessage('error', 'Please enter a valid email address');
+                return;
+            }
+            
+            const originalText = sendTestEmailBtn.innerHTML;
+            sendTestEmailBtn.disabled = true;
+            sendTestEmailBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Sending...';
+            
+            // Make AJAX request to send test email
+            fetch('{{ route("settings.test-email") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({
+                    test_email: testEmail,
+                    // Include current email settings
+                    mail_driver: document.querySelector('input[name="mail_driver"]:checked').value,
+                    mail_from_address: document.getElementById('mail_from_address').value,
+                    mail_from_name: document.getElementById('mail_from_name').value,
+                    mail_host: document.getElementById('mail_host').value,
+                    mail_port: document.getElementById('mail_port').value,
+                    mail_username: document.getElementById('mail_username').value,
+                    mail_password: document.getElementById('mail_password').value,
+                    mail_encryption: document.getElementById('mail_encryption').value
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    AdminAjax.showMessage('success', data.message);
+                } else {
+                    AdminAjax.showMessage('error', data.message || 'Failed to send test email');
+                }
+            })
+            .catch(error => {
+                console.error('Test email error:', error);
+                AdminAjax.showMessage('error', 'Failed to send test email');
+            })
+            .finally(() => {
+                sendTestEmailBtn.disabled = false;
+                sendTestEmailBtn.innerHTML = originalText;
+            });
+        });
     }
 });
 </script>
