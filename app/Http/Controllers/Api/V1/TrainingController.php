@@ -17,7 +17,7 @@ class TrainingController extends Controller
         try {
             $trainings = Training::where('is_active', true)
                 ->orderBy('order', 'asc')
-                ->orderBy('completion_date', 'desc')
+                ->orderBy('end_date', 'desc')
                 ->get();
 
             $data = $trainings->map(function ($training) {
@@ -27,14 +27,15 @@ class TrainingController extends Controller
                     'provider' => $training->provider,
                     'category' => $training->category,
                     'description' => $training->description,
-                    'skills_learned' => $training->skills_learned,
-                    'completion_date' => $training->completion_date,
+                    'skills_gained' => $training->skills_gained,
+                    'start_date' => $training->start_date,
+                    'end_date' => $training->end_date,
                     'duration_hours' => $training->duration_hours,
                     'certificate_url' => $training->certificate_url,
                     'is_featured' => $training->is_featured,
                     'order' => $training->order,
-                    'formatted_completion_date' => $training->formatted_completion_date,
-                    'duration_text' => $training->duration_text,
+                    'formatted_duration' => $training->formatted_duration,
+                    'status' => $training->status,
                 ];
             });
 
@@ -66,7 +67,7 @@ class TrainingController extends Controller
             $trainings = Training::where('is_active', true)
                 ->where('is_featured', true)
                 ->orderBy('order', 'asc')
-                ->orderBy('completion_date', 'desc')
+                ->orderBy('end_date', 'desc')
                 ->get();
 
             $data = $trainings->map(function ($training) {
@@ -76,9 +77,11 @@ class TrainingController extends Controller
                     'provider' => $training->provider,
                     'category' => $training->category,
                     'description' => $training->description,
-                    'completion_date' => $training->completion_date,
+                    'start_date' => $training->start_date,
+                    'end_date' => $training->end_date,
                     'certificate_url' => $training->certificate_url,
-                    'formatted_completion_date' => $training->formatted_completion_date,
+                    'formatted_duration' => $training->formatted_duration,
+                    'status' => $training->status,
                 ];
             });
 

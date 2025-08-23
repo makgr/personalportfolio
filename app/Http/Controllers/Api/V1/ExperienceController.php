@@ -31,7 +31,7 @@ class ExperienceController extends Controller
             $data = $experiences->map(function ($experience) {
                 return [
                     'id' => $experience->id,
-                    'company' => $experience->company,
+                    'company' => $experience->company_name,
                     'position' => $experience->position,
                     'employment_type' => $experience->employment_type,
                     'location' => $experience->location,
