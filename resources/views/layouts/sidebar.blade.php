@@ -247,6 +247,14 @@
             </ul>
         </li>
 
+        <!-- Categories -->
+        <li class="menu-item {{ request()->routeIs('categories.*') ? 'active' : '' }}">
+            <a href="{{ route('categories.index') }}" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-category"></i>
+                <div data-i18n="Categories">Categories</div>
+            </a>
+        </li>
+
         <!-- Contact Messages -->
         <li class="menu-item {{ request()->routeIs('contacts.*') ? 'active' : '' }}">
             <a href="{{ route('contacts.index') }}" class="menu-link">

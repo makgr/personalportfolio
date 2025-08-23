@@ -19,6 +19,8 @@ use App\Repositories\Contracts\ProfileRepositoryInterface;
 use App\Repositories\Eloquent\ProfileRepository;
 use App\Repositories\Contracts\TeamRepositoryInterface;
 use App\Repositories\Eloquent\TeamRepository;
+use App\Repositories\Contracts\CategoryRepositoryInterface;
+use App\Repositories\Eloquent\CategoryRepository;
 
 class RepositoryServiceProvider extends ServiceProvider
 {
@@ -36,6 +38,7 @@ class RepositoryServiceProvider extends ServiceProvider
         $this->app->bind(ContactRepositoryInterface::class, ContactRepository::class);
         $this->app->bind(ProfileRepositoryInterface::class, ProfileRepository::class);
         $this->app->bind(TeamRepositoryInterface::class, TeamRepository::class);
+        $this->app->bind(CategoryRepositoryInterface::class, CategoryRepository::class);
     }
 
     /**

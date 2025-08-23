@@ -16,6 +16,7 @@ use App\Http\Controllers\Admin\EducationController;
 use App\Http\Controllers\Admin\TrainingController;
 use App\Http\Controllers\Admin\TestimonialController;
 use App\Http\Controllers\Admin\TeamController;
+use App\Http\Controllers\Admin\CategoryController;
 
 
 Route::get('/', function () {
@@ -80,6 +81,9 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::post('teams/reorder', [TeamController::class, 'updateOrder'])->name('teams.reorder');
     Route::post('teams/{id}/toggle-status', [TeamController::class, 'toggleStatus'])->name('teams.toggle-status');
     Route::post('teams/{id}/toggle-featured', [TeamController::class, 'toggleFeatured'])->name('teams.toggle-featured');
+
+    // Categories
+    Route::resource('categories', CategoryController::class);
 
     // Contacts/Messages
     Route::get('contacts', [ContactController::class, 'index'])->name('contacts.index');
