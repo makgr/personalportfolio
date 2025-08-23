@@ -14,6 +14,7 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\ExperienceController;
 use App\Http\Controllers\Admin\EducationController;
 use App\Http\Controllers\Admin\TrainingController;
+use App\Http\Controllers\Admin\TestimonialController;
 
 
 Route::get('/', function () {
@@ -67,6 +68,11 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::post('admin/training/reorder', [TrainingController::class, 'updateOrder'])->name('admin.training.reorder');
     Route::post('admin/training/{training}/toggle-status', [TrainingController::class, 'toggleStatus'])->name('admin.training.toggle-status');
     Route::post('admin/training/{training}/toggle-featured', [TrainingController::class, 'toggleFeatured'])->name('admin.training.toggle-featured');
+
+    // Testimonials
+    Route::resource('admin/testimonials', TestimonialController::class, ['as' => 'admin']);
+    Route::post('admin/testimonials/reorder', [TestimonialController::class, 'reorder'])->name('admin.testimonials.reorder');
+    Route::post('admin/testimonials/{testimonial}/toggle-featured', [TestimonialController::class, 'toggleFeatured'])->name('admin.testimonials.toggle-featured');
 
     // Contacts/Messages
     Route::get('contacts', [ContactController::class, 'index'])->name('contacts.index');

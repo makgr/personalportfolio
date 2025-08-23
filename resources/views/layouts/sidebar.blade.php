@@ -207,6 +207,26 @@
             </ul>
         </li>
 
+        <!-- Testimonials -->
+        <li class="menu-item {{ request()->routeIs('admin.testimonials.*') ? 'active open' : '' }}">
+            <a href="javascript:void(0);" class="menu-link menu-toggle">
+                <i class="menu-icon tf-icons bx bx-chat"></i>
+                <div data-i18n="Testimonials">Testimonials</div>
+            </a>
+            <ul class="menu-sub">
+                <li class="menu-item {{ request()->routeIs('admin.testimonials.index') ? 'active' : '' }}">
+                    <a href="{{ route('admin.testimonials.index') }}" class="menu-link">
+                        <div data-i18n="All Testimonials">All Testimonials</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('admin.testimonials.create') ? 'active' : '' }}">
+                    <a href="{{ route('admin.testimonials.create') }}" class="menu-link">
+                        <div data-i18n="Add Testimonial">Add Testimonial</div>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
         <!-- Contact Messages -->
         <li class="menu-item {{ request()->routeIs('contacts.*') ? 'active' : '' }}">
             <a href="{{ route('contacts.index') }}" class="menu-link">

@@ -28,6 +28,21 @@ class ProjectController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
+            // Handle request for all projects (for dropdowns)
+            if ($request->has('all')) {
+                $projects = $this->projectRepository->getAllProjects()
+                    ->select('id', 'title')
+                    ->where('status', 'published')
+                    ->orderBy('title')
+                    ->get();
+                
+                return response()->json([
+                    'success' => true,
+                    'data' => $projects
+                ]);
+            }
+            
+            // Handle DataTables request
             $query = $this->projectRepository->getAllProjects();
             
             return DataTables::of($query)
