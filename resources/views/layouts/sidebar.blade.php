@@ -187,6 +187,26 @@
             </ul>
         </li>
 
+        <!-- Training -->
+        <li class="menu-item {{ request()->routeIs('admin.training.*') ? 'active open' : '' }}">
+            <a href="javascript:void(0);" class="menu-link menu-toggle">
+                <i class="menu-icon tf-icons bx bx-book-open"></i>
+                <div data-i18n="Training">Training</div>
+            </a>
+            <ul class="menu-sub">
+                <li class="menu-item {{ request()->routeIs('admin.training.index') ? 'active' : '' }}">
+                    <a href="{{ route('admin.training.index') }}" class="menu-link">
+                        <div data-i18n="All Training">All Training</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('admin.training.create') ? 'active' : '' }}">
+                    <a href="{{ route('admin.training.create') }}" class="menu-link">
+                        <div data-i18n="Add Training">Add Training</div>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
         <!-- Contact Messages -->
         <li class="menu-item {{ request()->routeIs('contacts.*') ? 'active' : '' }}">
             <a href="{{ route('contacts.index') }}" class="menu-link">

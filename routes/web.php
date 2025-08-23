@@ -13,6 +13,7 @@ use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\ExperienceController;
 use App\Http\Controllers\Admin\EducationController;
+use App\Http\Controllers\Admin\TrainingController;
 
 
 Route::get('/', function () {
@@ -60,6 +61,12 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::post('education/reorder', [EducationController::class, 'reorder'])->name('education.reorder');
     Route::post('education/{education}/toggle-status', [EducationController::class, 'toggleStatus'])->name('education.toggle-status');
     Route::post('education/bulk-action', [EducationController::class, 'bulkAction'])->name('education.bulk-action');
+
+    // Training
+    Route::resource('admin/training', TrainingController::class, ['as' => 'admin']); 
+    Route::post('admin/training/reorder', [TrainingController::class, 'updateOrder'])->name('admin.training.reorder');
+    Route::post('admin/training/{training}/toggle-status', [TrainingController::class, 'toggleStatus'])->name('admin.training.toggle-status');
+    Route::post('admin/training/{training}/toggle-featured', [TrainingController::class, 'toggleFeatured'])->name('admin.training.toggle-featured');
 
     // Contacts/Messages
     Route::get('contacts', [ContactController::class, 'index'])->name('contacts.index');
