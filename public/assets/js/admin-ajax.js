@@ -242,15 +242,40 @@ class AdminAjax {
                 AdminAjax.clearMessages();
             }
             
+            // Handle Laravel method spoofing for PUT, PATCH, DELETE
+            let method = options.method || 'POST';
+            let body = null;
+            let headers = {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                'X-Requested-With': 'XMLHttpRequest',
+                ...options.headers
+            };
+            
+            if (['PUT', 'PATCH', 'DELETE'].includes(method.toUpperCase())) {
+                // Use Laravel method spoofing
+                const formData = new FormData();
+                formData.append('_method', method.toUpperCase());
+                
+                // Add any additional body data
+                if (options.body) {
+                    for (const [key, value] of Object.entries(options.body)) {
+                        formData.append(key, value);
+                    }
+                }
+                
+                method = 'POST';
+                body = formData;
+                // Don't set Content-Type header for FormData, let browser set it with boundary
+            } else {
+                // For GET and POST requests, use JSON
+                headers['Content-Type'] = 'application/json';
+                body = options.body ? JSON.stringify(options.body) : null;
+            }
+            
             fetch(url, {
-                method: options.method || 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
-                    'X-Requested-With': 'XMLHttpRequest',
-                    ...options.headers
-                },
-                body: options.body ? JSON.stringify(options.body) : null
+                method: method,
+                headers: headers,
+                body: body
             })
             .then(response => {
                 if (!response.ok) {

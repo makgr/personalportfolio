@@ -65,7 +65,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::post('education/bulk-action', [EducationController::class, 'bulkAction'])->name('education.bulk-action');
 
     // Training
-    Route::resource('admin/training', TrainingController::class, ['as' => 'admin']); 
+    Route::resource('admin/training', TrainingController::class, ['as' => 'admin']);
     Route::post('admin/training/reorder', [TrainingController::class, 'updateOrder'])->name('admin.training.reorder');
     Route::post('admin/training/{training}/toggle-status', [TrainingController::class, 'toggleStatus'])->name('admin.training.toggle-status');
     Route::post('admin/training/{training}/toggle-featured', [TrainingController::class, 'toggleFeatured'])->name('admin.training.toggle-featured');
@@ -75,11 +75,11 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::post('admin/testimonials/reorder', [TestimonialController::class, 'reorder'])->name('admin.testimonials.reorder');
     Route::post('admin/testimonials/{testimonial}/toggle-featured', [TestimonialController::class, 'toggleFeatured'])->name('admin.testimonials.toggle-featured');
 
-    // Teams (directly accessible at /teams)
+    // Teams
     Route::resource('teams', TeamController::class);
     Route::post('teams/reorder', [TeamController::class, 'updateOrder'])->name('teams.reorder');
-    Route::post('teams/{team}/toggle-status', [TeamController::class, 'toggleStatus'])->name('teams.toggle-status');
-    Route::post('teams/{team}/toggle-featured', [TeamController::class, 'toggleFeatured'])->name('teams.toggle-featured');
+    Route::post('teams/{id}/toggle-status', [TeamController::class, 'toggleStatus'])->name('teams.toggle-status');
+    Route::post('teams/{id}/toggle-featured', [TeamController::class, 'toggleFeatured'])->name('teams.toggle-featured');
 
     // Contacts/Messages
     Route::get('contacts', [ContactController::class, 'index'])->name('contacts.index');

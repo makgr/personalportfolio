@@ -301,5 +301,16 @@ $(document).ready(function() {
         }
     });
 });
+
+// Auto-refresh DataTable after AJAX operations using admin-ajax.js
+$(document).on('click', '[data-ajax]', function() {
+    const button = this;
+    // Add a small delay to allow for server processing, then reload DataTable
+    setTimeout(function() {
+        if (typeof table !== 'undefined' && table) {
+            table.ajax.reload(null, false); // Reload without resetting pagination
+        }
+    }, 1000);
+});
 </script>
 @endpush

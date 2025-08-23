@@ -3,23 +3,25 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Services\TeamService;
+use App\Repositories\Contracts\TeamRepositoryInterface;
+use App\Http\Requests\Admin\TeamRequest;
 use App\Models\Team;
-use App\Services\MediaService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Str;
 use Yajra\DataTables\Facades\DataTables;
-use Illuminate\Validation\Rule;
 
 class TeamController extends Controller
 {
-    protected MediaService $mediaService;
+    protected TeamService $teamService;
+    protected TeamRepositoryInterface $teamRepository;
 
-    public function __construct(MediaService $mediaService)
-    {
+    public function __construct(
+        TeamService $teamService,
+        TeamRepositoryInterface $teamRepository
+    ) {
         $this->middleware(['auth', 'admin']);
-        $this->mediaService = $mediaService;
+        $this->teamService = $teamService;
+        $this->teamRepository = $teamRepository;
     }
 
     /**
@@ -28,13 +30,13 @@ class TeamController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $query = Team::query();
+            $query = Team::query()->orderBy('order', 'asc');
             
             return DataTables::of($query)
                 ->addColumn('member_info', function ($team) {
                     $html = '<div class="d-flex align-items-center">';
                     if ($team->image) {
-                        $html .= '<img src="' . $team->image . '" class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;" alt="' . $team->name . '">';
+                        $html .= '<img src="' . asset($team->image) . '" class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;" alt="' . $team->name . '">';
                     } else {
                         $html .= '<div class="avatar-initial rounded-circle bg-label-primary me-2 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; font-size: 14px;">' . $team->initials . '</div>';
                     }
@@ -98,24 +100,24 @@ class TeamController extends Controller
                 })
                 ->addColumn('action', function ($team) {
                     $actions = '<div class="btn-group" role="group">';
-                    $actions .= '<a href="' . route('teams.show', $team) . '" class="btn btn-sm btn-outline-info" title="View"><i class="bx bx-show"></i></a>';
-                    $actions .= '<a href="' . route('teams.edit', $team) . '" class="btn btn-sm btn-outline-primary" title="Edit"><i class="bx bx-edit"></i></a>';
+                    $actions .= '<a href="' . route('teams.show', $team->id) . '" class="btn btn-sm btn-outline-info" title="View"><i class="bx bx-show"></i></a>';
+                    $actions .= '<a href="' . route('teams.edit', $team->id) . '" class="btn btn-sm btn-outline-primary" title="Edit"><i class="bx bx-edit"></i></a>';
                     
                     // Toggle Active/Inactive
                     if ($team->is_active) {
-                        $actions .= '<button class="btn btn-sm btn-outline-warning toggle-status" data-id="' . $team->id . '" data-status="inactive" title="Deactivate"><i class="bx bx-pause"></i></button>';
+                        $actions .= '<button class="btn btn-sm btn-outline-warning" data-ajax="' . route('teams.toggle-status', $team->id) . '" data-method="POST" data-loading="Updating..." title="Deactivate"><i class="bx bx-pause"></i></button>';
                     } else {
-                        $actions .= '<button class="btn btn-sm btn-outline-success toggle-status" data-id="' . $team->id . '" data-status="active" title="Activate"><i class="bx bx-play"></i></button>';
+                        $actions .= '<button class="btn btn-sm btn-outline-success" data-ajax="' . route('teams.toggle-status', $team->id) . '" data-method="POST" data-loading="Updating..." title="Activate"><i class="bx bx-play"></i></button>';
                     }
                     
                     // Toggle Featured
                     if ($team->is_featured) {
-                        $actions .= '<button class="btn btn-sm btn-outline-secondary toggle-featured" data-id="' . $team->id . '" data-featured="false" title="Remove from Featured"><i class="bx bx-star"></i></button>';
+                        $actions .= '<button class="btn btn-sm btn-outline-secondary" data-ajax="' . route('teams.toggle-featured', $team->id) . '" data-method="POST" data-loading="Updating..." title="Remove from Featured"><i class="bx bx-star"></i></button>';
                     } else {
-                        $actions .= '<button class="btn btn-sm btn-outline-warning toggle-featured" data-id="' . $team->id . '" data-featured="true" title="Mark as Featured"><i class="bx bx-star"></i></button>';
+                        $actions .= '<button class="btn btn-sm btn-outline-warning" data-ajax="' . route('teams.toggle-featured', $team->id) . '" data-method="POST" data-loading="Updating..." title="Mark as Featured"><i class="bx bx-star"></i></button>';
                     }
                     
-                    $actions .= '<button class="btn btn-sm btn-outline-danger delete-team" data-id="' . $team->id . '" title="Delete"><i class="bx bx-trash"></i></button>';
+                    $actions .= '<button class="btn btn-sm btn-outline-danger" data-ajax="' . route('teams.destroy', $team->id) . '" data-method="DELETE" data-confirm="Are you sure you want to delete this team member?" data-loading="Deleting..." data-on-success="location.reload()" title="Delete"><i class="bx bx-trash"></i></button>';
                     $actions .= '</div>';
                     
                     return $actions;
@@ -126,7 +128,7 @@ class TeamController extends Controller
 
         $stats = [
             'total' => Team::count(),
-            'active' => Team::where('is_active', true)->count(),
+            'active' => Team::where('is_active', true)->count(), 
             'featured' => Team::where('is_featured', true)->count(),
             'full_time' => Team::where('employment_type', 'full_time')->count(),
         ];
@@ -162,110 +164,62 @@ class TeamController extends Controller
     /**
      * Store a newly created team member
      */
-    public function store(Request $request)
+    public function store(TeamRequest $request)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'position' => 'required|string|max:255',
-            'department' => 'nullable|in:engineering,design,marketing,sales,hr,management,other',
-            'bio' => 'nullable|string',
-            'email' => 'nullable|email|max:255',
-            'phone' => 'nullable|string|max:255',
-            'image' => 'nullable|image|max:1024',
-            'linkedin' => 'nullable|url',
-            'twitter' => 'nullable|url',
-            'github' => 'nullable|url',
-            'website' => 'nullable|url',
-            'skills' => 'nullable|string',
-            'join_date' => 'nullable|date',
-            'employment_type' => 'required|in:full_time,part_time,contract,intern',
-            'location' => 'nullable|string|max:255',
-            'icon' => 'nullable|string|max:50',
-            'color' => 'nullable|string|max:7|regex:/^#[a-fA-F0-9]{6}$/',
-            'order' => 'nullable|integer|min:0',
-            'is_featured' => 'boolean',
-            'is_active' => 'boolean'
-        ]);
+        $data = $request->validated();
+        $data['image'] = $request->file('image');
+        
+        $result = $this->teamService->createTeam($data);
 
-        try {
-            DB::beginTransaction();
-
-            $data = $request->all();
-            
-            // Process skills from comma-separated string to array
-            if ($request->skills) {
-                $data['skills'] = array_map('trim', explode(',', $request->skills));
-            }
-
-            // Generate slug if not provided
-            if (empty($data['slug'])) {
-                $data['slug'] = Str::slug($data['name']);
-                
-                // Ensure unique slug
-                $originalSlug = $data['slug'];
-                $count = 1;
-                while (Team::where('slug', $data['slug'])->exists()) {
-                    $data['slug'] = $originalSlug . '-' . $count;
-                    $count++;
-                }
-            }
-
-            // Handle image upload
-            if ($request->hasFile('image')) {
-                $data['image'] = $this->mediaService->upload($request->file('image'), 'teams');
-            }
-
-            // Set defaults
-            $data['icon'] = $data['icon'] ?: 'bx-user';
-            $data['color'] = $data['color'] ?: '#007bff';
-            $data['order'] = $data['order'] ?: Team::max('order') + 1;
-            $data['is_featured'] = $request->boolean('is_featured');
-            $data['is_active'] = $request->boolean('is_active', true);
-
-            $team = Team::create($data);
-
-            DB::commit();
-
-            if ($request->ajax()) {
+        if ($request->ajax()) {
+            if ($result['success']) {
                 return response()->json([
                     'success' => true,
-                    'message' => 'Team member added successfully!',
+                    'message' => $result['message'],
                     'redirect' => route('teams.index')
                 ]);
             }
 
-            return redirect()->route('teams.index')
-                ->with('success', 'Team member added successfully!');
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            Log::error('Team member creation failed: ' . $e->getMessage());
-
-            if ($request->ajax()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Failed to add team member. Please try again.'
-                ], 500);
-            }
-
-            return back()->withInput()
-                ->withErrors(['error' => 'Failed to add team member. Please try again.']);
+            return response()->json([
+                'success' => false,
+                'message' => $result['message']
+            ], 422);
         }
+
+        if ($result['success']) {
+            return redirect()->route('teams.index')
+                ->with('success', $result['message']);
+        }
+
+        return back()->withInput()
+            ->withErrors(['error' => $result['message']]);
     }
 
     /**
      * Display the specified team member
      */
-    public function show(Team $team)
+    public function show($team)
     {
+        $teamId = is_object($team) ? $team->id : $team;
+        $team = $this->teamRepository->find($teamId);
+        if (!$team) {
+            return redirect()->route('teams.index')
+                ->with('error', 'Team member not found');
+        }
         return view('admin.teams.show', compact('team'));
     }
 
     /**
      * Show the form for editing the specified team member
      */
-    public function edit(Team $team)
+    public function edit($team)
     {
+        $teamId = is_object($team) ? $team->id : $team;
+        $team = $this->teamRepository->find($teamId);
+        if (!$team) {
+            return redirect()->route('teams.index')
+                ->with('error', 'Team member not found');
+        }
         $departments = [
             'engineering' => 'Engineering',
             'design' => 'Design',
@@ -294,197 +248,113 @@ class TeamController extends Controller
     /**
      * Update the specified team member
      */
-    public function update(Request $request, Team $team)
+    public function update(TeamRequest $request, $team)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'position' => 'required|string|max:255',
-            'department' => 'nullable|in:engineering,design,marketing,sales,hr,management,other',
-            'bio' => 'nullable|string',
-            'email' => 'nullable|email|max:255',
-            'phone' => 'nullable|string|max:255',
-            'image' => 'nullable|image|max:1024',
-            'linkedin' => 'nullable|url',
-            'twitter' => 'nullable|url',
-            'github' => 'nullable|url',
-            'website' => 'nullable|url',
-            'skills' => 'nullable|string',
-            'join_date' => 'nullable|date',
-            'employment_type' => 'required|in:full_time,part_time,contract,intern',
-            'location' => 'nullable|string|max:255',
-            'icon' => 'nullable|string|max:50',
-            'color' => 'nullable|string|max:7|regex:/^#[a-fA-F0-9]{6}$/',
-            'order' => 'nullable|integer|min:0',
-            'is_featured' => 'boolean',
-            'is_active' => 'boolean'
-        ]);
+        $teamId = is_object($team) ? $team->id : $team;
+        $data = $request->validated();
+        $data['image'] = $request->file('image');
+        
+        $result = $this->teamService->updateTeam($teamId, $data);
 
-        try {
-            DB::beginTransaction();
-
-            $data = $request->all();
-            
-            // Process skills from comma-separated string to array
-            if ($request->skills) {
-                $data['skills'] = array_map('trim', explode(',', $request->skills));
-            } else {
-                $data['skills'] = null;
-            }
-
-            // Update slug if name changed
-            if ($data['name'] !== $team->name) {
-                $data['slug'] = Str::slug($data['name']);
-                
-                // Ensure unique slug (excluding current record)
-                $originalSlug = $data['slug'];
-                $count = 1;
-                while (Team::where('slug', $data['slug'])->where('id', '!=', $team->id)->exists()) {
-                    $data['slug'] = $originalSlug . '-' . $count;
-                    $count++;
-                }
-            }
-
-            // Handle image upload
-            if ($request->hasFile('image')) {
-                // Delete old image
-                if ($team->image) {
-                    $this->mediaService->delete($team->image);
-                }
-                $data['image'] = $this->mediaService->upload($request->file('image'), 'teams');
-            }
-
-            // Set defaults and booleans
-            $data['icon'] = $data['icon'] ?: 'bx-user';
-            $data['color'] = $data['color'] ?: '#007bff';
-            $data['is_featured'] = $request->boolean('is_featured');
-            $data['is_active'] = $request->boolean('is_active', true);
-
-            $team->update($data);
-
-            DB::commit();
-
-            if ($request->ajax()) {
+        if ($request->ajax()) {
+            if ($result['success']) {
                 return response()->json([
                     'success' => true,
-                    'message' => 'Team member updated successfully!'
+                    'message' => $result['message'],
+                    'redirect' => route('teams.index')
                 ]);
             }
 
-            return redirect()->route('teams.index')
-                ->with('success', 'Team member updated successfully!');
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            Log::error('Team member update failed: ' . $e->getMessage());
-
-            if ($request->ajax()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Failed to update team member. Please try again.'
-                ], 500);
-            }
-
-            return back()->withInput()
-                ->withErrors(['error' => 'Failed to update team member. Please try again.']);
+            return response()->json([
+                'success' => false,
+                'message' => $result['message']
+            ], 422);
         }
+
+        if ($result['success']) {
+            return redirect()->route('teams.index')
+                ->with('success', $result['message']);
+        }
+
+        return back()->withInput()
+            ->withErrors(['error' => $result['message']]);
     }
 
     /**
      * Remove the specified team member
      */
-    public function destroy(Request $request, Team $team)
+    public function destroy(Request $request, $team)
     {
-        try {
-            DB::beginTransaction();
+        // Handle both model binding (Team object) and direct ID
+        $teamId = is_object($team) ? $team->id : $team;
+        $result = $this->teamService->deleteTeam($teamId);
 
-            // Delete team member image
-            if ($team->image) {
-                $this->mediaService->delete($team->image);
-            }
-
-            $team->delete();
-
-            DB::commit();
-
-            if ($request->ajax()) {
+        if ($request->ajax()) {
+            if ($result['success']) {
                 return response()->json([
                     'success' => true,
-                    'message' => 'Team member removed successfully!'
+                    'message' => $result['message']
                 ]);
             }
 
-            return redirect()->route('teams.index')
-                ->with('success', 'Team member removed successfully!');
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            Log::error('Team member deletion failed: ' . $e->getMessage());
-
-            if ($request->ajax()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Failed to remove team member.'
-                ], 500);
-            }
-
-            return back()->withErrors(['error' => 'Failed to remove team member.']);
+            return response()->json([
+                'success' => false,
+                'message' => $result['message']
+            ], 500);
         }
+
+        if ($result['success']) {
+            return redirect()->route('teams.index')
+                ->with('success', $result['message']);
+        }
+
+        return back()->withErrors(['error' => $result['message']]);
     }
 
     /**
      * Toggle team member status (active/inactive)
      */
-    public function toggleStatus(Request $request, Team $team)
+    public function toggleStatus($id)
     {
-        try {
-            $team->update([
-                'is_active' => !$team->is_active
-            ]);
-
+        $result = $this->teamRepository->toggleStatus($id);
+        
+        if ($result) {
+            $team = $this->teamRepository->find($id);
             $status = $team->is_active ? 'activated' : 'deactivated';
-
             return response()->json([
                 'success' => true,
                 'message' => "Team member {$status} successfully!",
                 'is_active' => $team->is_active
             ]);
-
-        } catch (\Exception $e) {
-            Log::error('Team member status toggle failed: ' . $e->getMessage());
-
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to update team member status.'
-            ], 500);
         }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Failed to update team member status.'
+        ], 500);
     }
 
     /**
      * Toggle featured status
      */
-    public function toggleFeatured(Request $request, Team $team)
+    public function toggleFeatured($id)
     {
-        try {
-            $team->update([
-                'is_featured' => !$team->is_featured
-            ]);
-
+        $result = $this->teamRepository->toggleFeatured($id);
+        
+        if ($result) {
+            $team = $this->teamRepository->find($id);
             $status = $team->is_featured ? 'marked as featured' : 'removed from featured';
-
             return response()->json([
                 'success' => true,
                 'message' => "Team member {$status} successfully!",
                 'is_featured' => $team->is_featured
             ]);
-
-        } catch (\Exception $e) {
-            Log::error('Team member featured toggle failed: ' . $e->getMessage());
-
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to update team member featured status.'
-            ], 500);
         }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Failed to update team member featured status.'
+        ], 500);
     }
 
     /**
@@ -498,28 +368,18 @@ class TeamController extends Controller
             'items.*.order' => 'required|integer|min:0'
         ]);
 
-        try {
-            DB::beginTransaction();
-
-            foreach ($request->items as $item) {
-                Team::where('id', $item['id'])->update(['order' => $item['order']]);
-            }
-
-            DB::commit();
-
+        $result = $this->teamRepository->updateOrder($request->items);
+        
+        if ($result) {
             return response()->json([
                 'success' => true,
                 'message' => 'Team members order updated successfully!'
             ]);
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            Log::error('Team members order update failed: ' . $e->getMessage());
-
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to update team members order.'
-            ], 500);
         }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Failed to update team members order.'
+        ], 500);
     }
 }

@@ -12,7 +12,8 @@
       "Bash(cat:*)",
       "Bash(php -l:*)",
       "Bash(rm:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(mv:*)"
     ],
     "deny": [],
     "ask": [],
