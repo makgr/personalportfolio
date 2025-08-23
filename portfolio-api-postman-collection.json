@@ -1,0 +1,1090 @@
+{
+	"info": {
+		"_postman_id": "portfolio-api-collection",
+		"name": "Portfolio API Collection",
+		"description": "Complete API collection for Personal Portfolio Laravel application",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "portfolio-api"
+	},
+	"item": [
+		{
+			"name": "Profile",
+			"item": [
+				{
+					"name": "Get Profile",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/profile",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"profile"
+							]
+						},
+						"description": "Get complete profile information including personal details, social links, and site information"
+					},
+					"response": []
+				}
+			],
+			"description": "Profile management endpoints"
+		},
+		{
+			"name": "Projects",
+			"item": [
+				{
+					"name": "Get All Projects",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/projects",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"projects"
+							]
+						},
+						"description": "Get all published projects"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Featured Projects",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/projects/featured?limit=6",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"projects",
+								"featured"
+							],
+							"query": [
+								{
+									"key": "limit",
+									"value": "6",
+									"description": "Number of featured projects to return"
+								}
+							]
+						},
+						"description": "Get featured projects with optional limit"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Project by Slug",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/projects/{slug}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"projects",
+								"{slug}"
+							]
+						},
+						"description": "Get single project by slug"
+					},
+					"response": []
+				},
+				{
+					"name": "Filter Projects by Category",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/projects?category=full-stack-applications&limit=10",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"projects"
+							],
+							"query": [
+								{
+									"key": "category",
+									"value": "full-stack-applications",
+									"description": "Filter by category slug"
+								},
+								{
+									"key": "limit",
+									"value": "10",
+									"description": "Limit number of results"
+								}
+							]
+						},
+						"description": "Filter projects by category with pagination"
+					},
+					"response": []
+				}
+			],
+			"description": "Project portfolio endpoints"
+		},
+		{
+			"name": "Blog Posts",
+			"item": [
+				{
+					"name": "Get All Blog Posts",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/blog-posts?per_page=12&page=1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"blog-posts"
+							],
+							"query": [
+								{
+									"key": "per_page",
+									"value": "12",
+									"description": "Posts per page"
+								},
+								{
+									"key": "page",
+									"value": "1",
+									"description": "Page number"
+								}
+							]
+						},
+						"description": "Get paginated blog posts"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Featured Blog Posts",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/blog-posts/featured?limit=5",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"blog-posts",
+								"featured"
+							],
+							"query": [
+								{
+									"key": "limit",
+									"value": "5",
+									"description": "Number of featured posts"
+								}
+							]
+						},
+						"description": "Get featured blog posts"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Blog Post by Slug",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/blog-posts/{slug}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"blog-posts",
+								"{slug}"
+							]
+						},
+						"description": "Get single blog post by slug"
+					},
+					"response": []
+				},
+				{
+					"name": "Search Blog Posts",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/blog-posts?search=laravel&category=technology&per_page=10",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"blog-posts"
+							],
+							"query": [
+								{
+									"key": "search",
+									"value": "laravel",
+									"description": "Search in title and excerpt"
+								},
+								{
+									"key": "category",
+									"value": "technology",
+									"description": "Filter by category slug"
+								},
+								{
+									"key": "per_page",
+									"value": "10",
+									"description": "Posts per page"
+								}
+							]
+						},
+						"description": "Search and filter blog posts"
+					},
+					"response": []
+				}
+			],
+			"description": "Blog management endpoints"
+		},
+		{
+			"name": "Categories",
+			"item": [
+				{
+					"name": "Get All Categories",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/categories",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"categories"
+							]
+						},
+						"description": "Get all active categories"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Categories by Type",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/categories/type/project",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"categories",
+								"type",
+								"project"
+							]
+						},
+						"description": "Get categories filtered by type (project or blog)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Category by Slug",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/categories/{slug}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"categories",
+								"{slug}"
+							]
+						},
+						"description": "Get single category by slug with content counts"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Categories with Counts",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/categories?with_counts=true&type=project",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"categories"
+							],
+							"query": [
+								{
+									"key": "with_counts",
+									"value": "true",
+									"description": "Include project and blog post counts"
+								},
+								{
+									"key": "type",
+									"value": "project",
+									"description": "Filter by category type"
+								}
+							]
+						},
+						"description": "Get categories with content counts"
+					},
+					"response": []
+				}
+			],
+			"description": "Category management endpoints"
+		},
+		{
+			"name": "Skills",
+			"item": [
+				{
+					"name": "Get All Skills",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/skills",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"skills"
+							]
+						},
+						"description": "Get all skills grouped by category"
+					},
+					"response": []
+				},
+				{
+					"name": "Filter Skills by Category",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/skills?category=frontend",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"skills"
+							],
+							"query": [
+								{
+									"key": "category",
+									"value": "frontend",
+									"description": "Filter by skill category"
+								}
+							]
+						},
+						"description": "Get skills filtered by category"
+					},
+					"response": []
+				}
+			],
+			"description": "Skills management endpoints"
+		},
+		{
+			"name": "Services",
+			"item": [
+				{
+					"name": "Get All Services",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/services",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"services"
+							]
+						},
+						"description": "Get all active services ordered by priority"
+					},
+					"response": []
+				}
+			],
+			"description": "Services offerings endpoints"
+		},
+		{
+			"name": "Experience",
+			"item": [
+				{
+					"name": "Get All Experiences",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/experiences",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"experiences"
+							]
+						},
+						"description": "Get work experience timeline ordered by date"
+					},
+					"response": []
+				}
+			],
+			"description": "Work experience endpoints"
+		},
+		{
+			"name": "Education",
+			"item": [
+				{
+					"name": "Get All Education",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/education",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"education"
+							]
+						},
+						"description": "Get educational background ordered by date"
+					},
+					"response": []
+				}
+			],
+			"description": "Educational background endpoints"
+		},
+		{
+			"name": "Training",
+			"item": [
+				{
+					"name": "Get All Training",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/training",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"training"
+							]
+						},
+						"description": "Get all professional training and certifications"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Featured Training",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/training/featured?limit=5",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"training",
+								"featured"
+							],
+							"query": [
+								{
+									"key": "limit",
+									"value": "5",
+									"description": "Limit number of featured training records"
+								}
+							]
+						},
+						"description": "Get featured training and certifications"
+					},
+					"response": []
+				}
+			],
+			"description": "Professional training endpoints"
+		},
+		{
+			"name": "Testimonials",
+			"item": [
+				{
+					"name": "Get All Testimonials",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/testimonials?limit=10",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"testimonials"
+							],
+							"query": [
+								{
+									"key": "limit",
+									"value": "10",
+									"description": "Limit number of testimonials"
+								}
+							]
+						},
+						"description": "Get client testimonials"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Featured Testimonials",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/testimonials/featured?limit=5",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"testimonials",
+								"featured"
+							],
+							"query": [
+								{
+									"key": "limit",
+									"value": "5",
+									"description": "Limit featured testimonials"
+								}
+							]
+						},
+						"description": "Get featured client testimonials"
+					},
+					"response": []
+				}
+			],
+			"description": "Client testimonials endpoints"
+		},
+		{
+			"name": "Team",
+			"item": [
+				{
+					"name": "Get All Team Members",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/teams?limit=10",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"teams"
+							],
+							"query": [
+								{
+									"key": "limit",
+									"value": "10",
+									"description": "Limit number of team members"
+								}
+							]
+						},
+						"description": "Get team members"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Featured Team Members",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/teams/featured?limit=5",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"teams",
+								"featured"
+							],
+							"query": [
+								{
+									"key": "limit",
+									"value": "5",
+									"description": "Limit featured team members"
+								}
+							]
+						},
+						"description": "Get featured team members"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Team Member by Slug",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/teams/{slug}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"teams",
+								"{slug}"
+							]
+						},
+						"description": "Get team member profile by slug"
+					},
+					"response": []
+				}
+			],
+			"description": "Team members endpoints"
+		},
+		{
+			"name": "Settings",
+			"item": [
+				{
+					"name": "Get All Settings",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/settings",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"settings"
+							]
+						},
+						"description": "Get all public settings grouped by category"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Setting by Key",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/settings/site_description",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"settings",
+								"site_description"
+							]
+						},
+						"description": "Get specific setting by key"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Google Analytics Setting",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/settings/google_analytics",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"settings",
+								"google_analytics"
+							]
+						},
+						"description": "Get Google Analytics tracking ID"
+					},
+					"response": []
+				}
+			],
+			"description": "Site configuration endpoints"
+		},
+		{
+			"name": "Contact",
+			"item": [
+				{
+					"name": "Submit Contact Form",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john.doe@example.com\",\n  \"subject\": \"Project Inquiry\",\n  \"message\": \"Hello, I would like to discuss a potential project with you. Please let me know your availability.\",\n  \"phone\": \"+1234567890\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/contact",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"contact"
+							]
+						},
+						"description": "Submit contact form with client inquiry"
+					},
+					"response": []
+				},
+				{
+					"name": "Subscribe to Newsletter",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"subscriber@example.com\",\n  \"name\": \"John Subscriber\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/newsletter/subscribe",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"newsletter",
+								"subscribe"
+							]
+						},
+						"description": "Subscribe to newsletter"
+					},
+					"response": []
+				},
+				{
+					"name": "Unsubscribe from Newsletter",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"subscriber@example.com\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/newsletter/unsubscribe",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"newsletter",
+								"unsubscribe"
+							]
+						},
+						"description": "Unsubscribe from newsletter"
+					},
+					"response": []
+				}
+			],
+			"description": "Contact and newsletter endpoints"
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"pm.test(\"Response time is less than 2000ms\", function () {",
+					"    pm.expect(pm.response.responseTime).to.be.below(2000);",
+					"});",
+					"",
+					"pm.test(\"Status code is success\", function () {",
+					"    pm.expect(pm.response.code).to.be.oneOf([200, 201, 202]);",
+					"});",
+					"",
+					"pm.test(\"Response has JSON format\", function () {",
+					"    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+					"});",
+					"",
+					"pm.test(\"Response has success field\", function () {",
+					"    const responseJson = pm.response.json();",
+					"    if (responseJson.success !== undefined) {",
+					"        pm.expect(responseJson.success).to.be.a('boolean');",
+					"    }",
+					"});"
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://personalportfolio.test",
+			"type": "string"
+		}
+	]
+}
