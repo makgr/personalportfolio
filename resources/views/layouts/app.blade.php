@@ -242,7 +242,7 @@
     <script src="https://cdn.datatables.net/responsive/2.5.0/js/responsive.bootstrap5.min.js"></script>
 
     <!-- Admin AJAX Helper -->
-    <script src="{{ asset('assets/js/admin-ajax.js') }}?v=4"></script>
+    <script src="{{ asset('assets/js/admin-ajax.js') }}?v=6"></script>
 
     <!-- Page JS -->
     <script src="{{ asset('assets/js/dashboards-analytics.js') }}"></script>

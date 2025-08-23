@@ -115,7 +115,7 @@ class TeamService
             $data['is_featured'] = !empty($data['is_featured']);
             $data['is_active'] = !empty($data['is_active']);
 
-            $this->teamRepository->update($id, $data);
+            $this->teamRepository->update($data, $id);
 
             return [
                 'success' => true,

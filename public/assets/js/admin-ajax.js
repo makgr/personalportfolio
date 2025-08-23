@@ -253,6 +253,7 @@ class AdminAjax {
             
             if (['PUT', 'PATCH', 'DELETE'].includes(method.toUpperCase())) {
                 // Use Laravel method spoofing
+                console.log('AdminAjax: Method spoofing for', method.toUpperCase(), 'to URL:', url);
                 const formData = new FormData();
                 formData.append('_method', method.toUpperCase());
                 
@@ -265,6 +266,7 @@ class AdminAjax {
                 
                 method = 'POST';
                 body = formData;
+                console.log('AdminAjax: Converted to POST with FormData, _method =', formData.get('_method'));
                 // Don't set Content-Type header for FormData, let browser set it with boundary
             } else {
                 // For GET and POST requests, use JSON
@@ -272,6 +274,7 @@ class AdminAjax {
                 body = options.body ? JSON.stringify(options.body) : null;
             }
             
+            console.log('AdminAjax: Making fetch request', {url, method, headers, body});
             fetch(url, {
                 method: method,
                 headers: headers,
@@ -398,44 +401,45 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Auto-handle buttons with data-ajax attribute
-    document.querySelectorAll('[data-ajax]').forEach(element => {
-        if (element.tagName === 'FORM') return; // Skip forms, handled above
+    // Auto-handle buttons with data-ajax attribute using event delegation
+    document.addEventListener('click', function(e) {
+        const element = e.target.closest('[data-ajax]');
+        if (!element || element.tagName === 'FORM') return; // Skip forms, handled above
         
-        element.addEventListener('click', function(e) {
-            e.preventDefault();
-            
-            const url = this.dataset.ajax;
-            const method = this.dataset.method || 'POST';
-            const confirmMessage = this.dataset.confirm;
-            const loadingText = this.dataset.loading;
-            
-            const makeRequest = () => {
-                AdminAjax.makeRequest(url, {
-                    method: method,
-                    button: this,
-                    loadingText: loadingText
-                }).then(data => {
-                    // Custom success callback if defined
-                    if (this.dataset.onSuccess) {
-                        try {
-                            const callback = new Function('data', this.dataset.onSuccess);
-                            callback(data);
-                        } catch (e) {
-                            console.error('Success callback error:', e);
-                        }
+        e.preventDefault();
+        
+        const url = element.dataset.ajax;
+        const method = element.dataset.method || 'POST';
+        const confirmMessage = element.dataset.confirm;
+        const loadingText = element.dataset.loading;
+        
+        console.log('AdminAjax: Button clicked', {url, method, confirmMessage});
+        
+        const makeRequest = () => {
+            AdminAjax.makeRequest(url, {
+                method: method,
+                button: element,
+                loadingText: loadingText
+            }).then(data => {
+                // Custom success callback if defined
+                if (element.dataset.onSuccess) {
+                    try {
+                        const callback = new Function('data', element.dataset.onSuccess);
+                        callback(data);
+                    } catch (e) {
+                        console.error('Success callback error:', e);
                     }
-                });
-            };
+                }
+            });
+        };
 
-            if (confirmMessage) {
-                AdminAjax.confirmAction(confirmMessage).then(confirmed => {
-                    if (confirmed) makeRequest();
-                });
-            } else {
-                makeRequest();
-            }
-        });
+        if (confirmMessage) {
+            AdminAjax.confirmAction(confirmMessage).then(confirmed => {
+                if (confirmed) makeRequest();
+            });
+        } else {
+            makeRequest();
+        }
     });
 });
 
