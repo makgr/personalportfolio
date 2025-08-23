@@ -351,13 +351,25 @@ class SettingController extends Controller
     public function clearCache()
     {
         try {
+            // Clear Laravel cache
             Cache::flush();
+            
+            // Run optimize:clear command to clear compiled files, config cache, route cache, etc.
+            \Illuminate\Support\Facades\Artisan::call('optimize:clear');
+            
+            // Get the artisan command output for debugging (optional)
+            $artisanOutput = \Illuminate\Support\Facades\Artisan::output();
+            
+            \Illuminate\Support\Facades\Log::info('Cache cleared successfully', [
+                'artisan_output' => $artisanOutput
+            ]);
 
             return response()->json([
                 'success' => true,
-                'message' => 'Cache cleared successfully'
+                'message' => 'Cache cleared successfully. All caches, compiled files, and optimizations have been cleared.'
             ]);
         } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Failed to clear cache: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to clear cache',
