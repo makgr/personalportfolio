@@ -31,6 +31,15 @@ class BlogService
         // Calculate reading time
         $data['reading_time'] = $this->calculateReadingTime($data['content']);
 
+        // Handle published_at based on status
+        if (isset($data['status'])) {
+            if ($data['status'] === 'published' && !isset($data['published_at'])) {
+                $data['published_at'] = now();
+            } elseif ($data['status'] !== 'published') {
+                $data['published_at'] = null;
+            }
+        }
+
         // Handle tags - store directly in tags JSON field
         if (!empty($tags)) {
             $data['tags'] = $tags;
@@ -68,6 +77,17 @@ class BlogService
         // Recalculate reading time if content changed
         if (isset($data['content'])) {
             $data['reading_time'] = $this->calculateReadingTime($data['content']);
+        }
+
+        // Handle published_at based on status change
+        if (isset($data['status'])) {
+            if ($data['status'] === 'published' && $post->status !== 'published') {
+                // Status changed to published - set published_at if not already set
+                $data['published_at'] = $post->published_at ?? now();
+            } elseif ($data['status'] !== 'published' && $post->status === 'published') {
+                // Status changed from published - clear published_at
+                $data['published_at'] = null;
+            }
         }
 
         // Handle tags - store directly in tags JSON field
