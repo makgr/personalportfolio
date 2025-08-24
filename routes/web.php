@@ -21,7 +21,7 @@ use App\Http\Controllers\Admin\CategoryController;
 
 Route::get('/', function () {
     return view('auth.login');
-});
+})->middleware('guest');
 
 // Authentication Routes (no prefix)
 Route::get('login', [LoginController::class, 'showLoginForm'])->name('login');

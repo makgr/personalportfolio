@@ -52,6 +52,8 @@ class SettingsController extends Controller
                     'youtube_url' => $publicSettings->get('youtube_url'),
                 ],
                 'seo' => [
+                    'site_name' => $publicSettings->get('site_name'),
+                    'site_tagline' => $publicSettings->get('site_tagline'),
                     'meta_title' => $publicSettings->get('meta_title'),
                     'meta_description' => $publicSettings->get('meta_description'),
                     'og_title' => $publicSettings->get('og_title'),
