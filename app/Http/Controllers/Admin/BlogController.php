@@ -165,7 +165,7 @@ class BlogController extends Controller
             }
 
             return redirect()
-                ->route('blog-posts.index')
+                ->route('blog-posts.show', $result->id)
                 ->with('success', 'Blog post created successfully');
         } catch (\Exception $e) {
             Log::error('Failed to create blog post: ' . $e->getMessage());

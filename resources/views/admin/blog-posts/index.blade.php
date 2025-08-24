@@ -54,9 +54,12 @@
 
 @push('scripts')
 <script>
+// Global table variable
+var table;
+
 $(document).ready(function() {
     // Initialize DataTable
-    var table = $('#blogPostsTable').DataTable({
+    table = $('#blogPostsTable').DataTable({
         processing: true,
         serverSide: true,
         ajax: {
