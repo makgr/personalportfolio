@@ -60,6 +60,25 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Hero Profile Image -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h6 class="card-title mb-3">Hero Profile Image</h6>
+                        <div class="d-flex align-items-start align-items-sm-center gap-4">
+                            <img src="{{ $profile->hero_image_url ? asset($profile->hero_image_url) : asset('assets/img/avatars/1.png') }}"
+                                alt="hero-image" class="d-block rounded" height="100" width="100"
+                                id="uploadedHeroImage" />
+                            <div class="button-wrapper">
+                                <label for="hero_upload" class="btn btn-primary me-2 mb-4" tabindex="0">
+                                    <span class="d-none d-sm-block">Upload hero image</span>
+                                    <i class="bx bx-upload d-block d-sm-none"></i>
+                                </label>
+                                <p class="text-muted mb-0">Allowed JPG, PNG. Max size of 2MB</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div class="col-xl-8 col-lg-7 col-md-7">
@@ -145,6 +164,29 @@
                                 </div>
                             </div>
 
+                            <!-- Profile Statistics -->
+                            <h6 class="mt-4 mb-3">Profile Statistics</h6>
+                            <div class="row">
+                                <div class="mb-3 col-md-4">
+                                    <label for="years_of_experience" class="form-label">Years of Experience</label>
+                                    <input class="form-control" type="number" id="years_of_experience"
+                                        name="years_of_experience" min="0"
+                                        value="{{ old('years_of_experience', $profile->years_of_experience ?? 0) }}" />
+                                </div>
+                                <div class="mb-3 col-md-4">
+                                    <label for="total_projects" class="form-label">Total Projects</label>
+                                    <input class="form-control" type="number" id="total_projects"
+                                        name="total_projects" min="0"
+                                        value="{{ old('total_projects', $profile->total_projects ?? 0) }}" />
+                                </div>
+                                <div class="mb-3 col-md-4">
+                                    <label for="happy_clients" class="form-label">Happy Clients</label>
+                                    <input class="form-control" type="number" id="happy_clients"
+                                        name="happy_clients" min="0"
+                                        value="{{ old('happy_clients', $profile->happy_clients ?? 0) }}" />
+                                </div>
+                            </div>
+
                             <!-- Account Security -->
                             <h6 class="mt-4 mb-3">Account Security</h6>
                             <div class="row">
@@ -176,8 +218,10 @@
                             </div>
                         </div>
 
-                        <!-- Hidden file input inside form -->
+                        <!-- Hidden file inputs inside form -->
                         <input type="file" id="upload" name="upload" class="d-none"
+                            accept="image/png, image/jpeg" />
+                        <input type="file" id="hero_upload" name="hero_upload" class="d-none"
                             accept="image/png, image/jpeg" />
 
                         <div class="card-footer">
@@ -203,6 +247,7 @@
 
 @push('scripts')
     <script>
+        // Profile Avatar Image Handler
         const fileInput = document.getElementById('upload');
         const previewImage = document.getElementById('uploadedAvatar');
         const originalSrc = previewImage ? previewImage.src : '';
@@ -236,7 +281,7 @@
                         previewImage.style.opacity = '0.7';
                         previewImage.style.border = '2px dashed #007bff';
 
-                        toastr.info('Image selected. Save changes to upload.', 'Image Ready');
+                        toastr.info('Avatar image selected. Save changes to upload.', 'Image Ready');
                     };
                     reader.readAsDataURL(file);
                 } else {
@@ -244,6 +289,52 @@
                     previewImage.src = originalSrc;
                     previewImage.style.opacity = '1';
                     previewImage.style.border = 'none';
+                }
+            });
+        }
+
+        // Hero Image Handler
+        const heroFileInput = document.getElementById('hero_upload');
+        const heroPreviewImage = document.getElementById('uploadedHeroImage');
+        const heroOriginalSrc = heroPreviewImage ? heroPreviewImage.src : '';
+
+        if (heroFileInput && heroPreviewImage) {
+            heroFileInput.addEventListener('change', function(e) {
+                console.log('Hero file input changed:', e.target.files);
+                const file = e.target.files[0];
+                if (file) {
+                    // Validate file type
+                    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+                    if (!allowedTypes.includes(file.type)) {
+                        toastr.error('Please select a valid image file (JPG, PNG)');
+                        heroFileInput.value = '';
+                        return;
+                    }
+
+                    // Validate file size (2MB)
+                    if (file.size > 2 * 1024 * 1024) {
+                        toastr.error('Image size must be less than 2MB');
+                        heroFileInput.value = '';
+                        return;
+                    }
+
+                    // Show instant preview
+                    const reader = new FileReader();
+                    reader.onload = function(ev) {
+                        heroPreviewImage.src = ev.target.result;
+
+                        // Visual feedback
+                        heroPreviewImage.style.opacity = '0.7';
+                        heroPreviewImage.style.border = '2px dashed #007bff';
+
+                        toastr.info('Hero image selected. Save changes to upload.', 'Image Ready');
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    // If no file selected, reset to original
+                    heroPreviewImage.src = heroOriginalSrc;
+                    heroPreviewImage.style.opacity = '1';
+                    heroPreviewImage.style.border = 'none';
                 }
             });
         }

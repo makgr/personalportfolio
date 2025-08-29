@@ -48,27 +48,26 @@ class ProfileController extends Controller
 
             $data = [
                 'id' => $profile->id,
-                'name' => $profile->full_name,
-                'email' => $profile->email,
+                'full_name' => $profile->full_name,
                 'title' => $profile->title,
+                'subtitle' => $profile->subtitle,
                 'bio' => $profile->bio,
-                'description' => $profile->description,
-                'avatar' => $profile->avatar ? asset($profile->avatar) : null,
-                'cover_image' => $profile->cover_image ? asset($profile->cover_image) : null,
+                'short_bio' => $profile->short_bio,
+                'email' => $profile->email,
                 'phone' => $profile->phone,
                 'location' => $profile->location,
-                'website' => $profile->website,
+                'avatar_url' => $profile->avatar_url ? asset($profile->avatar_url) : null,
+                'hero_image_url' => $profile->hero_image_url ? asset($profile->hero_image_url) : null,
                 'resume_url' => $profile->resume_url ? asset($profile->resume_url) : null,
-                'years_experience' => $profile->years_experience,
-                'projects_completed' => $profile->projects_completed,
-                'happy_clients' => $profile->happy_clients,
+                
+                // Profile Statistics
+                'years_of_experience' => $profile->years_of_experience ?? 0,
+                'total_projects' => $profile->total_projects ?? 0,
+                'happy_clients' => $profile->happy_clients ?? 0,
+                
                 'social_links' => $profile->social_links ?: [],
-                'skills_summary' => $profile->skills_summary ?: [],
-                'is_available' => $profile->is_available,
-                'hourly_rate' => $profile->hourly_rate,
-                'currency' => $profile->currency,
-                'timezone' => $profile->timezone,
-                'languages' => $profile->languages ?: [],
+                'meta_tags' => $profile->meta_tags ?: [],
+                'is_active' => $profile->is_active,
 
                 // Additional info from settings
                 'site_info' => [

@@ -21,6 +21,10 @@ class Profile extends Model
         'phone',
         'location',
         'avatar_url',
+        'years_of_experience',
+        'total_projects',
+        'happy_clients',
+        'hero_image_url',
         'resume_url',
         'social_links',
         'meta_tags',
@@ -31,6 +35,9 @@ class Profile extends Model
         'social_links' => 'array',
         'meta_tags' => 'array',
         'is_active' => 'boolean',
+        'years_of_experience' => 'integer',
+        'total_projects' => 'integer',
+        'happy_clients' => 'integer',
     ];
 
     // Scopes

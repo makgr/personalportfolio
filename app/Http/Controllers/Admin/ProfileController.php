@@ -78,6 +78,10 @@ class ProfileController extends Controller
             'phone' => 'nullable|string|max:20',
             'location' => 'nullable|string|max:255',
             'upload' => 'nullable|image|max:2048',
+            'hero_upload' => 'nullable|image|max:2048',
+            'years_of_experience' => 'nullable|integer|min:0',
+            'total_projects' => 'nullable|integer|min:0',
+            'happy_clients' => 'nullable|integer|min:0',
             'resume' => 'nullable|mimes:pdf|max:5120',
             'social_links' => 'nullable|array',
             'social_links.github' => 'nullable|url',
@@ -120,6 +124,21 @@ class ProfileController extends Controller
                     ]);
                 }
 
+                // Handle hero image upload
+                if ($request->hasFile('hero_upload')) {
+                    Log::info('Profile update: Hero image upload detected', [
+                        'file_name' => $request->file('hero_upload')->getClientOriginalName(),
+                        'file_size' => $request->file('hero_upload')->getSize(),
+                        'file_type' => $request->file('hero_upload')->getMimeType()
+                    ]);
+                    
+                    if ($profile->hero_image_url && !empty($profile->hero_image_url)) {
+                        $this->mediaService->delete($profile->hero_image_url);
+                    }
+                    $validated['hero_image_url'] = $this->mediaService->upload($request->file('hero_upload'), 'profile');
+                    Log::info('Profile update: Hero image uploaded successfully', ['path' => $validated['hero_image_url']]);
+                }
+
                 // Handle resume upload
                 if ($request->hasFile('resume')) {
                     if ($profile->resume_url) {
@@ -130,7 +149,7 @@ class ProfileController extends Controller
 
                 // Update profile
                 $profileData = array_filter($validated, function ($key) {
-                    return !str_starts_with($key, 'user_') && !in_array($key, ['current_password', 'new_password', 'new_password_confirmation', 'upload', 'resume']);
+                    return !str_starts_with($key, 'user_') && !in_array($key, ['current_password', 'new_password', 'new_password_confirmation', 'upload', 'hero_upload', 'resume']);
                 }, ARRAY_FILTER_USE_KEY);
 
                 Log::info('Profile update: Data being saved', [
