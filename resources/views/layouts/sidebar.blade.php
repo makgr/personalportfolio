@@ -263,6 +263,14 @@
             </a>
         </li>
 
+        <!-- Newsletter Subscribers -->
+        <li class="menu-item {{ request()->routeIs('admin.newsletter-subscribers.*') ? 'active' : '' }}">
+            <a href="{{ route('admin.newsletter-subscribers.index') }}" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-mail-send"></i>
+                <div data-i18n="Newsletter">Newsletter</div>
+            </a>
+        </li>
+
         <!-- Settings -->
         <li class="menu-header small text-uppercase"><span class="menu-header-text">Settings</span></li>
         

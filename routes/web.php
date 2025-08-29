@@ -17,6 +17,7 @@ use App\Http\Controllers\Admin\TrainingController;
 use App\Http\Controllers\Admin\TestimonialController;
 use App\Http\Controllers\Admin\TeamController;
 use App\Http\Controllers\Admin\CategoryController;
+use App\Http\Controllers\Admin\NewsletterSubscriberController;
 
 
 Route::get('/', function () {
@@ -84,6 +85,12 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
     // Categories
     Route::resource('categories', CategoryController::class);
+
+    // Newsletter Subscribers
+    Route::resource('admin/newsletter-subscribers', NewsletterSubscriberController::class, ['as' => 'admin'])
+        ->only(['index', 'destroy']);
+    Route::get('admin/newsletter-subscribers-export', [NewsletterSubscriberController::class, 'export'])
+        ->name('admin.newsletter-subscribers.export');
 
     // Contacts/Messages
     Route::get('contacts', [ContactController::class, 'index'])->name('contacts.index');

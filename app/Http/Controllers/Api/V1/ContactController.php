@@ -66,8 +66,7 @@ class ContactController extends Controller
     public function subscribe(Request $request)
     {
         $request->validate([
-            'email' => 'required|email|max:255',
-            'name' => 'nullable|string|max:255'
+            'email' => 'required|email|max:255'
         ]);
 
         try {
@@ -80,7 +79,7 @@ class ContactController extends Controller
                 ], 429);
             }
 
-            $subscriber = $this->contactService->subscribeToNewsletter($request->only(['email', 'name']));
+            $subscriber = $this->contactService->subscribeToNewsletter($request->only(['email']));
 
             RateLimiter::hit($key, 3600); // 1 hour
 
@@ -89,7 +88,7 @@ class ContactController extends Controller
                 'message' => 'Successfully subscribed to newsletter!',
                 'data' => [
                     'email' => $subscriber->email,
-                    'subscribed_at' => $subscriber->subscribed_at
+                    'subscribed_at' => $subscriber->created_at->toISOString()
                 ]
             ], 201);
         } catch (\Exception $e) {

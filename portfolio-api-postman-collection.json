@@ -985,7 +985,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"email\": \"subscriber@example.com\",\n  \"name\": \"John Subscriber\"\n}"
+							"raw": "{\n  \"email\": \"subscriber@example.com\"\n}"
 						},
 						"url": {
 							"raw": "{{base_url}}/api/v1/newsletter/subscribe",
@@ -999,7 +999,7 @@
 								"subscribe"
 							]
 						},
-						"description": "Subscribe to newsletter"
+						"description": "Subscribe to newsletter with email only"
 					},
 					"response": []
 				},
