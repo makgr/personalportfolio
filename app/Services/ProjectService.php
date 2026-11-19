@@ -51,14 +51,19 @@ class ProjectService
                 if (!isset($data['slug']) || empty($data['slug'])) {
                     $data['slug'] = Str::slug($data['title']);
                 }
-                
+
                 // Process tech_stack JSON string to array
                 if (isset($data['tech_stack']) && is_string($data['tech_stack'])) {
                     $data['tech_stack'] = json_decode($data['tech_stack'], true) ?: [];
                 }
-                
+
                 // Handle boolean fields that might not be present
                 $data['is_featured'] = isset($data['is_featured']) && $data['is_featured'] ? true : false;
+
+                // Auto-set published_at when status is published
+                if (isset($data['status']) && $data['status'] === 'published' && empty($data['published_at'])) {
+                    $data['published_at'] = now();
+                }
 
                 // Handle featured image
                 if ($featuredImage) {
@@ -103,14 +108,19 @@ class ProjectService
                         $data['slug'] = Str::slug($data['title']);
                     }
                 }
-                
+
                 // Process tech_stack JSON string to array
                 if (isset($data['tech_stack']) && is_string($data['tech_stack'])) {
                     $data['tech_stack'] = json_decode($data['tech_stack'], true) ?: [];
                 }
-                
+
                 // Handle boolean fields that might not be present
                 $data['is_featured'] = isset($data['is_featured']) && $data['is_featured'] ? true : false;
+
+                // Auto-set published_at when status changes to published
+                if (isset($data['status']) && $data['status'] === 'published' && empty($project->published_at) && empty($data['published_at'])) {
+                    $data['published_at'] = now();
+                }
 
                 // Handle featured image
                 if ($featuredImage) {
