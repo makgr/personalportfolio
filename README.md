@@ -15,7 +15,7 @@ Admin panel and REST API for a personal portfolio website. Manage your profile, 
 
 - PHP 8.3+
 - Composer 2
-- Node.js 18+ and npm
+- Node.js 20.19+ and npm
 - SQLite (default) or MySQL
 
 ## Installation
