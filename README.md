@@ -84,6 +84,22 @@ php artisan test
 
 Issues and pull requests are welcome. Please open an issue first for larger changes.
 
+## Feature Requests & Custom Work
+
+Want a new feature? [Open an issue](https://github.com/makgr/personalportfolio/issues) describing what you need.
+
+Need something built or customized for your own portfolio or project? We're happy to do it — get in touch through any of the channels below.
+
+## Support the Project
+
+If this project helps you, you can sponsor or donate to support its development. Contact us by email or Discord and we'll share the donation details.
+
+## Contact
+
+- **Email:** [xvirus.bd@gmail.com](mailto:xvirus.bd@gmail.com)
+- **Discord:** `semakgr`
+- **Facebook:** [facebook.com/robotbalok](https://www.facebook.com/robotbalok)
+
 ## License
 
 [MIT](LICENSE)
