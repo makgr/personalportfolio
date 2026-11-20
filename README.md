@@ -49,22 +49,22 @@ To use MySQL instead of SQLite, set `DB_CONNECTION=mysql` and the `DB_*` values 
 
 Base URL: `http://localhost:8000/api/v1`
 
-| Method | Endpoint |
-|---|---|
-| GET | `/profile` |
-| GET | `/projects`, `/projects/featured`, `/projects/{slug}` |
-| GET | `/blog-posts`, `/blog-posts/featured`, `/blog-posts/{slug}` |
-| GET | `/categories`, `/categories/type/{type}`, `/categories/{slug}` |
-| GET | `/skills` |
-| GET | `/services` |
-| GET | `/experiences` |
-| GET | `/education` |
-| GET | `/training`, `/training/featured` |
-| GET | `/testimonials`, `/testimonials/featured` |
-| GET | `/teams`, `/teams/featured`, `/teams/{slug}` |
-| GET | `/settings`, `/settings/{key}` |
-| POST | `/contact` |
-| POST | `/newsletter/subscribe`, `/newsletter/unsubscribe` |
+| Method | Endpoint                                                       |
+| ------ | -------------------------------------------------------------- |
+| GET    | `/profile`                                                     |
+| GET    | `/projects`, `/projects/featured`, `/projects/{slug}`          |
+| GET    | `/blog-posts`, `/blog-posts/featured`, `/blog-posts/{slug}`    |
+| GET    | `/categories`, `/categories/type/{type}`, `/categories/{slug}` |
+| GET    | `/skills`                                                      |
+| GET    | `/services`                                                    |
+| GET    | `/experiences`                                                 |
+| GET    | `/education`                                                   |
+| GET    | `/training`, `/training/featured`                              |
+| GET    | `/testimonials`, `/testimonials/featured`                      |
+| GET    | `/teams`, `/teams/featured`, `/teams/{slug}`                   |
+| GET    | `/settings`, `/settings/{key}`                                 |
+| POST   | `/contact`                                                     |
+| POST   | `/newsletter/subscribe`, `/newsletter/unsubscribe`             |
 
 Every response has the shape:
 
@@ -97,14 +97,15 @@ If this project helps you, you can sponsor or donate to support its development.
 - **GitHub Sponsors:** [github.com/sponsors/makgr](https://github.com/sponsors/makgr)
 - **Bank transfer:**
 
-| | |
-|---|---|
-| Account Name | MOHAMMAD ALI KHAN |
-| Account No | 2061510357001 |
-| Bank | Dutch Bangla Bank PLC |
-| Branch | Jamalpur |
-| SWIFT | DBBLBDDH |
-| Routing No | 090390854 |
+|              |                       |
+| ------------ | --------------------- |
+| Account Name | MOHAMMAD ALI KHAN     |
+| Account No   | 2061510357001         |
+| Bank         | Dutch Bangla Bank PLC |
+| Branch       | Jamalpur              |
+| SWIFT        | DBBLBDDH              |
+| Routing No   | 090390854             |
+| Country      | Bangladesh            |
 
 For other ways to donate, contact us by email or Discord.
 
