@@ -127,6 +127,12 @@
             color: var(--ob-heading);
         }
 
+        /* Edge adds its own reveal/clear icons; we already have a show/hide toggle */
+        #password::-ms-reveal,
+        #password::-ms-clear {
+            display: none;
+        }
+
         .login-form .btn-primary {
             padding: 0.6875rem;
             font-size: 0.9375rem;

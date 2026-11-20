@@ -4,6 +4,12 @@ Admin panel and REST API for a personal portfolio website. Manage your profile, 
 
 **Frontend:** coming soon
 
+## Admin panel preview
+
+![Admin panel walkthrough: sign in, dashboard, projects, blog posts, skills, experience, messages and settings](docs/screenshots/admin-walkthrough.gif)
+
+Sign in, dashboard, projects (with row actions), blog posts, skills, experience, contact messages and settings. Visitor names, emails and message text are blurred.
+
 ## Features
 
 - **Admin panel** (Bootstrap): profile, projects, blog posts, categories, skills, services, experience, education, training, certifications, testimonials, team, media, contact messages, newsletter subscribers (Excel export), settings, analytics
