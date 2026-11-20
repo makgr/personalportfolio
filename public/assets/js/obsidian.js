@@ -223,24 +223,71 @@
     };
 
     /* ---------- Row action menus inside scrolling tables ---------- */
-    // .table-responsive clips overflow, so menus opened in a table row were cut off.
-    // Capture phase runs before Bootstrap's own click handler, so the instance is created with
-    // fixed positioning (placed against the viewport, not the scroll box).
+    // .table-responsive (and theme wrappers) clip anything that overflows, so a row's menu was cut off.
+    // While open, the menu lives in <body>; Popper still anchors it to the button. It goes back on close.
     function setupTableDropdowns() {
         if (typeof bootstrap === 'undefined' || !bootstrap.Dropdown) return;
-        document.addEventListener('click', function (e) {
-            var toggle = e.target.closest && e.target.closest('[data-bs-toggle="dropdown"]');
-            if (!toggle || !toggle.closest('.table-responsive, .card-datatable, .dataTables_wrapper')) return;
-            bootstrap.Dropdown.getOrCreateInstance(toggle, { popperConfig: { strategy: 'fixed' } });
+        var TABLE = '.table-responsive, .card-datatable, .dataTables_wrapper';
+        var homes = new WeakMap();
+        var toggles = new WeakMap();
+
+        document.addEventListener('show.bs.dropdown', function (e) {
+            var toggle = e.target;
+            if (!toggle.closest || !toggle.closest(TABLE)) return;
+            var menu = toggle.parentNode.querySelector('.dropdown-menu');
+            if (!menu) return;
+            homes.set(menu, toggle.parentNode);
+            toggles.set(menu, toggle);
+            menu.setAttribute('data-ob-floating', '');
+            document.body.appendChild(menu);
+        });
+
+        // Bootstrap finds the toggle as the menu's sibling, which no longer holds in <body>; handle keys here
+        document.addEventListener('keydown', function (e) {
+            var menu = e.target.closest && e.target.closest('.dropdown-menu[data-ob-floating]');
+            if (!menu || ['Escape', 'ArrowDown', 'ArrowUp'].indexOf(e.key) === -1) return;
+            e.preventDefault();
+            e.stopPropagation();
+            var toggle = toggles.get(menu);
+            if (e.key === 'Escape') {
+                if (toggle) {
+                    bootstrap.Dropdown.getOrCreateInstance(toggle).hide();
+                    toggle.focus();
+                }
+                return;
+            }
+            var items = Array.prototype.slice.call(menu.querySelectorAll('.dropdown-item:not(.disabled):not(:disabled)'));
+            var next = items.indexOf(document.activeElement) + (e.key === 'ArrowDown' ? 1 : -1);
+            if (items.length) items[(next + items.length) % items.length].focus();
         }, true);
 
-        // A fixed menu would float in place while the table scrolls sideways; close it instead
-        document.addEventListener('scroll', function (e) {
-            if (!e.target.classList || !e.target.classList.contains('table-responsive')) return;
-            e.target.querySelectorAll('[data-bs-toggle="dropdown"][aria-expanded="true"]').forEach(function (t) {
+        document.addEventListener('hidden.bs.dropdown', function (e) {
+            var menu = document.querySelector('body > .dropdown-menu[data-ob-floating]:not(.show)');
+            var home = menu && homes.get(menu);
+            if (!menu) return;
+            menu.removeAttribute('data-ob-floating');
+            if (home && home.isConnected) {
+                home.appendChild(menu);
+            } else {
+                menu.remove();
+            }
+        });
+
+        // Close the floating menu when the table scrolls or redraws, so it never points at a moved/removed row
+        function closeFloating() {
+            document.querySelectorAll('.table-responsive [data-bs-toggle="dropdown"][aria-expanded="true"]').forEach(function (t) {
                 bootstrap.Dropdown.getOrCreateInstance(t).hide();
             });
+            document.querySelectorAll('body > .dropdown-menu[data-ob-floating]').forEach(function (m) {
+                if (!homes.get(m) || !homes.get(m).isConnected) m.remove();
+            });
+        }
+        document.addEventListener('scroll', function (e) {
+            if (e.target.classList && e.target.classList.contains('table-responsive')) closeFloating();
         }, true);
+        if (window.jQuery) {
+            window.jQuery(document).on('preDraw.dt', closeFloating);
+        }
     }
 
     function init() {
