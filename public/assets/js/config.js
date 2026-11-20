@@ -10,18 +10,18 @@
 // JS global variables
 let config = {
   colors: {
-    primary: '#696cff',
-    secondary: '#8592a3',
-    success: '#71dd37',
-    info: '#03c3ec',
+    primary: '#8b5cf6',
+    secondary: '#71717a',
+    success: '#16a34a',
+    info: '#52525b',
     warning: '#ffab00',
-    danger: '#ff3e1d',
-    dark: '#233446',
+    danger: '#ef4444',
+    dark: '#18181b',
     black: '#000',
     white: '#fff',
-    body: '#f4f5fb',
-    headingColor: '#566a7f',
-    axisColor: '#a1acb8',
-    borderColor: '#eceef1'
+    body: '#fafafa',
+    headingColor: '#18181b',
+    axisColor: '#a1a1aa',
+    borderColor: '#f4f4f5'
   }
 };

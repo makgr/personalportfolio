@@ -182,7 +182,8 @@
 @push('scripts')
     <script>
         function deleteSubscriber(subscriberId) {
-            if (confirm('Are you sure you want to delete this subscriber? This action cannot be undone.')) {
+            obConfirm('Are you sure you want to delete this subscriber? This action cannot be undone.').then(function (ok) {
+                if (!ok) return;
                 fetch(`/admin/newsletter-subscribers/${subscriberId}`, {
                     method: 'DELETE',
                     headers: {
@@ -202,7 +203,7 @@
                     console.error('Error:', error);
                     toastr.error('An error occurred while deleting subscriber');
                 });
-            }
+            });
         }
 
         function exportSubscribers() {

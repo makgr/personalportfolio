@@ -217,7 +217,8 @@
 <script>
 // Toggle status function
 function toggleStatus(id) {
-    if (confirm('Are you sure you want to toggle this service status?')) {
+    obConfirm('Are you sure you want to toggle this service status?').then(function (ok) {
+        if (!ok) return;
         $.post(`{{ url('/services') }}/${id}/toggle-status`, {
             _token: $('meta[name="csrf-token"]').attr('content')
         })
@@ -235,12 +236,13 @@ function toggleStatus(id) {
         .fail(function() {
             toastr.error('Failed to toggle service status');
         });
-    }
+    });
 }
 
 // Delete service function
 function deleteService(id) {
-    if (confirm('Are you sure you want to delete this service? This action cannot be undone.')) {
+    obConfirm('Are you sure you want to delete this service? This action cannot be undone.').then(function (ok) {
+        if (!ok) return;
         const deleteUrl = `{{ url('/services') }}/${id}`;
         console.log('Attempting to delete service ID:', id);
         console.log('Delete URL:', deleteUrl);
@@ -276,7 +278,7 @@ function deleteService(id) {
                 toastr.error('Failed to delete service: ' + error);
             }
         });
-    }
+    });
 }
 </script>
 @endpush

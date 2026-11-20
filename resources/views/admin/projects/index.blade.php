@@ -165,7 +165,8 @@ $(document).ready(function() {
             ? 'Are you sure you want to delete the selected projects? This action cannot be undone.'
             : 'Are you sure you want to ' + action + ' the selected projects?';
 
-        if (confirm(confirmMessage)) {
+        obConfirm(confirmMessage).then(function (ok) {
+            if (!ok) return;
             $.ajax({
                 url: '{{ route('projects.bulk-action') }}',
                 type: 'POST',
@@ -189,7 +190,7 @@ $(document).ready(function() {
                     toastr.error('An error occurred while processing your request.');
                 }
             });
-        }
+        });
     });
 
     // Handle individual actions
@@ -226,7 +227,8 @@ $(document).ready(function() {
         const url = $(this).data('url');
         const title = $(this).data('title');
         
-        if (confirm('Are you sure you want to delete "' + title + '"? This action cannot be undone.')) {
+        obConfirm('Are you sure you want to delete "' + title + '"? This action cannot be undone.').then(function (ok) {
+            if (!ok) return;
             $.ajax({
                 url: url,
                 type: 'DELETE',
@@ -243,7 +245,7 @@ $(document).ready(function() {
                     toastr.error('An error occurred while deleting the project.');
                 }
             });
-        }
+        });
     });
 });
 </script>

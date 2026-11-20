@@ -430,7 +430,8 @@ $(document).ready(function() {
     $('.delete-training').on('click', function() {
         const trainingId = $(this).data('id');
         
-        if (confirm('Are you sure you want to delete this training record? This action cannot be undone.')) {
+        obConfirm('Are you sure you want to delete this training record? This action cannot be undone.').then(function (ok) {
+            if (!ok) return;
             $.ajax({
                 url: '{{ url("admin/training") }}/' + trainingId,
                 type: 'POST',
@@ -457,7 +458,7 @@ $(document).ready(function() {
                     toastr.error('Failed to delete training record');
                 }
             });
-        }
+        });
     });
 });
 </script>

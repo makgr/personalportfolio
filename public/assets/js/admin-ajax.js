@@ -314,10 +314,12 @@ class AdminAjax {
     }
 
     /**
-     * Confirm action with SweetAlert or browser confirm
+     * Confirm action with the Obsidian dialog (falls back to the browser confirm)
      */
     static confirmAction(message, title = 'Are you sure?') {
-        // Use browser confirm for now, can be upgraded to SweetAlert later
+        if (typeof window.obConfirm === 'function') {
+            return window.obConfirm(message, { title });
+        }
         return Promise.resolve(confirm(`${title}\n\n${message}`));
     }
 

@@ -236,7 +236,8 @@
 
         // Delete education function
         function deleteEducation(id) {
-            if (confirm('Are you sure you want to delete this education record? This action cannot be undone.')) {
+            obConfirm('Are you sure you want to delete this education record? This action cannot be undone.').then(function (ok) {
+                if (!ok) return;
                 const deleteUrl = `{{ url('/education') }}/${id}`;
                 $.ajax({
                         url: deleteUrl,
@@ -265,7 +266,7 @@
                             toastr.error('Failed to delete education record: ' + error);
                         }
                     });
-            }
+            });
         }
 
         // Bulk actions
@@ -289,7 +290,8 @@
                     break;
             }
 
-            if (confirm(confirmMessage)) {
+            obConfirm(confirmMessage).then(function (ok) {
+                if (!ok) return;
                 $.post('{{ route('education.bulk-action') }}', {
                         _token: $('meta[name="csrf-token"]').attr('content'),
                         action: action,
@@ -310,7 +312,7 @@
                     .fail(function() {
                         toastr.error('Failed to perform bulk action');
                     });
-            }
+            });
         }
     </script>
 @endpush

@@ -1,147 +1,243 @@
+@php
+    // Sign-in must still render if the profiles table is empty or not migrated yet
+    $profile = rescue(fn () => \App\Models\Profile::where('is_active', true)->first(), null, false);
+    $ownerName = $profile->full_name ?? config('app.name');
+    $initials = collect(preg_split('/\s+/', trim($ownerName)))->filter()->map(fn ($w) => mb_substr($w, 0, 1))->take(2)->implode('');
+@endphp
 <!DOCTYPE html>
-<html lang="en" class="light-style customizer-hide" dir="ltr" data-theme="theme-default"
-    data-assets-path="{{ asset('assets') }}" data-template="vertical-menu-template-free">
+<html lang="en" class="light-style" dir="ltr" data-theme="theme-default">
 
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport"
-        content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sign in | {{ $ownerName }}</title>
 
-    <title>Login | Personal Portfolio</title>
-
-    <meta name="description" content="" />
-
-    <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="{{ asset('assets/img/favicon/favicon.ico') }}" />
-
-    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-        href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap"
-        rel="stylesheet" />
-
-    <!-- Icons. Uncomment required icon fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="{{ asset('assets/vendor/fonts/boxicons.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/vendor/css/core.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/vendor/css/theme-default.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/css/obsidian.css') }}?v=4" />
 
-    <!-- Core CSS -->
-    <link rel="stylesheet" href="{{ asset('assets/vendor/css/core.css') }}" class="template-customizer-core-css" />
-    <link rel="stylesheet" href="{{ asset('assets/vendor/css/theme-default.css') }}"
-        class="template-customizer-theme-css" />
-    <link rel="stylesheet" href="{{ asset('assets/css/demo.css') }}" />
+    <style>
+        body {
+            background: var(--ob-surface);
+        }
 
-    <!-- Vendors CSS -->
-    <link rel="stylesheet" href="{{ asset('assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css') }}" />
+        .login {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+            min-height: 100vh;
+        }
 
-    <!-- Page CSS -->
-    <!-- Page -->
-    <link rel="stylesheet" href="{{ asset('assets/vendor/css/pages/page-auth.css') }}" />
+        /* Left: name panel */
+        .login-aside {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: clamp(2rem, 4vw, 3.5rem);
+            background: var(--ob-bg);
+            border-right: 1px solid var(--ob-border);
+        }
 
+        .login-aside .ob-brand-mark {
+            width: 2.75rem;
+            height: 2.75rem;
+            font-size: 1.0625rem;
+            border-radius: var(--ob-radius);
+        }
+
+        .login-owner {
+            margin: 0;
+            font-size: clamp(2.5rem, 4.6vw, 4rem);
+            font-weight: 600;
+            line-height: 1.04;
+            letter-spacing: -0.035em;
+            color: var(--ob-heading);
+            max-width: 11ch;
+        }
+
+        .login-role {
+            margin: 1rem 0 0;
+            font-size: 1rem;
+            color: var(--ob-body);
+            max-width: 26rem;
+        }
+
+        .login-foot {
+            font-size: 0.8125rem;
+            color: var(--ob-muted);
+        }
+
+        /* Right: form */
+        .login-panel {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1rem;
+        }
+
+        .login-form {
+            width: 100%;
+            max-width: 22rem;
+        }
+
+        .login-form h1 {
+            font-size: 1.5rem;
+            letter-spacing: -0.02em;
+            margin-bottom: 0.375rem;
+        }
+
+        .login-form .lead-in {
+            color: var(--ob-body);
+            font-size: 0.9375rem;
+            margin-bottom: 2rem;
+        }
+
+        .login-form .form-control {
+            padding: 0.6875rem 0.875rem;
+            font-size: 0.9375rem;
+        }
+
+        .password-wrap {
+            position: relative;
+        }
+
+        .password-wrap .form-control {
+            padding-right: 3rem;
+        }
+
+        .password-toggle {
+            position: absolute;
+            top: 0;
+            right: 0;
+            height: 100%;
+            width: 3rem;
+            border: 0;
+            background: none;
+            color: var(--ob-muted);
+            font-size: 1.125rem;
+            border-radius: 0 var(--ob-radius-sm) var(--ob-radius-sm) 0;
+        }
+
+        .password-toggle:hover {
+            color: var(--ob-heading);
+        }
+
+        .login-form .btn-primary {
+            padding: 0.6875rem;
+            font-size: 0.9375rem;
+        }
+
+        .login-mobile-brand {
+            display: none;
+        }
+
+        @media (max-width: 767.98px) {
+            .login {
+                grid-template-columns: 1fr;
+            }
+
+            .login-aside {
+                display: none;
+            }
+
+            .login-panel {
+                align-items: flex-start;
+                padding-top: 3rem;
+            }
+
+            .login-mobile-brand {
+                display: flex;
+                align-items: center;
+                gap: 0.625rem;
+                margin-bottom: 2.5rem;
+                font-weight: 600;
+                color: var(--ob-heading);
+            }
+        }
+    </style>
 </head>
 
 <body>
-    <!-- Content -->
-
-    <div class="container-xxl">
-        <div class="authentication-wrapper authentication-basic container-p-y">
-            <div class="authentication-inner">
-                <!-- Register -->
-                <div class="card">
-                    <div class="card-body">
-                        <!-- Logo -->
-                        <div class="app-brand justify-content-center">
-                            <a href="{{ url('/') }}" class="app-brand-link gap-2">
-                                <span class="app-brand-logo demo">
-
-                                </span>
-                                <span class="app-brand-text demo text-body fw-bolder">Admin</span>
-                            </a>
-                        </div>
-                        <!-- /Logo -->
-                        {{-- <h4 class="mb-2">Welcome to Sneat! 👋</h4> --}}
-                        <p class="mb-4">Please sign-in to your account and start the adventure</p>
-
-                        <form id="formAuthentication" class="mb-3" method="POST" action="{{ route('login') }}">
-                            @csrf
-                            <div class="mb-3">
-                                <label for="email" class="form-label">Email</label>
-                                <input type="email" id="email"
-                                    class="form-control @error('email') is-invalid @enderror" name="email"
-                                    placeholder="Enter your email" value="{{ old('email') }}" required
-                                    autocomplete="email" autofocus />
-                                @error('email')
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong>{{ $message }}</strong>
-                                    </span>
-                                @enderror
-                            </div>
-                            <div class="mb-3 form-password-toggle">
-                                <div class="d-flex justify-content-between">
-                                    <label class="form-label" for="password">Password</label>
-                                    {{-- <a href="auth-forgot-password-basic.html">
-                                        <small>Forgot Password?</small>
-                                    </a> --}}
-                                </div>
-                                <div class="input-group input-group-merge">
-                                    <input type="password" id="password"
-                                        class="form-control @error('password') is-invalid @enderror" name="password"
-                                        required autocomplete="current-password" placeholder="********"
-                                        aria-describedby="password" />
-                                    <span class="input-group-text cursor-pointer"><i class="bx bx-hide"></i></span>
-                                    @error('password')
-                                        <span class="invalid-feedback" role="alert">
-                                            <strong>{{ $message }}</strong>
-                                        </span>
-                                    @enderror
-                                </div>
-                            </div>
-                            <div class="mb-3">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="remember" name="remember"
-                                        {{ old('remember') ? 'checked' : '' }} />
-                                    <label class="form-check-label" for="remember"> Remember Me </label>
-                                </div>
-                            </div>
-                            <div class="mb-3">
-                                <button class="btn btn-primary d-grid w-100 loginbtn" type="submit">Sign in</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-                <!-- /Register -->
+    <main class="login">
+        <section class="login-aside" aria-hidden="true">
+            <span class="ob-brand-mark">{{ strtoupper($initials) }}</span>
+            <div>
+                <p class="login-owner">{{ $ownerName }}</p>
+                <p class="login-role">Manage the projects, writing and messages behind your portfolio.</p>
             </div>
-        </div>
-    </div>
+            <p class="login-foot mb-0">Portfolio admin</p>
+        </section>
 
-    <!-- / Content -->
+        <section class="login-panel">
+            <form id="formAuthentication" class="login-form" method="POST" action="{{ route('login') }}">
+                @csrf
+                <div class="login-mobile-brand">
+                    <span class="ob-brand-mark">{{ strtoupper($initials) }}</span>
+                    {{ $ownerName }}
+                </div>
 
-    <!-- Helpers -->
-    <script src="{{ asset('assets/vendor/js/helpers.js') }}"></script>
+                <h1>Sign in</h1>
+                <p class="lead-in">Use your admin email and password.</p>
 
-    <script src="{{ asset('assets/js/config.js') }}"></script>
-    <!-- Core JS -->
-    <!-- build:js assets/vendor/js/core.js -->
-    <script src="{{ asset('assets/vendor/libs/jquery/jquery.js') }}"></script>
-    <script src="{{ asset('assets/vendor/libs/popper/popper.js') }}"></script>
-    <script src="{{ asset('assets/vendor/js/bootstrap.js') }}"></script>
-    <script src="{{ asset('assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js') }}"></script>
+                <div class="mb-3">
+                    <label for="email" class="form-label">Email</label>
+                    <input type="email" id="email" name="email"
+                        class="form-control @error('email') is-invalid @enderror" value="{{ old('email') }}"
+                        required autocomplete="email" autofocus
+                        @error('email') aria-describedby="email-error" @enderror />
+                    @error('email')
+                        <div id="email-error" class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
 
-    <script src="{{ asset('assets/vendor/js/menu.js') }}"></script>
-    <!-- endbuild -->
+                <div class="mb-3">
+                    <label for="password" class="form-label">Password</label>
+                    <div class="password-wrap">
+                        <input type="password" id="password" name="password"
+                            class="form-control @error('password') is-invalid @enderror" required
+                            autocomplete="current-password"
+                            @error('password') aria-describedby="password-error" @enderror />
+                        <button type="button" class="password-toggle" aria-label="Show password"
+                            aria-controls="password">
+                            <i class="bx bx-show" aria-hidden="true"></i>
+                        </button>
+                    </div>
+                    @error('password')
+                        <div id="password-error" class="invalid-feedback d-block">{{ $message }}</div>
+                    @enderror
+                </div>
 
-    <!-- Vendors JS -->
+                <div class="form-check mb-4">
+                    <input class="form-check-input" type="checkbox" id="remember" name="remember"
+                        {{ old('remember') ? 'checked' : '' }} />
+                    <label class="form-check-label" for="remember">Keep me signed in</label>
+                </div>
 
-    <!-- Main JS -->
-    <script src="{{ asset('assets/js/main.js') }}"></script>
+                <button class="btn btn-primary w-100 loginbtn" type="submit">Sign in</button>
+            </form>
+        </section>
+    </main>
 
-    <!-- Page JS -->
-
-    <!-- Place this tag in your head or just before your close body tag. -->
-    <script async defer src="https://buttons.github.io/buttons.js"></script>
-
+    <script src="{{ asset('assets/vendor/libs/lucide/lucide.min.js') }}"></script>
+    <script src="{{ asset('assets/js/obsidian.js') }}?v=1"></script>
     <script>
-        $('#formAuthentication').on('submit', function(e) {
-            $('.loginbtn').prop('disabled', true).text("Signing in...");
+        const toggle = document.querySelector('.password-toggle');
+        const password = document.getElementById('password');
+        toggle.addEventListener('click', () => {
+            const show = password.type === 'password';
+            password.type = show ? 'text' : 'password';
+            toggle.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+            toggle.querySelector('i').className = show ? 'bx bx-hide' : 'bx bx-show';
+        });
+
+        document.getElementById('formAuthentication').addEventListener('submit', () => {
+            const btn = document.querySelector('.loginbtn');
+            btn.disabled = true;
+            btn.classList.add('is-loading');
         });
     </script>
 </body>

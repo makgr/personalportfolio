@@ -274,7 +274,8 @@ $(document).ready(function() {
         const trainingId = $(this).data('id');
         const button = $(this);
 
-        if (confirm('Are you sure you want to delete this training record? This action cannot be undone.')) {
+        obConfirm('Are you sure you want to delete this training record? This action cannot be undone.').then(function (ok) {
+            if (!ok) return;
             $.ajax({
                 url: '{{ url("admin/training") }}/' + trainingId,
                 type: 'POST',
@@ -302,7 +303,7 @@ $(document).ready(function() {
                     button.prop('disabled', false);
                 }
             });
-        }
+        });
     });
 });
 </script>

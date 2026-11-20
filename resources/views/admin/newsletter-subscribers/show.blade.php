@@ -249,7 +249,8 @@
 @push('scripts')
     <script>
         function updateStatus(subscriberId, status) {
-            if (confirm('Are you sure you want to change this subscriber\'s status?')) {
+            obConfirm('Are you sure you want to change this subscriber\'s status?').then(function (ok) {
+                if (!ok) return;
                 fetch(`/admin/newsletter-subscribers/${subscriberId}`, {
                     method: 'PUT',
                     headers: {
@@ -271,11 +272,12 @@
                     console.error('Error:', error);
                     toastr.error('An error occurred while updating status');
                 });
-            }
+            });
         }
 
         function deleteSubscriber(subscriberId) {
-            if (confirm('Are you sure you want to delete this subscriber? This action cannot be undone.')) {
+            obConfirm('Are you sure you want to delete this subscriber? This action cannot be undone.').then(function (ok) {
+                if (!ok) return;
                 fetch(`/admin/newsletter-subscribers/${subscriberId}`, {
                     method: 'DELETE',
                     headers: {
@@ -295,7 +297,7 @@
                     console.error('Error:', error);
                     toastr.error('An error occurred while deleting subscriber');
                 });
-            }
+            });
         }
     </script>
 @endpush

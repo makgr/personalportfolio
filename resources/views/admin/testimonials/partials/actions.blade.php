@@ -109,9 +109,10 @@ function toggleActive(id) {
 
 // Delete testimonial
 function deleteTestimonial(id) {
-    if (confirm('Are you sure you want to delete this testimonial?')) {
+    obConfirm('Are you sure you want to delete this testimonial?').then(function (ok) {
+        if (!ok) return;
         performDelete(id);
-    }
+    });
 }
 
 function performDelete(id) {

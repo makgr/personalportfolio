@@ -295,7 +295,8 @@ function markAsReplied(id, notes = '') {
 
 // Archive function
 function archiveMessage(id) {
-    if (confirm('Are you sure you want to archive this message?')) {
+    obConfirm('Are you sure you want to archive this message?').then(function (ok) {
+        if (!ok) return;
         $.post(`{{ url('/contacts') }}/${id}/archive`, {
             _token: $('meta[name="csrf-token"]').attr('content')
         })
@@ -310,12 +311,13 @@ function archiveMessage(id) {
         .fail(function() {
             toastr.error('Failed to archive message');
         });
-    }
+    });
 }
 
 // Delete message function
 function deleteMessage(id) {
-    if (confirm('Are you sure you want to delete this message? This action cannot be undone.')) {
+    obConfirm('Are you sure you want to delete this message? This action cannot be undone.').then(function (ok) {
+        if (!ok) return;
         const deleteUrl = `{{ url('/contacts') }}/${id}`;
         $.ajax({
             url: deleteUrl,
@@ -344,7 +346,7 @@ function deleteMessage(id) {
                 toastr.error('Failed to delete message: ' + error);
             }
         });
-    }
+    });
 }
 
 // Bulk actions
@@ -370,7 +372,8 @@ function bulkAction(action) {
             break;
     }
 
-    if (confirm(confirmMessage)) {
+    obConfirm(confirmMessage).then(function (ok) {
+        if (!ok) return;
         $.post('{{ route("contacts.bulk-action") }}', {
             _token: $('meta[name="csrf-token"]').attr('content'),
             action: action,
@@ -391,7 +394,7 @@ function bulkAction(action) {
         .fail(function() {
             toastr.error('Failed to perform bulk action');
         });
-    }
+    });
 }
 </script>
 @endpush

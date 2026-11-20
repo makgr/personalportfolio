@@ -270,7 +270,8 @@ $(document).ready(function() {
         const teamId = $(this).data('id');
         const button = $(this);
 
-        if (confirm('Are you sure you want to remove this team member? This action cannot be undone.')) {
+        obConfirm('Are you sure you want to remove this team member? This action cannot be undone.').then(function (ok) {
+            if (!ok) return;
             $.ajax({
                 url: '{{ url("teams") }}/' + teamId,
                 type: 'POST',
@@ -298,7 +299,7 @@ $(document).ready(function() {
                     button.prop('disabled', false);
                 }
             });
-        }
+        });
     });
 });
 

@@ -1,31 +1,45 @@
+@php
+    // Breadcrumb from the route name, e.g. "admin.training.edit" -> Training / Edit
+    $routeName = request()->route()?->getName() ?? '';
+    $prefix = str_starts_with($routeName, 'admin.') ? 'admin.' : '';
+    $segments = explode('.', substr($routeName, strlen($prefix)));
+    $section = $routeName === 'home' ? null : ($segments[0] ?? null);
+    $sectionLabel = $section ? \Illuminate\Support\Str::headline($section === 'contacts' ? 'messages' : $section) : null;
+    $sectionUrl = $section && \Illuminate\Support\Facades\Route::has($prefix . $section . '.index')
+        ? route($prefix . $section . '.index')
+        : null;
+    $actionLabel = ['create' => 'Add new', 'edit' => 'Edit', 'show' => 'Details'][$segments[1] ?? ''] ?? null;
+    $avatar = $profile->avatar_url ? asset($profile->avatar_url) : asset('assets/img/avatars/1.png');
+@endphp
 <!DOCTYPE html>
 <html lang="en" class="light-style layout-menu-fixed" dir="ltr" data-theme="theme-default"
     data-assets-path="{{ asset('assets') }}" data-template="vertical-menu-template-free">
 
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport"
-        content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <title>Dashboard | Personal Portfolio</title>
+    <title>{{ trim($__env->yieldContent('title')) ?: ($sectionLabel ?? 'Dashboard') }} | {{ $profile->full_name ?: config('app.name') }}</title>
 
     <meta name="description" content="personal portfolio" />
-    <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="{{ asset('assets/img/favicon/favicon.ico') }}" />
+
+    <!-- Restore the collapsed sidebar before first paint -->
+    <script>
+        try {
+            if (localStorage.getItem('ob-menu-rail') === '1') document.documentElement.classList.add('menu-rail');
+        } catch (e) {}
+    </script>
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-        href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap"
-        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-    <!-- Icons. Uncomment required icon fonts -->
+    <!-- Icons (Boxicons classes stay in the views; obsidian.js draws Lucide inside them) -->
     <link rel="stylesheet" href="{{ asset('assets/vendor/fonts/boxicons.css') }}" />
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
     <!-- Core CSS -->
@@ -36,203 +50,211 @@
 
     <!-- Vendors CSS -->
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css') }}" />
-
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/apex-charts/apex-charts.css') }}" />
-
-    <!-- Toastr CSS -->
     <link rel="stylesheet" href="{{ asset('assets/css/toastr/toastr.min.css') }}" />
-
-    <!-- DataTables CSS -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css">
 
+    <!-- Obsidian Light design system -->
+    <link rel="stylesheet" href="{{ asset('assets/css/obsidian.css') }}?v=4" />
+
     <!-- Page CSS -->
     @yield('css')
-    <!-- Toastr Custom Styles -->
-    <style>
-        /* Toastr customization for admin theme */
-        .toast-success {
-            background-color: #28a745 !important;
-        }
-
-        .toast-error {
-            background-color: #dc3545 !important;
-        }
-
-        .toast-info {
-            background-color: #17a2b8 !important;
-        }
-
-        .toast-warning {
-            background-color: #ffc107 !important;
-            color: #212529 !important;
-        }
-
-        #toast-container>div {
-            border-radius: 0.375rem;
-            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-        }
-    </style>
 </head>
 
 <body>
-    <!-- Layout wrapper -->
     <div class="layout-wrapper layout-content-navbar">
         <div class="layout-container">
-            <!-- Menu -->
             @include('layouts.sidebar')
-            <!-- / Menu -->
 
-            <!-- Layout container -->
             <div class="layout-page">
-                <!-- Navbar -->
-
+                <!-- Top bar -->
                 <nav class="layout-navbar container-xxl navbar navbar-expand-xl navbar-detached align-items-center bg-navbar-theme"
                     id="layout-navbar">
-                    <div class="layout-menu-toggle navbar-nav align-items-xl-center me-3 me-xl-0 d-xl-none">
-                        <a class="nav-item nav-link px-0 me-xl-4" href="javascript:void(0)">
-                            <i class="bx bx-menu bx-sm"></i>
-                        </a>
+                    <div class="layout-menu-toggle navbar-nav align-items-xl-center me-2 d-xl-none">
+                        <button type="button" class="ob-icon-btn" aria-label="Open menu">
+                            <i class="bx bx-menu"></i>
+                        </button>
                     </div>
 
-                    <div class="navbar-nav-right d-flex align-items-center" id="navbar-collapse">
-                        <!-- Search -->
-                        <div class="navbar-nav align-items-center">
-                            <div class="nav-item d-flex align-items-center">
-                                {{-- <i class="bx bx-search fs-4 lh-0"></i>
-                                <input type="text" class="form-control border-0 shadow-none" placeholder="Search..."
-                                    aria-label="Search..." /> --}}
-                                <span class="badge bg-primary">
-                                    {{ \Carbon\Carbon::now()->format('d F Y  h:i A') }}
-                                </span>
+                    <div class="d-flex align-items-center w-100 gap-3" id="navbar-collapse">
+                        <div class="ob-page-heading flex-grow-1">
+                            <p class="ob-page-title">{{ trim($__env->yieldContent('title')) ?: ($actionLabel ? $actionLabel . ' · ' . $sectionLabel : ($sectionLabel ?? 'Dashboard')) }}</p>
+                            <nav aria-label="Breadcrumb" @unless ($sectionLabel) hidden @endunless>
+                                <ol class="ob-breadcrumb d-none d-sm-flex">
+                                    <li><a href="{{ route('home') }}">Dashboard</a></li>
+                                    @if ($sectionLabel)
+                                        <li>
+                                            @if ($sectionUrl && $actionLabel)
+                                                <a href="{{ $sectionUrl }}">{{ $sectionLabel }}</a>
+                                            @else
+                                                <span @unless ($actionLabel) aria-current="page" @endunless>{{ $sectionLabel }}</span>
+                                            @endif
+                                        </li>
+                                    @endif
+                                    @if ($actionLabel)
+                                        <li><span aria-current="page">{{ $actionLabel }}</span></li>
+                                    @endif
+                                </ol>
+                            </nav>
+                        </div>
+
+                        <button type="button" class="ob-search-trigger d-none d-md-inline-flex" data-bs-toggle="modal"
+                            data-bs-target="#obPalette">
+                            <i class="bx bx-search"></i>
+                            <span>Go to page…</span>
+                            <kbd>Ctrl K</kbd>
+                        </button>
+                        <button type="button" class="ob-icon-btn d-md-none" data-bs-toggle="modal"
+                            data-bs-target="#obPalette" aria-label="Go to page">
+                            <i class="bx bx-search"></i>
+                        </button>
+
+                        <!-- Notifications: new contact messages -->
+                        <div class="dropdown">
+                            <button type="button" class="ob-icon-btn" data-bs-toggle="dropdown" aria-expanded="false"
+                                aria-label="Notifications{{ $newMessagesCount ? ', ' . $newMessagesCount . ' new' : '' }}">
+                                <i class="bx bx-ob-bell"></i>
+                                @if ($newMessagesCount)
+                                    <span class="ob-dot">{{ $newMessagesCount > 9 ? '9+' : $newMessagesCount }}</span>
+                                @endif
+                            </button>
+                            <div class="dropdown-menu dropdown-menu-end ob-notify-menu">
+                                <div class="ob-notify-head">
+                                    <strong class="text-body">New messages</strong>
+                                    <a href="{{ route('contacts.index') }}" class="small">View all</a>
+                                </div>
+                                @forelse ($newMessages as $message)
+                                    <a class="ob-notify-item" href="{{ route('contacts.show', $message) }}">
+                                        <span class="ob-avatar-initials">{{ strtoupper(mb_substr($message->name, 0, 1)) }}</span>
+                                        <div class="min-w-0">
+                                            <strong>{{ $message->name }}</strong>
+                                            <span>{{ $message->subject ?: \Illuminate\Support\Str::limit($message->message, 60) }}</span>
+                                            <time datetime="{{ $message->created_at->toIso8601String() }}">{{ $message->created_at->diffForHumans() }}</time>
+                                        </div>
+                                    </a>
+                                @empty
+                                    <div class="ob-empty py-4">
+                                        <div class="ob-empty-icon"><i class="bx bx-envelope-open"></i></div>
+                                        <p class="mb-0">You're all caught up. New contact messages show up here.</p>
+                                    </div>
+                                @endforelse
                             </div>
                         </div>
-                        <!-- /Search -->
 
-                        <ul class="navbar-nav flex-row align-items-center ms-auto">
-                            <!-- Place this tag where you want the button to render. -->
-
-                            <!-- User -->
-                            <li class="nav-item navbar-dropdown dropdown-user dropdown">
-                                <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);"
-                                    data-bs-toggle="dropdown">
-                                    <div class="avatar avatar-online">
-                                        <img src="{{ $profile->avatar_url ? asset($profile->avatar_url) : asset('assets/img/avatars/1.png') }}"
-                                            alt class="w-px-40 h-auto rounded-circle" />
+                        <!-- Profile -->
+                        <div class="dropdown">
+                            <button type="button" class="ob-icon-btn p-0" data-bs-toggle="dropdown" aria-expanded="false"
+                                aria-label="Account menu">
+                                <img src="{{ $avatar }}" alt="" class="rounded-circle" width="34" height="34"
+                                    style="object-fit: cover" />
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end" style="min-width: 15rem">
+                                <li class="px-2 py-2 d-flex align-items-center gap-2">
+                                    <img src="{{ $avatar }}" alt="" class="rounded-circle" width="36" height="36"
+                                        style="object-fit: cover" />
+                                    <div class="min-w-0">
+                                        <div class="fw-semibold text-body text-truncate" style="color: var(--ob-heading) !important">
+                                            {{ Auth::user()->name }}</div>
+                                        <small class="text-muted text-truncate d-block">{{ Auth::user()->email }}</small>
                                     </div>
-                                </a>
-                                <ul class="dropdown-menu dropdown-menu-end">
-                                    <li>
-                                        <a class="dropdown-item" href="#">
-                                            <div class="d-flex">
-                                                <div class="flex-shrink-0 me-3">
-                                                    <div class="avatar avatar-online">
-                                                        <img src="{{ $profile->avatar_url ? asset($profile->avatar_url) : asset('assets/img/avatars/1.png') }}"
-                                                            alt class="w-px-40 h-auto rounded-circle" />
-                                                    </div>
-                                                </div>
-                                                <div class="flex-grow-1">
-                                                    <span class="fw-semibold d-block">{{ Auth::user()->name }}</span>
-                                                    <small class="text-muted">Admin</small>
-                                                </div>
-                                            </div>
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <div class="dropdown-divider"></div>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item" href="{{ route('profile.edit') }}">
-                                            <i class="bx bx-user me-2"></i>
-                                            <span class="align-middle">My Profile</span>
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <div class="dropdown-divider"></div>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item" href="{{ route('logout') }}"
-                                            onclick="event.preventDefault();
-                                                     document.getElementById('logout-form').submit();">
-                                            <i class="bx bx-power-off me-2"></i>
-                                            <span class="align-middle">Log Out</span>
-                                        </a>
-                                        <form id="logout-form" action="{{ route('logout') }}" method="POST"
-                                            class="d-none">
-                                            @csrf
-                                        </form>
-                                    </li>
-                                </ul>
-                            </li>
-                            <!--/ User -->
-                        </ul>
+                                </li>
+                                <li><div class="dropdown-divider"></div></li>
+                                <li>
+                                    <a class="dropdown-item" href="{{ route('profile.edit') }}">
+                                        <i class="bx bx-user"></i> My profile
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="{{ route('settings.index') }}">
+                                        <i class="bx bx-slider"></i> Settings
+                                    </a>
+                                </li>
+                                <li><div class="dropdown-divider"></div></li>
+                                <li>
+                                    <a class="dropdown-item text-danger" href="{{ route('logout') }}"
+                                        onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                                        <i class="bx bx-power-off"></i> Log out
+                                    </a>
+                                    <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
+                                        @csrf
+                                    </form>
+                                </li>
+                            </ul>
+                        </div>
                     </div>
                 </nav>
 
-                <!-- / Navbar -->
-
-                <!-- Content wrapper -->
                 <div class="content-wrapper">
-                    <!-- Content -->
                     @yield('content')
-                    <!-- / Content -->
 
-                    <!-- Footer -->
-                    <footer class="content-footer footer bg-footer-theme">
-                        <div
-                            class="container-xxl d-flex flex-wrap justify-content-between py-2 flex-md-row flex-column">
-                            <div class="mb-2 mb-md-0">
-                                ©
-                                <script>
-                                    document.write(new Date().getFullYear());
-                                </script>
-                                , made with ❤️ by
-                                <a href="https://makgr.com" target="_blank" class="footer-link fw-bolder">Mohammad
-                                    Ali Khan</a> &
-                                <a href="https://www.facebook.com/mehedi.care" target="_blank"
-                                    class="footer-link fw-bolder">Md. Mehedi Hasan Khan</a>
+                    <footer class="content-footer footer">
+                        <div class="container-xxl d-flex flex-wrap justify-content-between py-3">
+                            <div>
+                                © {{ date('Y') }}, made with ❤️ by
+                                <a href="https://makgr.com" target="_blank" rel="noopener" class="footer-link fw-semibold">Mohammad Ali Khan</a>
+                                &amp;
+                                <a href="https://www.facebook.com/mehedi.care" target="_blank" rel="noopener"
+                                    class="footer-link fw-semibold">Md. Mehedi Hasan Khan</a>
                             </div>
                         </div>
                     </footer>
-                    <!-- / Footer -->
 
                     <div class="content-backdrop fade"></div>
                 </div>
-                <!-- Content wrapper -->
             </div>
-            <!-- / Layout page -->
         </div>
 
-        <!-- Overlay -->
         <div class="layout-overlay layout-menu-toggle"></div>
     </div>
-    <!-- / Layout wrapper -->
 
-    <div class="buy-now">
-
+    <!-- Page search -->
+    <div class="modal fade ob-palette" id="obPalette" tabindex="-1" aria-label="Go to page" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="ob-palette-input">
+                    <i class="bx bx-search"></i>
+                    <input type="text" placeholder="Go to page…" aria-label="Search admin pages" role="combobox"
+                        aria-controls="obPaletteList" aria-expanded="true" autocomplete="off" />
+                    <kbd class="d-none d-sm-inline">Esc</kbd>
+                </div>
+                <ul class="ob-palette-list" id="obPaletteList" role="listbox"></ul>
+                <div class="ob-palette-empty" hidden>No admin page matches that.</div>
+            </div>
+        </div>
     </div>
 
-    <!-- Helpers -->
-    <script src="{{ asset('assets/vendor/js/helpers.js') }}"></script>
+    <!-- Confirmation dialog (window.obConfirm) -->
+    <div class="modal fade ob-confirm" id="obConfirm" tabindex="-1" aria-labelledby="obConfirmTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-body pt-4">
+                    <div class="ob-confirm-icon"><i class="bx bx-trash"></i></div>
+                    <h5 class="modal-title mb-2" id="obConfirmTitle">Are you sure?</h5>
+                    <p class="ob-confirm-message"></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" data-ob-confirm>Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    <script src="{{ asset('assets/js/config.js') }}"></script>
     <!-- Core JS -->
-    <!-- build:js assets/vendor/js/core.js -->
+    <script src="{{ asset('assets/vendor/js/helpers.js') }}"></script>
+    <script src="{{ asset('assets/js/config.js') }}"></script>
     <script src="{{ asset('assets/vendor/libs/jquery/jquery.js') }}"></script>
     <script src="{{ asset('assets/vendor/libs/popper/popper.js') }}"></script>
     <script src="{{ asset('assets/vendor/js/bootstrap.js') }}"></script>
     <script src="{{ asset('assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js') }}"></script>
-
     <script src="{{ asset('assets/vendor/js/menu.js') }}"></script>
-    <!-- endbuild -->
 
     <!-- Vendors JS -->
     <script src="{{ asset('assets/vendor/libs/apex-charts/apexcharts.js') }}"></script>
+    <script src="{{ asset('assets/vendor/libs/lucide/lucide.min.js') }}"></script>
 
-    <!-- Main JS -->
     <script src="{{ asset('assets/js/main.js') }}"></script>
-
-    <!-- Toastr JS -->
     <script src="{{ asset('assets/js/toastr/toastr.min.js') }}"></script>
 
     <!-- DataTables JS -->
@@ -241,16 +263,9 @@
     <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
     <script src="https://cdn.datatables.net/responsive/2.5.0/js/responsive.bootstrap5.min.js"></script>
 
-    <!-- Admin AJAX Helper -->
-    <script src="{{ asset('assets/js/admin-ajax.js') }}?v=6"></script>
+    <script src="{{ asset('assets/js/admin-ajax.js') }}?v=7"></script>
+    <script src="{{ asset('assets/js/obsidian.js') }}?v=1"></script>
 
-    <!-- Page JS -->
-    <script src="{{ asset('assets/js/dashboards-analytics.js') }}"></script>
-
-    <!-- Place this tag in your head or just before your close body tag. -->
-    <script async defer src="https://buttons.github.io/buttons.js"></script>
-
-    <!-- Custom JS -->
     @stack('scripts')
 </body>
 

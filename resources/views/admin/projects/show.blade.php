@@ -315,7 +315,8 @@ $(document).ready(function() {
 });
 
 function publishProject(id) {
-    if (confirm('Are you sure you want to publish this project?')) {
+    obConfirm('Are you sure you want to publish this project?').then(function (ok) {
+        if (!ok) return;
         $.post(`/projects/${id}/publish`, {
             _token: $('meta[name="csrf-token"]').attr('content')
         })
@@ -330,11 +331,12 @@ function publishProject(id) {
         .fail(function() {
             toastr.error('Failed to publish project');
         });
-    }
+    });
 }
 
 function unpublishProject(id) {
-    if (confirm('Are you sure you want to unpublish this project?')) {
+    obConfirm('Are you sure you want to unpublish this project?').then(function (ok) {
+        if (!ok) return;
         $.post(`/projects/${id}/unpublish`, {
             _token: $('meta[name="csrf-token"]').attr('content')
         })
@@ -349,11 +351,12 @@ function unpublishProject(id) {
         .fail(function() {
             toastr.error('Failed to unpublish project');
         });
-    }
+    });
 }
 
 function deleteProject(id) {
-    if (confirm('Are you sure you want to delete this project? This action cannot be undone.')) {
+    obConfirm('Are you sure you want to delete this project? This action cannot be undone.').then(function (ok) {
+        if (!ok) return;
         $.ajax({
             url: `/projects/${id}`,
             type: 'DELETE',
@@ -372,7 +375,7 @@ function deleteProject(id) {
         .fail(function() {
             toastr.error('Failed to delete project');
         });
-    }
+    });
 }
 </script>
 @endpush

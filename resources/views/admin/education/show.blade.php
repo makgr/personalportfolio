@@ -259,7 +259,8 @@ function toggleStatus(id) {
 
 // Delete education function
 function deleteEducation(id) {
-    if (confirm('Are you sure you want to delete this education record? This action cannot be undone.')) {
+    obConfirm('Are you sure you want to delete this education record? This action cannot be undone.').then(function (ok) {
+        if (!ok) return;
         const deleteUrl = `{{ url('/education') }}/${id}`;
         $.ajax({
             url: deleteUrl,
@@ -290,7 +291,7 @@ function deleteEducation(id) {
                 toastr.error('Failed to delete education record: ' + error);
             }
         });
-    }
+    });
 }
 </script>
 @endpush

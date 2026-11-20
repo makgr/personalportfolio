@@ -223,7 +223,8 @@ $(document).ready(function() {
         const testimonialId = $(this).data('id');
         const button = $(this);
 
-        if (confirm('Are you sure you want to delete this testimonial? This action cannot be undone.')) {
+        obConfirm('Are you sure you want to delete this testimonial? This action cannot be undone.').then(function (ok) {
+            if (!ok) return;
             $.ajax({
                 url: '{{ url("admin/testimonials") }}/' + testimonialId,
                 type: 'DELETE',
@@ -249,7 +250,7 @@ $(document).ready(function() {
                     button.prop('disabled', false);
                 }
             });
-        }
+        });
     });
 });
 </script>

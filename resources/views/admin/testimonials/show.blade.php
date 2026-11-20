@@ -303,9 +303,10 @@ function toggleFeatured(id) {
     const currentStatus = {{ $testimonial->is_featured ? 'true' : 'false' }};
     const action = currentStatus ? 'remove from featured' : 'mark as featured';
     
-    if (confirm(`Are you sure you want to ${action} this testimonial?`)) {
+    obConfirm(`Are you sure you want to ${action} this testimonial?`).then(function (ok) {
+        if (!ok) return;
         performToggleFeatured(id);
-    }
+    });
 }
 
 function performToggleFeatured(id) {
@@ -336,9 +337,10 @@ function performToggleFeatured(id) {
 
 // Delete testimonial
 function deleteTestimonial(id) {
-    if (confirm('Are you sure you want to delete this testimonial? This action cannot be undone.')) {
+    obConfirm('Are you sure you want to delete this testimonial? This action cannot be undone.').then(function (ok) {
+        if (!ok) return;
         performDelete(id);
-    }
+    });
 }
 
 function performDelete(id) {

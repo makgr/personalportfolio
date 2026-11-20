@@ -130,7 +130,8 @@ $(document).ready(function() {
 
 // Toggle status function
 function toggleStatus(id) {
-    if (confirm('Are you sure you want to toggle this skill status?')) {
+    obConfirm('Are you sure you want to toggle this skill status?').then(function (ok) {
+        if (!ok) return;
         $.post(`{{ url('/skills') }}/${id}/toggle-status`, {
             _token: $('meta[name="csrf-token"]').attr('content')
         })
@@ -145,12 +146,13 @@ function toggleStatus(id) {
         .fail(function() {
             toastr.error('Failed to toggle skill status');
         });
-    }
+    });
 }
 
 // Toggle primary function
 function togglePrimary(id) {
-    if (confirm('Are you sure you want to toggle this skill primary status?')) {
+    obConfirm('Are you sure you want to toggle this skill primary status?').then(function (ok) {
+        if (!ok) return;
         $.post(`{{ url('/skills') }}/${id}/toggle-primary`, {
             _token: $('meta[name="csrf-token"]').attr('content')
         })
@@ -165,12 +167,13 @@ function togglePrimary(id) {
         .fail(function() {
             toastr.error('Failed to toggle primary status');
         });
-    }
+    });
 }
 
 // Delete skill function
 function deleteSkill(id) {
-    if (confirm('Are you sure you want to delete this skill? This action cannot be undone.')) {
+    obConfirm('Are you sure you want to delete this skill? This action cannot be undone.').then(function (ok) {
+        if (!ok) return;
         const deleteUrl = `{{ url('/skills') }}/${id}`;
         console.log('Attempting to delete skill ID:', id);
         console.log('Delete URL:', deleteUrl);
@@ -203,7 +206,7 @@ function deleteSkill(id) {
                 toastr.error('Failed to delete skill: ' + error);
             }
         });
-    }
+    });
 }
 </script>
 @endpush

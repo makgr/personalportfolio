@@ -131,7 +131,8 @@ $(document).ready(function() {
 
 // Publish post function
 function publishPost(id) {
-    if (confirm('Are you sure you want to publish this blog post?')) {
+    obConfirm('Are you sure you want to publish this blog post?').then(function (ok) {
+        if (!ok) return;
         $.post(`{{ url('/blog-posts') }}/${id}/publish`, {
             _token: $('meta[name="csrf-token"]').attr('content')
         })
@@ -146,12 +147,13 @@ function publishPost(id) {
         .fail(function() {
             toastr.error('Failed to publish blog post');
         });
-    }
+    });
 }
 
 // Unpublish post function
 function unpublishPost(id) {
-    if (confirm('Are you sure you want to unpublish this blog post?')) {
+    obConfirm('Are you sure you want to unpublish this blog post?').then(function (ok) {
+        if (!ok) return;
         $.post(`{{ url('/blog-posts') }}/${id}/unpublish`, {
             _token: $('meta[name="csrf-token"]').attr('content')
         })
@@ -166,12 +168,13 @@ function unpublishPost(id) {
         .fail(function() {
             toastr.error('Failed to unpublish blog post');
         });
-    }
+    });
 }
 
 // Delete post function
 function deletePost(id) {
-    if (confirm('Are you sure you want to delete this blog post? This action cannot be undone.')) {
+    obConfirm('Are you sure you want to delete this blog post? This action cannot be undone.').then(function (ok) {
+        if (!ok) return;
         const deleteUrl = `{{ url('/blog-posts') }}/${id}`;
         console.log('Attempting to delete blog post ID:', id);
         console.log('Delete URL:', deleteUrl);
@@ -204,7 +207,7 @@ function deletePost(id) {
                 toastr.error('Failed to delete blog post: ' + error);
             }
         });
-    }
+    });
 }
 </script>
 @endpush

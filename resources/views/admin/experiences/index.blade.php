@@ -138,7 +138,8 @@ $(document).ready(function() {
 
 // Toggle status function
 function toggleStatus(id) {
-    if (confirm('Are you sure you want to toggle this experience status?')) {
+    obConfirm('Are you sure you want to toggle this experience status?').then(function (ok) {
+        if (!ok) return;
         $.post(`{{ url('/experiences') }}/${id}/toggle-status`, {
             _token: $('meta[name="csrf-token"]').attr('content')
         })
@@ -153,12 +154,13 @@ function toggleStatus(id) {
         .fail(function() {
             toastr.error('Failed to toggle experience status');
         });
-    }
+    });
 }
 
 // Delete experience function
 function deleteExperience(id) {
-    if (confirm('Are you sure you want to delete this experience? This action cannot be undone.')) {
+    obConfirm('Are you sure you want to delete this experience? This action cannot be undone.').then(function (ok) {
+        if (!ok) return;
         const deleteUrl = `{{ url('/experiences') }}/${id}`;
         console.log('Attempting to delete experience ID:', id);
         console.log('Delete URL:', deleteUrl);
@@ -191,7 +193,7 @@ function deleteExperience(id) {
                 toastr.error('Failed to delete experience: ' + error);
             }
         });
-    }
+    });
 }
 </script>
 @endpush
