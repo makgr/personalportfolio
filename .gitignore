@@ -25,4 +25,6 @@ Thumbs.db
 /docs/**/*.md
 /CLAUDE.md
 /cookies.txt
-/.claude/settings.local.json
+/.claude
+/.cursor
+/AGENTS.md
