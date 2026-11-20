@@ -7,6 +7,8 @@ use App\Models\BlogPost;
 use App\Models\ContactSubmission;
 use App\Models\Project;
 use App\Models\Skill;
+use Illuminate\Contracts\Support\Renderable;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Carbon;
 
 class HomeController extends Controller
@@ -22,11 +24,17 @@ class HomeController extends Controller
     }
 
     /**
-     * Show the admin dashboard.
-     *
-     * @return \Illuminate\Contracts\Support\Renderable
+     * Show the dashboard shell; its data loads asynchronously from data().
      */
-    public function index()
+    public function index(): Renderable
+    {
+        return view('home');
+    }
+
+    /**
+     * Dashboard data: rendered HTML for the stats, projects and messages sections, plus the chart series.
+     */
+    public function data(): JsonResponse
     {
         $since = Carbon::today()->subDays(29);
 
@@ -52,15 +60,18 @@ class HomeController extends Controller
         $messagesByDay = $daily(ContactSubmission::query(), 'created_at');
         $visitsByDay = $daily(Analytics::query(), 'visited_at');
 
-        $chart = [
-            'labels' => $days->values(),
-            'messages' => $days->map(fn ($d) => $messagesByDay[$d] ?? 0)->values(),
-            'visits' => $days->map(fn ($d) => $visitsByDay[$d] ?? 0)->values(),
-        ];
-
         $recentProjects = Project::with('category')->latest()->take(5)->get();
         $recentMessages = ContactSubmission::latest()->take(5)->get();
 
-        return view('home', compact('stats', 'chart', 'recentProjects', 'recentMessages'));
+        return response()->json([
+            'stats' => view('home.stats', compact('stats'))->render(),
+            'projects' => view('home.projects', compact('recentProjects'))->render(),
+            'messages' => view('home.messages', compact('recentMessages'))->render(),
+            'chart' => [
+                'labels' => $days->values(),
+                'messages' => $days->map(fn ($d) => (int) ($messagesByDay[$d] ?? 0))->values(),
+                'visits' => $days->map(fn ($d) => (int) ($visitsByDay[$d] ?? 0))->values(),
+            ],
+        ]);
     }
 }

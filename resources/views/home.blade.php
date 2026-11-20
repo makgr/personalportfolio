@@ -6,24 +6,40 @@
     $hour = now()->hour;
     $greeting = $hour < 12 ? 'Good morning' : ($hour < 18 ? 'Good afternoon' : 'Good evening');
     $firstName = \Illuminate\Support\Str::before(trim(Auth::user()->name), ' ');
-    $statusBadge = [
-        'published' => 'bg-label-success',
-        'draft' => 'bg-label-secondary',
-        'archived' => 'bg-label-warning',
-    ];
-    $cards = [
-        ['label' => 'Projects', 'icon' => 'bx-folder', 'value' => $stats['projects'],
-            'meta' => $stats['projectsPublished'] . ' published', 'url' => route('projects.index')],
-        ['label' => 'Skills', 'icon' => 'bx-code-alt', 'value' => $stats['skills'],
-            'meta' => 'Shown on your portfolio', 'url' => route('skills.index')],
-        ['label' => 'Messages', 'icon' => 'bx-envelope', 'value' => $stats['messages'],
-            'meta' => $stats['messagesNew'] ? $stats['messagesNew'] . ' new' : 'No new messages', 'url' => route('contacts.index')],
-        ['label' => 'Blog posts', 'icon' => 'bx-edit', 'value' => $stats['blogPosts'],
-            'meta' => $stats['blogPostsPublished'] . ' published', 'url' => route('blog-posts.index')],
-        ['label' => 'Visitors', 'icon' => 'bx-ob-chart', 'value' => $stats['visitors'],
-            'meta' => 'Unique, last 30 days', 'url' => null],
-    ];
 @endphp
+
+@section('css')
+    <style>
+        .dash-skel-row {
+            display: flex;
+            align-items: center;
+            gap: 0.875rem;
+            padding: 0.875rem 1.5rem;
+        }
+
+        .dash-skel-row + .dash-skel-row {
+            border-top: 1px solid var(--ob-border-soft);
+        }
+
+        .dash-fade {
+            animation: dash-fade 0.35s var(--ob-ease);
+        }
+
+        @keyframes dash-fade {
+            from {
+                opacity: 0;
+                transform: translateY(4px);
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .dash-fade,
+            .ob-skeleton {
+                animation: none;
+            }
+        }
+    </style>
+@endsection
 
 @section('content')
     <div class="container-xxl flex-grow-1 container-p-y">
@@ -41,27 +57,21 @@
         </div>
 
         <!-- Stats -->
-        <div class="row row-cols-2 row-cols-md-3 row-cols-xl-5 g-3 mb-4">
-            @foreach ($cards as $card)
+        <div class="row row-cols-2 row-cols-md-3 row-cols-xl-5 g-3 mb-4" data-slot="stats" aria-busy="true">
+            @for ($i = 0; $i < 5; $i++)
                 <div class="col">
-                    @if ($card['url'])
-                        <a href="{{ $card['url'] }}" class="ob-stat-link">
-                    @endif
                     <div class="card h-100">
                         <div class="ob-stat">
                             <div class="ob-stat-top">
-                                <span>{{ $card['label'] }}</span>
-                                <span class="ob-stat-icon"><i class="bx {{ $card['icon'] }}"></i></span>
+                                <span class="ob-skeleton" style="width: 40%; height: 0.875rem"></span>
+                                <span class="ob-skeleton" style="width: 2rem; height: 2rem; border-radius: 8px"></span>
                             </div>
-                            <div class="ob-stat-value">{{ number_format($card['value']) }}</div>
-                            <div class="ob-stat-meta">{{ $card['meta'] }}</div>
+                            <div class="ob-skeleton my-2" style="width: 35%; height: 1.75rem"></div>
+                            <div class="ob-skeleton" style="width: 60%; height: 0.75rem"></div>
                         </div>
                     </div>
-                    @if ($card['url'])
-                        </a>
-                    @endif
                 </div>
-            @endforeach
+            @endfor
         </div>
 
         <div class="row g-3 mb-4">
@@ -79,12 +89,12 @@
                         </div>
                     </div>
                     <div class="card-body pt-2">
-                        <div id="activityChart" style="min-height: 280px"></div>
-                        @if (!array_sum($chart['visits']->all()) && !array_sum($chart['messages']->all()))
-                            <div class="ob-empty pt-0">
-                                <p class="mb-0">No visits or messages in the last 30 days yet. The chart fills in as people find your portfolio.</p>
-                            </div>
-                        @endif
+                        <div id="activityChart" style="min-height: 280px" aria-busy="true">
+                            <div class="ob-skeleton" style="height: 280px; border-radius: var(--ob-radius-sm)"></div>
+                        </div>
+                        <div class="ob-empty pt-0" id="activityEmpty" hidden>
+                            <p class="mb-0">No visits or messages in the last 30 days yet. The chart fills in as people find your portfolio.</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -119,50 +129,16 @@
                         <h5 class="card-title">Recent projects</h5>
                         <a href="{{ route('projects.index') }}" class="small fw-medium">View all</a>
                     </div>
-                    @if ($recentProjects->isEmpty())
-                        <div class="ob-empty">
-                            <div class="ob-empty-icon"><i class="bx bx-folder"></i></div>
-                            <h6>No projects yet</h6>
-                            <p>Add your first project so it shows up on your portfolio.</p>
-                            <a href="{{ route('projects.create') }}" class="btn btn-primary btn-sm"><i class="bx bx-plus"></i> Add project</a>
-                        </div>
-                    @else
-                        <div class="table-responsive">
-                            <table class="table align-middle">
-                                <thead>
-                                    <tr>
-                                        <th>Project</th>
-                                        <th>Category</th>
-                                        <th>Status</th>
-                                        <th class="text-end">Added</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach ($recentProjects as $project)
-                                        <tr>
-                                            <td>
-                                                <a href="{{ route('projects.show', $project) }}" class="d-flex align-items-center gap-3 text-body">
-                                                    @if ($project->featured_image)
-                                                        <img src="{{ asset($project->featured_image) }}" alt="" class="ob-thumb" loading="lazy">
-                                                    @else
-                                                        <span class="ob-thumb"></span>
-                                                    @endif
-                                                    <strong class="text-truncate" style="max-width: 16rem">{{ $project->title }}</strong>
-                                                </a>
-                                            </td>
-                                            <td>{{ $project->category->name ?? '—' }}</td>
-                                            <td>
-                                                <span class="badge {{ $statusBadge[$project->status] ?? 'bg-label-secondary' }}">
-                                                    {{ ucfirst($project->status) }}
-                                                </span>
-                                            </td>
-                                            <td class="text-end text-muted small">{{ $project->created_at->format('j M Y') }}</td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
-                    @endif
+                    <div data-slot="projects" aria-busy="true">
+                        @for ($i = 0; $i < 5; $i++)
+                            <div class="dash-skel-row">
+                                <span class="ob-skeleton" style="width: 2.5rem; height: 2.5rem; border-radius: 8px"></span>
+                                <span class="ob-skeleton flex-grow-1" style="height: 0.875rem; max-width: 14rem"></span>
+                                <span class="ob-skeleton ms-auto" style="width: 4rem; height: 1.25rem"></span>
+                                <span class="ob-skeleton" style="width: 4.5rem; height: 0.75rem"></span>
+                            </div>
+                        @endfor
+                    </div>
                 </div>
             </div>
 
@@ -173,27 +149,18 @@
                         <h5 class="card-title">Recent messages</h5>
                         <a href="{{ route('contacts.index') }}" class="small fw-medium">View all</a>
                     </div>
-                    @forelse ($recentMessages as $message)
-                        <a href="{{ route('contacts.show', $message) }}" class="ob-list-row">
-                            <span class="ob-avatar-initials">{{ strtoupper(mb_substr($message->name, 0, 1)) }}</span>
-                            <div class="ob-list-main">
-                                <strong>
-                                    {{ $message->name }}
-                                    @if ($message->status === 'new')
-                                        <span class="badge bg-label-primary ms-1">New</span>
-                                    @endif
-                                </strong>
-                                <span>{{ $message->subject ?: \Illuminate\Support\Str::limit($message->message, 70) }}</span>
+                    <div data-slot="messages" aria-busy="true">
+                        @for ($i = 0; $i < 5; $i++)
+                            <div class="dash-skel-row">
+                                <span class="ob-skeleton" style="width: 2.25rem; height: 2.25rem; border-radius: 50%"></span>
+                                <div class="flex-grow-1">
+                                    <div class="ob-skeleton mb-2" style="width: 40%; height: 0.875rem"></div>
+                                    <div class="ob-skeleton" style="width: 75%; height: 0.75rem"></div>
+                                </div>
+                                <span class="ob-skeleton" style="width: 2.5rem; height: 0.75rem"></span>
                             </div>
-                            <time datetime="{{ $message->created_at->toIso8601String() }}">{{ $message->created_at->diffForHumans(null, true) }}</time>
-                        </a>
-                    @empty
-                        <div class="ob-empty">
-                            <div class="ob-empty-icon"><i class="bx bx-envelope-open"></i></div>
-                            <h6>No messages yet</h6>
-                            <p>Messages sent through your portfolio's contact form land here.</p>
-                        </div>
-                    @endforelse
+                        @endfor
+                    </div>
                 </div>
             </div>
         </div>
@@ -203,52 +170,97 @@
 @push('scripts')
     <script>
         (function () {
-            const data = @json($chart);
-            const el = document.getElementById('activityChart');
-            if (!el || typeof ApexCharts === 'undefined') return;
+            const fill = (slot, html) => {
+                const el = document.querySelector(`[data-slot="${slot}"]`);
+                el.innerHTML = html;
+                el.removeAttribute('aria-busy');
+                el.classList.add('dash-fade');
+            };
 
-            const fmt = (d) => new Date(d + 'T00:00:00').toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
-            const slice = (n) => ({
-                labels: data.labels.slice(-n).map(fmt),
-                visits: data.visits.slice(-n),
-                messages: data.messages.slice(-n),
-            });
+            const errorHtml = '<div class="ob-empty"><p class="mb-2">Could not load this section.</p>' +
+                '<button type="button" class="btn btn-secondary btn-sm" data-retry>Try again</button></div>';
 
-            const initial = slice(30);
-            const chart = new ApexCharts(el, {
-                chart: { type: 'area', height: 280, fontFamily: 'Inter, sans-serif', toolbar: { show: false }, zoom: { enabled: false } },
-                series: [
-                    { name: 'Visits', data: initial.visits },
-                    { name: 'Messages', data: initial.messages },
-                ],
-                xaxis: {
-                    categories: initial.labels,
-                    tickAmount: 6,
-                    axisBorder: { show: false },
-                    axisTicks: { show: false },
-                    labels: { style: { colors: '#a1a1aa', fontSize: '12px' }, rotate: 0 },
-                },
-                // max: keep a visible scale when every value is 0 (Apex otherwise prints "Infinity")
-                yaxis: { min: 0, max: (m) => Math.max(Math.ceil(m), 4), tickAmount: 4, labels: { style: { colors: '#a1a1aa', fontSize: '12px' }, formatter: (v) => Math.round(v) } },
-                colors: ['#8b5cf6', '#a1a1aa'],
-                stroke: { curve: 'smooth', width: [2.5, 2], dashArray: [0, 4] },
-                fill: { type: 'gradient', gradient: { shadeIntensity: 0, opacityFrom: 0.16, opacityTo: 0, stops: [0, 95] } },
-                grid: { borderColor: '#f4f4f5', strokeDashArray: 0, padding: { left: 4, right: 8 } },
-                dataLabels: { enabled: false },
-                legend: { position: 'top', horizontalAlign: 'left', fontSize: '13px', labels: { colors: '#52525b' }, markers: { size: 5 } },
-                tooltip: { shared: true, intersect: false },
-                markers: { size: 0, hover: { size: 4 } },
-            });
-            chart.render();
+            const showError = () => {
+                // Stats row is a grid of .col items, so wrap the message in a full-width column
+                fill('stats', `<div class="col-12"><div class="card">${errorHtml}</div></div>`);
+                fill('projects', errorHtml);
+                fill('messages', errorHtml);
+                const chartEl = document.getElementById('activityChart');
+                chartEl.innerHTML = errorHtml;
+                chartEl.removeAttribute('aria-busy');
+                document.querySelectorAll('[data-retry]').forEach((b) => b.addEventListener('click', () => location.reload()));
+            };
 
-            document.querySelectorAll('.ob-segmented [data-range]').forEach((btn) => {
-                btn.addEventListener('click', () => {
-                    document.querySelectorAll('.ob-segmented [data-range]').forEach((b) => b.setAttribute('aria-pressed', b === btn ? 'true' : 'false'));
-                    const next = slice(Number(btn.dataset.range));
-                    chart.updateOptions({ xaxis: { categories: next.labels } }, false, false);
-                    chart.updateSeries([{ data: next.visits }, { data: next.messages }]);
+            const renderChart = (data) => {
+                const el = document.getElementById('activityChart');
+                el.innerHTML = '';
+                el.removeAttribute('aria-busy');
+                el.classList.add('dash-fade');
+
+                const total = data.visits.reduce((a, b) => a + b, 0) + data.messages.reduce((a, b) => a + b, 0);
+                document.getElementById('activityEmpty').hidden = total > 0;
+
+                if (typeof ApexCharts === 'undefined') return;
+
+                const fmt = (d) => new Date(d + 'T00:00:00').toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
+                const slice = (n) => ({
+                    labels: data.labels.slice(-n).map(fmt),
+                    visits: data.visits.slice(-n),
+                    messages: data.messages.slice(-n),
                 });
-            });
+
+                const initial = slice(30);
+                const chart = new ApexCharts(el, {
+                    chart: { type: 'area', height: 280, fontFamily: 'Inter, sans-serif', toolbar: { show: false }, zoom: { enabled: false } },
+                    series: [
+                        { name: 'Visits', data: initial.visits },
+                        { name: 'Messages', data: initial.messages },
+                    ],
+                    xaxis: {
+                        categories: initial.labels,
+                        tickAmount: 6,
+                        axisBorder: { show: false },
+                        axisTicks: { show: false },
+                        labels: { style: { colors: '#a1a1aa', fontSize: '12px' }, rotate: 0 },
+                    },
+                    // max: keep a visible scale when every value is 0 (Apex otherwise prints "Infinity")
+                    yaxis: { min: 0, max: (m) => Math.max(Math.ceil(m), 4), tickAmount: 4, labels: { style: { colors: '#a1a1aa', fontSize: '12px' }, formatter: (v) => Math.round(v) } },
+                    colors: ['#8b5cf6', '#a1a1aa'],
+                    stroke: { curve: 'smooth', width: [2.5, 2], dashArray: [0, 4] },
+                    fill: { type: 'gradient', gradient: { shadeIntensity: 0, opacityFrom: 0.16, opacityTo: 0, stops: [0, 95] } },
+                    grid: { borderColor: '#f4f4f5', strokeDashArray: 0, padding: { left: 4, right: 8 } },
+                    dataLabels: { enabled: false },
+                    legend: { position: 'top', horizontalAlign: 'left', fontSize: '13px', labels: { colors: '#52525b' }, markers: { size: 5 } },
+                    tooltip: { shared: true, intersect: false },
+                    markers: { size: 0, hover: { size: 4 } },
+                });
+                chart.render();
+
+                document.querySelectorAll('.ob-segmented [data-range]').forEach((btn) => {
+                    btn.addEventListener('click', () => {
+                        document.querySelectorAll('.ob-segmented [data-range]').forEach((b) => b.setAttribute('aria-pressed', b === btn ? 'true' : 'false'));
+                        const next = slice(Number(btn.dataset.range));
+                        chart.updateOptions({ xaxis: { categories: next.labels } }, false, false);
+                        chart.updateSeries([{ data: next.visits }, { data: next.messages }]);
+                    });
+                });
+            };
+
+            fetch(@json(route('home.data')), {
+                headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                credentials: 'same-origin',
+            })
+                .then((res) => {
+                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                    return res.json();
+                })
+                .then((data) => {
+                    fill('stats', data.stats);
+                    fill('projects', data.projects);
+                    fill('messages', data.messages);
+                    renderChart(data.chart);
+                })
+                .catch(showError);
         })();
     </script>
 @endpush
