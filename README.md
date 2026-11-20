@@ -92,7 +92,21 @@ Need something built or customized for your own portfolio or project? We're happ
 
 ## Support the Project
 
-If this project helps you, you can sponsor or donate to support its development. Contact us by email or Discord and we'll share the donation details.
+If this project helps you, you can sponsor or donate to support its development.
+
+- **GitHub Sponsors:** [github.com/sponsors/makgr](https://github.com/sponsors/makgr)
+- **Bank transfer:**
+
+| | |
+|---|---|
+| Account Name | MOHAMMAD ALI KHAN |
+| Account No | 2061510357001 |
+| Bank | Dutch Bangla Bank PLC |
+| Branch | Jamalpur |
+| SWIFT | DBBLBDDH |
+| Routing No | 090390854 |
+
+For other ways to donate, contact us by email or Discord.
 
 ## Contact
 
