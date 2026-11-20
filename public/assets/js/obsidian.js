@@ -4,6 +4,7 @@
  *  - collapsible sidebar rail
  *  - Ctrl/Cmd+K page search built from the sidebar links
  *  - obConfirm(): promise-based confirmation dialog
+ *  - row action menus in scrolling tables open above the table instead of being clipped
  */
 (function () {
     'use strict';
@@ -221,10 +222,32 @@
         });
     };
 
+    /* ---------- Row action menus inside scrolling tables ---------- */
+    // .table-responsive clips overflow, so menus opened in a table row were cut off.
+    // Capture phase runs before Bootstrap's own click handler, so the instance is created with
+    // fixed positioning (placed against the viewport, not the scroll box).
+    function setupTableDropdowns() {
+        if (typeof bootstrap === 'undefined' || !bootstrap.Dropdown) return;
+        document.addEventListener('click', function (e) {
+            var toggle = e.target.closest && e.target.closest('[data-bs-toggle="dropdown"]');
+            if (!toggle || !toggle.closest('.table-responsive, .card-datatable, .dataTables_wrapper')) return;
+            bootstrap.Dropdown.getOrCreateInstance(toggle, { popperConfig: { strategy: 'fixed' } });
+        }, true);
+
+        // A fixed menu would float in place while the table scrolls sideways; close it instead
+        document.addEventListener('scroll', function (e) {
+            if (!e.target.classList || !e.target.classList.contains('table-responsive')) return;
+            e.target.querySelectorAll('[data-bs-toggle="dropdown"][aria-expanded="true"]').forEach(function (t) {
+                bootstrap.Dropdown.getOrCreateInstance(t).hide();
+            });
+        }, true);
+    }
+
     function init() {
         setupRail();
         setupPalette();
         watchIcons();
+        setupTableDropdowns();
     }
 
     if (document.readyState === 'loading') {

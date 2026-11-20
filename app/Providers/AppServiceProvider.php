@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Models\ContactSubmission;
 use App\Models\Setting;
 use App\View\Composers\ProfileComposer;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
@@ -28,6 +29,9 @@ class AppServiceProvider extends ServiceProvider
         if ($timezone && in_array($timezone, \DateTimeZone::listIdentifiers(), true)) {
             config(['app.display_timezone' => $timezone]);
         }
+
+        // @versioned('assets/css/x.css'): asset URL with the file's mtime, so browsers refetch only after a change
+        Blade::directive('versioned', fn (string $path) => "<?php echo e(asset({$path}) . '?v=' . @filemtime(public_path({$path}))); ?>");
 
         // Register profile composer for all views using the layout
         View::composer(['layouts.app', 'admin.profile.edit'], ProfileComposer::class);

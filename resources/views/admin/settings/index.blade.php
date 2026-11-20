@@ -1,8 +1,8 @@
 @extends('layouts.app')
 
 @section('css')
-    <link rel="stylesheet" href="{{ asset('assets/vendor/libs/select2/select2.min.css') }}" />
-    <link rel="stylesheet" href="{{ asset('assets/vendor/libs/select2/select2-bootstrap-5-theme.min.css') }}" />
+    <link rel="stylesheet" href="@versioned('assets/vendor/libs/select2/select2.min.css')" />
+    <link rel="stylesheet" href="@versioned('assets/vendor/libs/select2/select2-bootstrap-5-theme.min.css')" />
     <style>
         /* Match Select2 to the Obsidian inputs */
         .select2-container--bootstrap-5 .select2-selection {
@@ -455,7 +455,7 @@
 @endsection
 
 @push('scripts')
-<script src="{{ asset('assets/vendor/libs/select2/select2.min.js') }}"></script>
+<script src="@versioned('assets/vendor/libs/select2/select2.min.js')"></script>
 <script>
 // Searchable timezone picker; width 100% because the General tab may be hidden when this runs
 $('#timezone').select2({

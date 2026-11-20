@@ -21,6 +21,16 @@ class DashboardTest extends TestCase
             ->assertSee('ob-skeleton', false);
     }
 
+    public function test_local_assets_carry_their_file_modified_time_as_version(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $version = filemtime(public_path('assets/css/obsidian.css'));
+
+        $this->actingAs($admin)
+            ->get(route('home'))
+            ->assertSee(asset('assets/css/obsidian.css').'?v='.$version, false);
+    }
+
     public function test_dashboard_data_returns_sections_and_chart(): void
     {
         $admin = User::factory()->create(['role' => 'admin']);

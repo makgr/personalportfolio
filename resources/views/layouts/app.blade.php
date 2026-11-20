@@ -47,17 +47,17 @@
     <link rel="stylesheet" href="{{ asset('assets/vendor/css/core.css') }}" class="template-customizer-core-css" />
     <link rel="stylesheet" href="{{ asset('assets/vendor/css/theme-default.css') }}"
         class="template-customizer-theme-css" />
-    <link rel="stylesheet" href="{{ asset('assets/css/demo.css') }}" />
+    <link rel="stylesheet" href="@versioned('assets/css/demo.css')" />
 
     <!-- Vendors CSS -->
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/apex-charts/apex-charts.css') }}" />
-    <link rel="stylesheet" href="{{ asset('assets/css/toastr/toastr.min.css') }}" />
+    <link rel="stylesheet" href="@versioned('assets/css/toastr/toastr.min.css')" />
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css">
 
     <!-- Obsidian Light design system -->
-    <link rel="stylesheet" href="{{ asset('assets/css/obsidian.css') }}?v=4" />
+    <link rel="stylesheet" href="@versioned('assets/css/obsidian.css')" />
 
     <!-- Page CSS -->
     @yield('css')
@@ -244,7 +244,7 @@
 
     <!-- Core JS -->
     <script src="{{ asset('assets/vendor/js/helpers.js') }}"></script>
-    <script src="{{ asset('assets/js/config.js') }}"></script>
+    <script src="@versioned('assets/js/config.js')"></script>
     <script src="{{ asset('assets/vendor/libs/jquery/jquery.js') }}"></script>
     <script src="{{ asset('assets/vendor/libs/popper/popper.js') }}"></script>
     <script src="{{ asset('assets/vendor/js/bootstrap.js') }}"></script>
@@ -255,8 +255,8 @@
     <script src="{{ asset('assets/vendor/libs/apex-charts/apexcharts.js') }}"></script>
     <script src="{{ asset('assets/vendor/libs/lucide/lucide.min.js') }}"></script>
 
-    <script src="{{ asset('assets/js/main.js') }}"></script>
-    <script src="{{ asset('assets/js/toastr/toastr.min.js') }}"></script>
+    <script src="@versioned('assets/js/main.js')"></script>
+    <script src="@versioned('assets/js/toastr/toastr.min.js')"></script>
 
     <!-- DataTables JS -->
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
@@ -264,8 +264,8 @@
     <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
     <script src="https://cdn.datatables.net/responsive/2.5.0/js/responsive.bootstrap5.min.js"></script>
 
-    <script src="{{ asset('assets/js/admin-ajax.js') }}?v=7"></script>
-    <script src="{{ asset('assets/js/obsidian.js') }}?v=1"></script>
+    <script src="@versioned('assets/js/admin-ajax.js')"></script>
+    <script src="@versioned('assets/js/obsidian.js')"></script>
 
     @stack('scripts')
 </body>

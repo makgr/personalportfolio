@@ -20,7 +20,7 @@
     <link rel="stylesheet" href="{{ asset('assets/vendor/fonts/boxicons.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/vendor/css/core.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/vendor/css/theme-default.css') }}" />
-    <link rel="stylesheet" href="{{ asset('assets/css/obsidian.css') }}?v=4" />
+    <link rel="stylesheet" href="@versioned('assets/css/obsidian.css')" />
 
     <style>
         body {
@@ -419,7 +419,7 @@
     </main>
 
     <script src="{{ asset('assets/vendor/libs/lucide/lucide.min.js') }}"></script>
-    <script src="{{ asset('assets/js/obsidian.js') }}?v=1"></script>
+    <script src="@versioned('assets/js/obsidian.js')"></script>
     <script>
         const toggle = document.querySelector('.password-toggle');
         const password = document.getElementById('password');
