@@ -1382,14 +1382,95 @@ table.dataTable thead > tr > th.sorting_desc::after {
     color: #71717a;
 }
 
+/* Content-type tones: one light tint per kind of content, reused wherever that content appears */
+.ob-tone-violet {
+    --tone-bg: #f5f3ff;
+    --tone-line: #ddd6fe;
+    --tone-fg: #7c3aed;
+}
+
+.ob-tone-sky {
+    --tone-bg: #f0f9ff;
+    --tone-line: #bae6fd;
+    --tone-fg: #0369a1;
+}
+
+.ob-tone-amber {
+    --tone-bg: #fffbeb;
+    --tone-line: #fde68a;
+    --tone-fg: #b45309;
+}
+
+.ob-tone-rose {
+    --tone-bg: #fff1f2;
+    --tone-line: #fecdd3;
+    --tone-fg: #be123c;
+}
+
+.ob-tone-emerald {
+    --tone-bg: #ecfdf5;
+    --tone-line: #a7f3d0;
+    --tone-fg: #047857;
+}
+
+.ob-tone-zinc {
+    --tone-bg: #f4f4f5;
+    --tone-line: #e4e4e7;
+    --tone-fg: #52525b;
+}
+
+.card.ob-stat-card {
+    background: var(--tone-bg, #fff);
+    border-color: var(--tone-line, var(--ob-border));
+}
+
 .ob-stat-icon {
     display: grid;
     place-items: center;
     width: 2.125rem;
     height: 2.125rem;
     border-radius: var(--ob-radius-sm);
-    background: var(--ob-border-soft);
-    color: var(--ob-body);
+    background: #fff;
+    border: 1px solid var(--tone-line, var(--ob-border));
+    color: var(--tone-fg, var(--ob-body));
+}
+
+/* Unread count: the one loud thing on the dashboard */
+.ob-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3125rem;
+    padding: 0.125rem 0.5rem;
+    border-radius: 999px;
+    background: var(--tone-fg);
+    color: #fff;
+    font-weight: 600;
+}
+
+.ob-pill::before {
+    content: "";
+    width: 0.375rem;
+    height: 0.375rem;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+/* Soft button: a lighter alternative to the solid primary */
+.btn-soft {
+    background: var(--ob-primary-soft);
+    border: 1px solid #ddd6fe;
+    color: var(--ob-primary-hover);
+}
+
+.btn-soft:hover,
+.btn-soft:focus-visible {
+    background: #ede9fe;
+    border-color: #c4b5fd;
+    color: #6d28d9;
+}
+
+.btn-soft:focus-visible {
+    box-shadow: 0 0 0 3px var(--ob-primary-ring);
 }
 
 .ob-stat-value {
@@ -1415,8 +1496,13 @@ a.ob-stat-link {
 }
 
 a.ob-stat-link:hover .card {
-    border-color: #d4d4d8;
+    border-color: var(--tone-fg, #d4d4d8);
     box-shadow: var(--ob-shadow-lg);
+}
+
+a.ob-stat-link:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px var(--ob-primary-ring);
 }
 
 .ob-greeting h4 {
@@ -1448,8 +1534,13 @@ a.ob-stat-link:hover .card {
 
 .ob-segmented button[aria-pressed="true"] {
     background: #fff;
-    color: var(--ob-heading);
-    box-shadow: 0 1px 2px rgba(24, 24, 27, 0.08);
+    color: var(--ob-primary-hover);
+    box-shadow: 0 1px 2px rgba(124, 58, 237, 0.18);
+}
+
+.ob-segmented button:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px var(--ob-primary-ring);
 }
 
 .ob-list-row {
@@ -1510,20 +1601,42 @@ a.ob-list-row:hover {
 .ob-quick a {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    padding: 0.6875rem 0.75rem;
-    border: 1px solid var(--ob-border);
+    gap: 0.625rem;
+    padding: 0.5rem 0.625rem;
+    border: 1px solid transparent;
     border-radius: var(--ob-radius-sm);
+    background: var(--ob-bg);
     color: var(--ob-heading);
     font-size: 0.8125rem;
     font-weight: 500;
     transition: border-color 0.15s, background-color 0.15s;
 }
 
+.ob-quick a > .bx {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 1.875rem;
+    height: 1.875rem;
+    border-radius: 8px;
+    background: var(--tone-bg);
+    border: 1px solid var(--tone-line);
+    color: var(--tone-fg);
+}
+
 .ob-quick a:hover {
-    border-color: #ddd6fe;
-    background: var(--ob-primary-soft);
-    color: var(--ob-primary-hover);
+    border-color: var(--tone-line);
+    background: var(--tone-bg);
+}
+
+.ob-quick a:hover > .bx {
+    background: #fff;
+}
+
+.ob-quick a:focus-visible {
+    outline: none;
+    border-color: var(--tone-fg);
+    box-shadow: 0 0 0 3px var(--ob-primary-ring);
 }
 
 /* ---------- Motion preference ---------- */

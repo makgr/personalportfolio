@@ -52,7 +52,7 @@
                 <p>{{ $localNow->format('l, j F Y') }}</p>
             </div>
             <div class="d-flex gap-2">
-                <a href="{{ route('blog-posts.create') }}" class="btn btn-secondary"><i class="bx bx-edit"></i> New post</a>
+                <a href="{{ route('blog-posts.create') }}" class="btn btn-soft"><i class="bx bx-edit"></i> New post</a>
                 <a href="{{ route('projects.create') }}" class="btn btn-primary"><i class="bx bx-plus"></i> New project</a>
             </div>
         </div>
@@ -108,14 +108,15 @@
                     </div>
                     <div class="card-body">
                         <div class="ob-quick">
-                            <a href="{{ route('projects.create') }}"><i class="bx bx-folder"></i> Add project</a>
-                            <a href="{{ route('blog-posts.create') }}"><i class="bx bx-edit"></i> Write post</a>
-                            <a href="{{ route('skills.create') }}"><i class="bx bx-code-alt"></i> Add skill</a>
-                            <a href="{{ route('services.create') }}"><i class="bx bx-briefcase"></i> Add service</a>
-                            <a href="{{ route('experiences.create') }}"><i class="bx bx-time"></i> Add experience</a>
-                            <a href="{{ route('admin.testimonials.create') }}"><i class="bx bx-chat"></i> Add testimonial</a>
-                            <a href="{{ route('profile.edit') }}"><i class="bx bx-user"></i> Edit profile</a>
-                            <a href="{{ route('settings.index') }}"><i class="bx bx-slider"></i> Site settings</a>
+                            {{-- Tones match the stat cards: project violet, post rose, skill sky --}}
+                            <a href="{{ route('projects.create') }}" class="ob-tone-violet"><i class="bx bx-folder"></i> Add project</a>
+                            <a href="{{ route('blog-posts.create') }}" class="ob-tone-rose"><i class="bx bx-edit"></i> Write post</a>
+                            <a href="{{ route('skills.create') }}" class="ob-tone-sky"><i class="bx bx-code-alt"></i> Add skill</a>
+                            <a href="{{ route('services.create') }}" class="ob-tone-emerald"><i class="bx bx-briefcase"></i> Add service</a>
+                            <a href="{{ route('experiences.create') }}" class="ob-tone-amber"><i class="bx bx-time"></i> Add experience</a>
+                            <a href="{{ route('admin.testimonials.create') }}" class="ob-tone-violet"><i class="bx bx-chat"></i> Add testimonial</a>
+                            <a href="{{ route('profile.edit') }}" class="ob-tone-zinc"><i class="bx bx-user"></i> Edit profile</a>
+                            <a href="{{ route('settings.index') }}" class="ob-tone-zinc"><i class="bx bx-slider"></i> Site settings</a>
                         </div>
                     </div>
                 </div>

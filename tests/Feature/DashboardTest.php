@@ -49,6 +49,7 @@ class DashboardTest extends TestCase
             ->assertJsonStructure(['stats', 'projects', 'messages', 'chart' => ['labels', 'messages', 'visits']])
             ->assertJsonCount(30, 'chart.labels');
         $this->assertStringContainsString('Rahim Uddin', $response->json('messages'));
+        $this->assertStringContainsString('<span class="ob-pill">1 new</span>', $response->json('stats'));
         $this->assertSame(1, array_sum($response->json('chart.messages')));
     }
 
