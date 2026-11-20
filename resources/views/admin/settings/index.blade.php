@@ -1,5 +1,45 @@
 @extends('layouts.app')
 
+@section('css')
+    <link rel="stylesheet" href="{{ asset('assets/vendor/libs/select2/select2.min.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/vendor/libs/select2/select2-bootstrap-5-theme.min.css') }}" />
+    <style>
+        /* Match Select2 to the Obsidian inputs */
+        .select2-container--bootstrap-5 .select2-selection {
+            border-color: var(--ob-border);
+            border-radius: var(--ob-radius-sm);
+            min-height: calc(2.25rem + 2px);
+        }
+
+        .select2-container--bootstrap-5.select2-container--focus .select2-selection,
+        .select2-container--bootstrap-5.select2-container--open .select2-selection {
+            border-color: var(--ob-primary);
+            box-shadow: 0 0 0 3px var(--ob-primary-ring);
+        }
+
+        .select2-container--bootstrap-5 .select2-dropdown {
+            border-color: var(--ob-border);
+            border-radius: var(--ob-radius-sm);
+            box-shadow: var(--ob-shadow-lg);
+        }
+
+        .select2-container--bootstrap-5 .select2-dropdown .select2-results__options .select2-results__option.select2-results__option--highlighted {
+            background-color: var(--ob-primary-soft);
+            color: var(--ob-heading);
+        }
+
+        .select2-container--bootstrap-5 .select2-dropdown .select2-results__options .select2-results__option.select2-results__option--selected {
+            background-color: var(--ob-primary);
+            color: #fff;
+        }
+
+        .select2-container--bootstrap-5 .select2-dropdown .select2-search .select2-search__field:focus {
+            border-color: var(--ob-primary);
+            box-shadow: 0 0 0 3px var(--ob-primary-ring);
+        }
+    </style>
+@endsection
+
 @section('content')
     <div class="container-xxl flex-grow-1 container-p-y">
         <!-- Header -->
@@ -126,6 +166,24 @@
                                         <div class="col-12 mb-3">
                                             <label for="address" class="form-label">Address</label>
                                             <textarea class="form-control" id="address" name="address" rows="2">{{ old('address', $settingsGroups->get('general', collect())->where('key', 'address')->first()->value ?? '') }}</textarea>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            @php
+                                                $currentTimezone = old('timezone', $settingsGroups->get('general', collect())->where('key', 'timezone')->first()->value ?? 'Asia/Dhaka');
+                                            @endphp
+                                            <label for="timezone" class="form-label">Timezone</label>
+                                            <select class="form-select @error('timezone') is-invalid @enderror" id="timezone" name="timezone"
+                                                aria-describedby="timezone-help">
+                                                @foreach (\DateTimeZone::listIdentifiers() as $tz)
+                                                    <option value="{{ $tz }}" @selected($tz === $currentTimezone)>
+                                                        {{ str_replace('_', ' ', $tz) }} (UTC{{ now($tz)->format('P') }})
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                            <div id="timezone-help" class="form-text">Dates across the admin are shown in this timezone. They are always saved in UTC.</div>
+                                            @error('timezone')
+                                                <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
                                         </div>
                                     </div>
                                 </div>
@@ -397,7 +455,15 @@
 @endsection
 
 @push('scripts')
+<script src="{{ asset('assets/vendor/libs/select2/select2.min.js') }}"></script>
 <script>
+// Searchable timezone picker; width 100% because the General tab may be hidden when this runs
+$('#timezone').select2({
+    theme: 'bootstrap-5',
+    width: '100%',
+    placeholder: 'Search timezone…',
+});
+
 // Settings page is now handled automatically by admin-ajax.js
 // The form has data-ajax attribute and buttons have data-ajax attributes
 // All AJAX functionality is handled automatically!

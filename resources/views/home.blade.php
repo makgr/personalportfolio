@@ -3,7 +3,8 @@
 @section('title', 'Dashboard')
 
 @php
-    $hour = now()->hour;
+    $localNow = now(config('app.display_timezone'));
+    $hour = $localNow->hour;
     $greeting = $hour < 12 ? 'Good morning' : ($hour < 18 ? 'Good afternoon' : 'Good evening');
     $firstName = \Illuminate\Support\Str::before(trim(Auth::user()->name), ' ');
 @endphp
@@ -48,7 +49,7 @@
         <div class="d-flex flex-wrap align-items-end justify-content-between gap-3 mb-4 ob-greeting">
             <div>
                 <h4>{{ $greeting }}, {{ $firstName }}</h4>
-                <p>{{ now()->format('l, j F Y') }}</p>
+                <p>{{ $localNow->format('l, j F Y') }}</p>
             </div>
             <div class="d-flex gap-2">
                 <a href="{{ route('blog-posts.create') }}" class="btn btn-secondary"><i class="bx bx-edit"></i> New post</a>

@@ -2,12 +2,12 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class Service extends Model
 {
-    use HasFactory;
+    use \App\Models\Concerns\DisplaysInSiteTimezone, HasFactory;
 
     protected $table = 'services';
 
@@ -53,14 +53,14 @@ class Service extends Model
     // Accessors
     public function getFormattedPriceAttribute()
     {
-        if (!$this->starting_price) {
+        if (! $this->starting_price) {
             return 'Contact for pricing';
         }
 
         $price = number_format($this->starting_price, 2);
 
         return $this->price_unit
-            ? "$" . $price . " / " . $this->price_unit
-            : "$" . $price;
+            ? '$'.$price.' / '.$this->price_unit
+            : '$'.$price;
     }
 }

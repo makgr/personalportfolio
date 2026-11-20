@@ -2,12 +2,12 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class Experience extends Model
 {
-    use HasFactory;
+    use \App\Models\Concerns\DisplaysInSiteTimezone, HasFactory;
 
     protected $table = 'experiences';
 
@@ -62,7 +62,7 @@ class Experience extends Model
         $start = $this->start_date;
         $end = $this->is_current ? now() : $this->end_date;
 
-        if (!$start || !$end) {
+        if (! $start || ! $end) {
             return null;
         }
 
@@ -71,10 +71,10 @@ class Experience extends Model
         $months = $diff->m;
 
         if ($years > 0) {
-            return $years . ' year' . ($years > 1 ? 's' : '') .
-                ($months > 0 ? ' ' . $months . ' month' . ($months > 1 ? 's' : '') : '');
+            return $years.' year'.($years > 1 ? 's' : '').
+                ($months > 0 ? ' '.$months.' month'.($months > 1 ? 's' : '') : '');
         }
 
-        return $months . ' month' . ($months > 1 ? 's' : '');
+        return $months.' month'.($months > 1 ? 's' : '');
     }
 }

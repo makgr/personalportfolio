@@ -69,6 +69,9 @@ return [
 
     'timezone' => 'UTC',
 
+    // Timezone dates are shown in; overridden at boot by the "timezone" setting. Storage stays UTC.
+    'display_timezone' => 'Asia/Dhaka',
+
     /*
     |--------------------------------------------------------------------------
     | Application Locale Configuration

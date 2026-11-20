@@ -2,14 +2,14 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use App\Traits\Sluggable;
 use App\Traits\HasSeo;
+use App\Traits\Sluggable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class Project extends Model
 {
-    use HasFactory, Sluggable, HasSeo;
+    use \App\Models\Concerns\DisplaysInSiteTimezone, HasFactory, HasSeo, Sluggable;
 
     protected $table = 'projects';
 

@@ -2,13 +2,13 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
 class Training extends Model
 {
-    use HasFactory;
+    use \App\Models\Concerns\DisplaysInSiteTimezone, HasFactory;
 
     protected $table = 'training';
 
@@ -123,28 +123,30 @@ class Training extends Model
         if ($endDate) {
             $query->where('end_date', '<=', $endDate);
         }
+
         return $query;
     }
 
     // Accessors
     public function getFormattedDurationAttribute()
     {
-        if (!$this->duration_hours) {
+        if (! $this->duration_hours) {
             return 'N/A';
         }
 
         if ($this->duration_hours < 24) {
-            return $this->duration_hours . ' hours';
+            return $this->duration_hours.' hours';
         } else {
             $days = floor($this->duration_hours / 24);
             $remainingHours = $this->duration_hours % 24;
-            return $days . ' days' . ($remainingHours > 0 ? ', ' . $remainingHours . ' hours' : '');
+
+            return $days.' days'.($remainingHours > 0 ? ', '.$remainingHours.' hours' : '');
         }
     }
 
     public function getStatusBadgeColorAttribute()
     {
-        return match($this->status) {
+        return match ($this->status) {
             'completed' => 'success',
             'in_progress' => 'primary',
             'planned' => 'warning',
@@ -154,7 +156,7 @@ class Training extends Model
 
     public function getCategoryBadgeColorAttribute()
     {
-        return match($this->category) {
+        return match ($this->category) {
             'technical' => 'info',
             'soft_skills' => 'success',
             'business' => 'warning',
@@ -166,7 +168,7 @@ class Training extends Model
 
     public function getTypeBadgeColorAttribute()
     {
-        return match($this->type) {
+        return match ($this->type) {
             'certification' => 'success',
             'course' => 'primary',
             'workshop' => 'info',
@@ -178,7 +180,7 @@ class Training extends Model
 
     public function getRatingStarsAttribute()
     {
-        if (!$this->rating) {
+        if (! $this->rating) {
             return '';
         }
 
@@ -226,11 +228,11 @@ class Training extends Model
 
     public function hasCertificate()
     {
-        return !empty($this->certificate_url);
+        return ! empty($this->certificate_url);
     }
 
     public function hasCredential()
     {
-        return !empty($this->credential_id);
+        return ! empty($this->credential_id);
     }
 }

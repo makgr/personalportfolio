@@ -2,14 +2,14 @@
 
 namespace App\Models;
 
-use Illuminate\Support\Str;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Support\Str;
 
 class NewsletterSubscriber extends Model
 {
-    use HasFactory, Notifiable;
+    use \App\Models\Concerns\DisplaysInSiteTimezone, HasFactory, Notifiable;
 
     protected $table = 'newsletter_subscribers';
 
@@ -89,7 +89,7 @@ class NewsletterSubscriber extends Model
         parent::boot();
 
         static::creating(function ($subscriber) {
-            if (!$subscriber->verification_token) {
+            if (! $subscriber->verification_token) {
                 $subscriber->verification_token = Str::random(60);
             }
         });

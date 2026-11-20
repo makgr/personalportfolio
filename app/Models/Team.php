@@ -2,13 +2,13 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
 class Team extends Model
 {
-    use HasFactory;
+    use \App\Models\Concerns\DisplaysInSiteTimezone, HasFactory;
 
     protected $fillable = [
         'name',
@@ -97,7 +97,7 @@ class Team extends Model
     // Accessors
     public function getEmploymentTypeBadgeColorAttribute()
     {
-        return match($this->employment_type) {
+        return match ($this->employment_type) {
             'full_time' => 'success',
             'part_time' => 'primary',
             'contract' => 'warning',
@@ -108,7 +108,7 @@ class Team extends Model
 
     public function getDepartmentBadgeColorAttribute()
     {
-        return match($this->department) {
+        return match ($this->department) {
             'engineering' => 'primary',
             'design' => 'info',
             'marketing' => 'warning',
@@ -121,26 +121,28 @@ class Team extends Model
 
     public function getFormattedJoinDateAttribute()
     {
-        if (!$this->join_date) {
+        if (! $this->join_date) {
             return 'N/A';
         }
+
         return $this->join_date->format('M d, Y');
     }
 
     public function getTenureAttribute()
     {
-        if (!$this->join_date) {
+        if (! $this->join_date) {
             return 'N/A';
         }
-        
+
         $diff = $this->join_date->diffForHumans(null, true, false, 2);
+
         return $diff;
     }
 
     public function getSocialLinksAttribute()
     {
         $links = [];
-        
+
         if ($this->linkedin) {
             $links['linkedin'] = $this->linkedin;
         }
@@ -153,7 +155,7 @@ class Team extends Model
         if ($this->website) {
             $links['website'] = $this->website;
         }
-        
+
         return $links;
     }
 
@@ -161,8 +163,9 @@ class Team extends Model
     {
         $words = explode(' ', $this->name);
         if (count($words) >= 2) {
-            return strtoupper(substr($words[0], 0, 1) . substr($words[1], 0, 1));
+            return strtoupper(substr($words[0], 0, 1).substr($words[1], 0, 1));
         }
+
         return strtoupper(substr($this->name, 0, 2));
     }
 }

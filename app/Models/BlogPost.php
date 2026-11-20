@@ -2,14 +2,15 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use App\Traits\Sluggable;
 use App\Traits\HasSeo;
+use App\Traits\Sluggable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 class BlogPost extends Model
 {
-    use HasFactory, Sluggable, HasSeo;
+    use \App\Models\Concerns\DisplaysInSiteTimezone, HasFactory, HasSeo, Sluggable;
 
     protected $table = 'blog_posts';
 
@@ -41,6 +42,18 @@ class BlogPost extends Model
         'published_at' => 'datetime',
         'scheduled_at' => 'datetime',
     ];
+
+    /**
+     * The schedule form sends local wall-clock time; read it in the site timezone so it is stored as UTC.
+     */
+    public function setScheduledAtAttribute(mixed $value): void
+    {
+        if (is_string($value) && $value !== '') {
+            $value = Carbon::parse($value, config('app.display_timezone'));
+        }
+
+        $this->attributes['scheduled_at'] = $this->fromDateTime($value);
+    }
 
     // Relationships
     public function category()
@@ -137,7 +150,7 @@ class BlogPost extends Model
         parent::boot();
 
         static::creating(function ($post) {
-            if (!$post->reading_time) {
+            if (! $post->reading_time) {
                 $post->reading_time = $post->calculateReadingTime();
             }
         });

@@ -2,12 +2,12 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class Certification extends Model
 {
-    use HasFactory;
+    use \App\Models\Concerns\DisplaysInSiteTimezone, HasFactory;
 
     protected $table = 'certifications';
 
@@ -63,7 +63,7 @@ class Certification extends Model
     // Accessors
     public function getIsValidAttribute()
     {
-        if (!$this->does_expire) {
+        if (! $this->does_expire) {
             return true;
         }
 
@@ -72,7 +72,7 @@ class Certification extends Model
 
     public function getStatusAttribute()
     {
-        if (!$this->does_expire) {
+        if (! $this->does_expire) {
             return 'valid';
         }
 

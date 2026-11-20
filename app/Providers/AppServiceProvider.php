@@ -2,10 +2,11 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\ServiceProvider;
-use Illuminate\Support\Facades\View;
 use App\Models\ContactSubmission;
+use App\Models\Setting;
 use App\View\Composers\ProfileComposer;
+use Illuminate\Support\Facades\View;
+use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -22,6 +23,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Show dates in the timezone picked in Settings; rescue keeps boot working before migrations run
+        $timezone = rescue(fn () => Setting::get('timezone'), null, false);
+        if ($timezone && in_array($timezone, \DateTimeZone::listIdentifiers(), true)) {
+            config(['app.display_timezone' => $timezone]);
+        }
+
         // Register profile composer for all views using the layout
         View::composer(['layouts.app', 'admin.profile.edit'], ProfileComposer::class);
 

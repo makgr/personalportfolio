@@ -2,12 +2,12 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class ApiToken extends Model
 {
-    use HasFactory;
+    use \App\Models\Concerns\DisplaysInSiteTimezone, HasFactory;
 
     protected $table = 'api_tokens';
 
@@ -51,7 +51,7 @@ class ApiToken extends Model
     // Methods
     public function isValid()
     {
-        if (!$this->is_active) {
+        if (! $this->is_active) {
             return false;
         }
 
@@ -64,7 +64,7 @@ class ApiToken extends Model
 
     public function canAccessFromIp($ip)
     {
-        if (!$this->ip_restriction) {
+        if (! $this->ip_restriction) {
             return true;
         }
 
@@ -80,7 +80,7 @@ class ApiToken extends Model
 
     public function hasAbility($ability)
     {
-        if (!$this->abilities) {
+        if (! $this->abilities) {
             return true; // No restrictions
         }
 
@@ -106,7 +106,7 @@ class ApiToken extends Model
         parent::boot();
 
         static::creating(function ($token) {
-            if (!$token->token) {
+            if (! $token->token) {
                 $plainToken = static::generateToken();
                 $token->token = hash('sha256', $plainToken);
                 $token->setAttribute('plain_token', $plainToken);
