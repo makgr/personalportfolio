@@ -1,8 +1,8 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "laravel/laravel",
+    "name": "makgr/personalportfolio",
     "type": "project",
-    "description": "The skeleton application for the Laravel framework.",
+    "description": "Laravel admin panel and REST API backend for a personal portfolio (Next.js frontend).",
     "keywords": ["laravel", "framework"],
     "license": "MIT",
     "require": {
