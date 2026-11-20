@@ -24,7 +24,8 @@
     <meta name="description" content="personal portfolio" />
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <link rel="icon" type="image/x-icon" href="{{ asset('assets/img/favicon/favicon.ico') }}" />
+    <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}" />
+    <link rel="alternate icon" href="{{ asset('assets/img/favicon/favicon.ico') }}" />
 
     <!-- Restore the collapsed sidebar before first paint -->
     <script>
