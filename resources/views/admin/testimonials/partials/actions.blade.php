@@ -30,7 +30,7 @@
         @if($testimonial->project)
         <li><hr class="dropdown-divider"></li>
         <li>
-            <a class="dropdown-item" href="{{ route('admin.projects.show', $testimonial->project->id) }}">
+            <a class="dropdown-item" href="{{ route('projects.show', $testimonial->project->id) }}">
                 <i class="bx bx-folder me-1"></i> View Project
             </a>
         </li>

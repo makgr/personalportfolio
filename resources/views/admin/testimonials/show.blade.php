@@ -118,7 +118,7 @@
                                 </div>
                                 <div class="flex-grow-1">
                                     <h6 class="mb-1">
-                                        <a href="{{ route('admin.projects.show', $testimonial->project->id) }}" class="text-decoration-none">
+                                        <a href="{{ route('projects.show', $testimonial->project->id) }}" class="text-decoration-none">
                                             {{ $testimonial->project->title }}
                                         </a>
                                     </h6>
@@ -128,7 +128,7 @@
                                         </p>
                                     @endif
                                 </div>
-                                <a href="{{ route('admin.projects.show', $testimonial->project->id) }}" 
+                                <a href="{{ route('projects.show', $testimonial->project->id) }}" 
                                    class="btn btn-outline-primary btn-sm">
                                     <i class="bx bx-link-external me-1"></i>View Project
                                 </a>
