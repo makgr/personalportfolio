@@ -2,7 +2,7 @@
 
 Admin panel and REST API for a personal portfolio website. Manage your profile, projects, blog, skills, experience and more from the admin panel; a frontend (built with Next.js) reads everything through the `/api/v1` JSON API.
 
-**Frontend:** coming soon
+**Frontend:** [makgr/portfolio-frontend](https://github.com/makgr/portfolio-frontend)
 
 ## Admin panel preview
 
