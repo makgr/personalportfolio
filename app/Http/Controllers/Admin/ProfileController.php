@@ -79,6 +79,7 @@ class ProfileController extends Controller
             'location' => 'nullable|string|max:255',
             'upload' => 'nullable|image|max:2048',
             'hero_upload' => 'nullable|image|max:2048',
+            'hero_cutout_upload' => 'nullable|image|mimes:png,webp,jpg,jpeg|max:4096',
             'years_of_experience' => 'nullable|integer|min:0',
             'total_projects' => 'nullable|integer|min:0',
             'happy_clients' => 'nullable|integer|min:0',
@@ -124,9 +125,9 @@ class ProfileController extends Controller
                     ]);
                 }
 
-                // Handle hero image upload
+                // Handle about photo upload (hero_image_url, shown in the home "whoami" card)
                 if ($request->hasFile('hero_upload')) {
-                    Log::info('Profile update: Hero image upload detected', [
+                    Log::info('Profile update: About photo (hero_image_url) upload detected', [
                         'file_name' => $request->file('hero_upload')->getClientOriginalName(),
                         'file_size' => $request->file('hero_upload')->getSize(),
                         'file_type' => $request->file('hero_upload')->getMimeType()
@@ -136,7 +137,15 @@ class ProfileController extends Controller
                         $this->mediaService->delete($profile->hero_image_url);
                     }
                     $validated['hero_image_url'] = $this->mediaService->upload($request->file('hero_upload'), 'profile');
-                    Log::info('Profile update: Hero image uploaded successfully', ['path' => $validated['hero_image_url']]);
+                    Log::info('Profile update: About photo (hero_image_url) uploaded successfully', ['path' => $validated['hero_image_url']]);
+                }
+
+                // Handle hero cutout portrait upload (PNG/WebP keeps its transparency)
+                if ($request->hasFile('hero_cutout_upload')) {
+                    if ($profile->hero_cutout_url) {
+                        $this->mediaService->delete($profile->hero_cutout_url);
+                    }
+                    $validated['hero_cutout_url'] = $this->mediaService->upload($request->file('hero_cutout_upload'), 'profile');
                 }
 
                 // Handle resume upload
@@ -149,7 +158,7 @@ class ProfileController extends Controller
 
                 // Update profile
                 $profileData = array_filter($validated, function ($key) {
-                    return !str_starts_with($key, 'user_') && !in_array($key, ['current_password', 'new_password', 'new_password_confirmation', 'upload', 'hero_upload', 'resume']);
+                    return !str_starts_with($key, 'user_') && !in_array($key, ['current_password', 'new_password', 'new_password_confirmation', 'upload', 'hero_upload', 'hero_cutout_upload', 'resume']);
                 }, ARRAY_FILTER_USE_KEY);
 
                 Log::info('Profile update: Data being saved', [

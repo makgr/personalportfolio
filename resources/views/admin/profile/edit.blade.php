@@ -61,20 +61,44 @@
                     </div>
                 </div>
 
-                <!-- Hero Profile Image -->
+                <!-- About Photo (stored as hero_image_url; shown in the home page "whoami" card below the hero) -->
                 <div class="card mb-4">
                     <div class="card-body">
-                        <h6 class="card-title mb-3">Hero Profile Image</h6>
+                        <h6 class="card-title mb-1">About Photo</h6>
+                        <p class="text-muted small mb-3">Shown in the "whoami" photo card on the home page, just
+                            below the hero. A natural photo of you works best.</p>
                         <div class="d-flex align-items-start align-items-sm-center gap-4">
                             <img src="{{ $profile->hero_image_url ? asset($profile->hero_image_url) : asset('assets/img/avatars/1.png') }}"
-                                alt="hero-image" class="d-block rounded" height="100" width="100"
+                                alt="about-photo" class="d-block rounded" height="100" width="100"
                                 id="uploadedHeroImage" />
                             <div class="button-wrapper">
                                 <label for="hero_upload" class="btn btn-primary me-2 mb-4" tabindex="0">
-                                    <span class="d-none d-sm-block">Upload hero image</span>
+                                    <span class="d-none d-sm-block">Upload about photo</span>
                                     <i class="bx bx-upload d-block d-sm-none"></i>
                                 </label>
                                 <p class="text-muted mb-0">Allowed JPG, PNG. Max size of 2MB</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Hero Cutout Portrait (large portrait in the frontend home hero) -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h6 class="card-title mb-1">Hero Cutout Portrait</h6>
+                        <p class="text-muted small mb-3">The large portrait in the home page hero. Use a PNG or WebP
+                            with a transparent background, or a photo on a plain black background, head and
+                            shoulders, portrait orientation.</p>
+                        <div class="d-flex align-items-start align-items-sm-center gap-4">
+                            <img src="{{ $profile->hero_cutout_url ? asset($profile->hero_cutout_url) : asset('assets/img/avatars/1.png') }}"
+                                alt="hero-cutout" class="d-block rounded" height="100" width="100"
+                                style="object-fit: cover; background: #0b0f17;" id="uploadedHeroCutout" />
+                            <div class="button-wrapper">
+                                <label for="hero_cutout_upload" class="btn btn-primary me-2 mb-4" tabindex="0">
+                                    <span class="d-none d-sm-block">Upload cutout portrait</span>
+                                    <i class="bx bx-upload d-block d-sm-none"></i>
+                                </label>
+                                <p class="text-muted mb-0">Allowed PNG, WebP, JPG. Max size of 4MB</p>
                             </div>
                         </div>
                     </div>
@@ -223,6 +247,8 @@
                             accept="image/png, image/jpeg" />
                         <input type="file" id="hero_upload" name="hero_upload" class="d-none"
                             accept="image/png, image/jpeg" />
+                        <input type="file" id="hero_cutout_upload" name="hero_cutout_upload" class="d-none"
+                            accept="image/png, image/webp, image/jpeg" />
 
                         <div class="card-footer">
                             <button type="submit" class="btn btn-primary" id="save-profile-btn">
@@ -293,50 +319,43 @@
             });
         }
 
-        // Hero Image Handler
-        const heroFileInput = document.getElementById('hero_upload');
-        const heroPreviewImage = document.getElementById('uploadedHeroImage');
-        const heroOriginalSrc = heroPreviewImage ? heroPreviewImage.src : '';
+        // Instant preview + client-side checks for the hero image uploads
+        function bindImagePreview(inputId, previewId, allowedTypes, maxMb, label) {
+            const input = document.getElementById(inputId);
+            const preview = document.getElementById(previewId);
+            if (!input || !preview) return;
+            const originalSrc = preview.src;
 
-        if (heroFileInput && heroPreviewImage) {
-            heroFileInput.addEventListener('change', function(e) {
-                console.log('Hero file input changed:', e.target.files);
+            input.addEventListener('change', function(e) {
                 const file = e.target.files[0];
-                if (file) {
-                    // Validate file type
-                    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
-                    if (!allowedTypes.includes(file.type)) {
-                        toastr.error('Please select a valid image file (JPG, PNG)');
-                        heroFileInput.value = '';
-                        return;
-                    }
-
-                    // Validate file size (2MB)
-                    if (file.size > 2 * 1024 * 1024) {
-                        toastr.error('Image size must be less than 2MB');
-                        heroFileInput.value = '';
-                        return;
-                    }
-
-                    // Show instant preview
-                    const reader = new FileReader();
-                    reader.onload = function(ev) {
-                        heroPreviewImage.src = ev.target.result;
-
-                        // Visual feedback
-                        heroPreviewImage.style.opacity = '0.7';
-                        heroPreviewImage.style.border = '2px dashed #007bff';
-
-                        toastr.info('Hero image selected. Save changes to upload.', 'Image Ready');
-                    };
-                    reader.readAsDataURL(file);
-                } else {
-                    // If no file selected, reset to original
-                    heroPreviewImage.src = heroOriginalSrc;
-                    heroPreviewImage.style.opacity = '1';
-                    heroPreviewImage.style.border = 'none';
+                if (!file) {
+                    preview.src = originalSrc;
+                    preview.style.opacity = '1';
+                    preview.style.border = 'none';
+                    return;
                 }
+                if (!allowedTypes.includes(file.type)) {
+                    toastr.error('Please select a valid image file (' + allowedTypes.map(t => t.split('/')[1].toUpperCase()).join(', ') + ')');
+                    input.value = '';
+                    return;
+                }
+                if (file.size > maxMb * 1024 * 1024) {
+                    toastr.error('Image size must be less than ' + maxMb + 'MB');
+                    input.value = '';
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onload = function(ev) {
+                    preview.src = ev.target.result;
+                    preview.style.opacity = '0.7';
+                    preview.style.border = '2px dashed #007bff';
+                    toastr.info(label + ' selected. Save changes to upload.', 'Image Ready');
+                };
+                reader.readAsDataURL(file);
             });
         }
+
+        bindImagePreview('hero_upload', 'uploadedHeroImage', ['image/jpeg', 'image/jpg', 'image/png'], 2, 'About photo');
+        bindImagePreview('hero_cutout_upload', 'uploadedHeroCutout', ['image/png', 'image/webp', 'image/jpeg', 'image/jpg'], 4, 'Hero cutout portrait');
     </script>
 @endpush

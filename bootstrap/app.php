@@ -20,10 +20,9 @@ return Application::configure(basePath: dirname(__DIR__))
             'admin' => \App\Http\Middleware\AdminMiddleware::class,
         ]);
 
-        // Configure API middleware
-        $middleware->api(prepend: [
-            \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
-        ]);
+        // The API is stateless: the Next.js frontend sends no cookies, so Sanctum's
+        // stateful middleware would only demand a CSRF token it never has (419 on POST).
+        // Protected routes authenticate with Sanctum bearer tokens instead.
 
         // Configure rate limiting for API
         // $middleware->throttleApi();

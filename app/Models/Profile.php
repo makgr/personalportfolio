@@ -25,6 +25,7 @@ class Profile extends Model
         'total_projects',
         'happy_clients',
         'hero_image_url',
+        'hero_cutout_url',
         'resume_url',
         'social_links',
         'meta_tags',

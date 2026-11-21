@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Models\ContactSubmission;
 use App\Models\Setting;
+use App\Services\FrontendRevalidator;
 use App\View\Composers\ProfileComposer;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\View;
@@ -16,7 +17,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // one instance per request, so tags from several saves go out in a single call
+        $this->app->singleton(FrontendRevalidator::class);
     }
 
     /**
@@ -24,6 +26,13 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Any content change in the admin drops the matching cache on the frontend.
+        foreach (FrontendRevalidator::MODEL_TAGS as $model => $tags) {
+            $refresh = fn () => app(FrontendRevalidator::class)->queue($tags);
+            $model::saved($refresh);
+            $model::deleted($refresh);
+        }
+
         // Show dates in the timezone picked in Settings; rescue keeps boot working before migrations run
         $timezone = rescue(fn () => Setting::get('timezone'), null, false);
         if ($timezone && in_array($timezone, \DateTimeZone::listIdentifiers(), true)) {

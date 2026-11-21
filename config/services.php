@@ -35,4 +35,11 @@ return [
         ],
     ],
 
+    // Next.js frontend: told to drop its API cache when content changes here.
+    // Leave either value empty to turn this off.
+    'frontend' => [
+        'url' => env('FRONTEND_URL'),
+        'revalidate_secret' => env('FRONTEND_REVALIDATE_SECRET'),
+    ],
+
 ];

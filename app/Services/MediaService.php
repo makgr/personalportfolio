@@ -137,8 +137,9 @@ class MediaService
                     $image->scaleDown(width: 1920);
                 }
 
-                // Save with quality optimization
-                $image->toJpeg(85)->save($fullPath);
+                // Re-encode in the file's own format: forcing JPEG wrote JPEG bytes into
+                // .png files and destroyed transparency (needed for the hero cutout).
+                $image->save($fullPath, quality: 85);
                 \Log::info('MediaService image optimized', ['path' => $fullPath]);
             } else {
                 \Log::warning('MediaService image file not found for optimization', ['path' => $fullPath]);

@@ -58,6 +58,7 @@ class ProfileController extends Controller
                 'location' => $profile->location,
                 'avatar_url' => $profile->avatar_url ? asset($profile->avatar_url) : null,
                 'hero_image_url' => $profile->hero_image_url ? asset($profile->hero_image_url) : null,
+                'hero_cutout_url' => $profile->hero_cutout_url ? asset($profile->hero_cutout_url) : null,
                 'resume_url' => $profile->resume_url ? asset($profile->resume_url) : null,
                 
                 // Profile Statistics
