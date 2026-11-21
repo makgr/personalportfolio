@@ -121,7 +121,7 @@ class PortfolioDemoSeeder extends Seeder
             Service::firstOrCreate(['slug' => str($title)->slug()->toString()], [
                 'title' => $title,
                 'short_description' => $short,
-                'description' => "<p>{$short}</p><p>Every engagement starts with a discovery call, followed by a clear plan, weekly progress updates and a smooth handover.</p>",
+                'description' => "{$short}\n\nEvery engagement starts with a discovery call, followed by a clear plan, weekly progress updates and a smooth handover.",
                 'icon' => $icon,
                 'image' => $this->image($order + 3),
                 'features' => $features,
@@ -155,7 +155,7 @@ class PortfolioDemoSeeder extends Seeder
             Project::firstOrCreate(['slug' => $slug], [
                 'title' => $title,
                 'short_description' => $short,
-                'description' => "<p>{$short}</p><p>The goal was to deliver a fast, reliable and easy-to-use product. I handled the architecture, development and deployment, working closely with the client through weekly demos.</p>",
+                'description' => "{$short}\n\nThe goal was to deliver a fast, reliable and easy-to-use product. I handled the architecture, development and deployment, working closely with the client through weekly demos.",
                 'category_id' => $this->categoryId($categorySlug),
                 'featured_image' => $this->image($index),
                 'images' => [$this->image($index + 1), $this->image($index + 2), $this->image($index + 3)],
@@ -200,7 +200,7 @@ class PortfolioDemoSeeder extends Seeder
             $post = BlogPost::firstOrCreate(['slug' => str($title)->slug()->toString()], [
                 'title' => $title,
                 'excerpt' => "A practical guide on \"{$title}\" with real examples from my projects.",
-                'content' => "<h2>Introduction</h2><p>In this post I share what I learned about {$title}. These are practical lessons from real client work.</p><h2>The Problem</h2><p>Most tutorials stop at the basics. Real projects need more: performance, maintainability and a good developer experience.</p><blockquote>Write code for humans first, computers second.</blockquote><h2>The Approach</h2><ul><li>Start simple and measure</li><li>Automate the boring parts</li><li>Refactor with tests in place</li></ul><pre><code>php artisan make:model Post -mf</code></pre><h2>Conclusion</h2><p>Small, consistent improvements add up. Try one idea from this post in your next project.</p>",
+                'content' => "In this post I share what I learned about {$title}. These are practical lessons from real client work.\n\nMost tutorials stop at the basics. Real projects need more: performance, maintainability and a good developer experience.\n\n\"Write code for humans first, computers second.\"\n\nMy approach:\n- Start simple and measure\n- Automate the boring parts\n- Refactor with tests in place\n\nSmall, consistent improvements add up. Try one idea from this post in your next project.",
                 'category_id' => $this->categoryId($categorySlug),
                 'author_id' => $authorId,
                 'featured_image' => $this->image($index + 5),
