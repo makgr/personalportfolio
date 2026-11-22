@@ -290,16 +290,19 @@ $(document).ready(function() {
     });
 
     // Tags management
+    // Typed text counts on Enter or on leaving the box; commas split it into several tags
+    function addTypedTags(input) {
+        input.val().split(',').map(t => t.trim()).filter(t => t && !tags.includes(t)).forEach(t => tags.push(t));
+        input.val('');
+        updateTagsDisplay();
+    }
     $('#tags_input').on('keypress', function(e) {
         if (e.which === 13) {
             e.preventDefault();
-            const tag = $(this).val().trim();
-            if (tag && !tags.includes(tag)) {
-                tags.push(tag);
-                updateTagsDisplay();
-                $(this).val('');
-            }
+            addTypedTags($(this));
         }
+    }).on('blur', function() {
+        addTypedTags($(this));
     });
 
     function updateTagsDisplay() {

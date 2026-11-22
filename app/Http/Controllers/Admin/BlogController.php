@@ -2,16 +2,16 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Models\Tag;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\BlogRequest;
 use App\Models\BlogPost;
 use App\Models\Category;
-use Illuminate\Http\Request;
+use App\Models\Tag;
 use App\Services\BlogService;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Auth;
-use App\Http\Requests\Admin\BlogRequest;
 use Yajra\DataTables\Facades\DataTables;
 
 class BlogController extends Controller
@@ -31,20 +31,21 @@ class BlogController extends Controller
     {
         if ($request->ajax()) {
             $query = BlogPost::with(['category', 'author', 'tagModels']);
-            
+
             return DataTables::of($query)
                 ->addColumn('status_badge', function ($post) {
                     $colors = [
                         'published' => 'success',
-                        'draft' => 'warning', 
+                        'draft' => 'warning',
                         'scheduled' => 'info',
-                        'archived' => 'secondary'
+                        'archived' => 'secondary',
                     ];
                     $color = $colors[$post->status] ?? 'primary';
-                    return '<span class="badge bg-' . $color . '">' . ucfirst($post->status) . '</span>';
+
+                    return '<span class="badge bg-'.$color.'">'.ucfirst($post->status).'</span>';
                 })
                 ->addColumn('featured_badge', function ($post) {
-                    return $post->is_featured 
+                    return $post->is_featured
                         ? '<span class="badge bg-info"><i class="bx bx-star"></i> Featured</span>'
                         : '';
                 })
@@ -55,7 +56,7 @@ class BlogController extends Controller
                     return $post->category ? $post->category->name : 'Uncategorized';
                 })
                 ->addColumn('reading_time', function ($post) {
-                    return $post->reading_time . ' min read';
+                    return $post->reading_time.' min read';
                 })
                 ->addColumn('actions', function ($post) {
                     return view('admin.blog-posts.partials.actions', compact('post'));
@@ -69,7 +70,7 @@ class BlogController extends Controller
                 ->rawColumns(['status_badge', 'featured_badge', 'actions'])
                 ->make(true);
         }
-        
+
         return view('admin.blog-posts.index');
     }
 
@@ -80,6 +81,7 @@ class BlogController extends Controller
     {
         $categories = Category::where('type', 'blog')->active()->get();
         $tags = Tag::orderBy('name')->get();
+
         return view('admin.blog-posts.create', compact('categories', 'tags'));
     }
 
@@ -91,6 +93,7 @@ class BlogController extends Controller
         $post = BlogPost::with(['category', 'tagModels', 'media'])->findOrFail($id);
         $categories = Category::where('type', 'blog')->active()->get();
         $tags = Tag::orderBy('name')->get();
+
         return view('admin.blog-posts.edit', compact('post', 'categories', 'tags'));
     }
 
@@ -106,7 +109,7 @@ class BlogController extends Controller
             if ($request->ajax()) {
                 return response()->json([
                     'success' => true,
-                    'data' => $post
+                    'data' => $post,
                 ]);
             }
 
@@ -115,7 +118,7 @@ class BlogController extends Controller
             if ($request->ajax()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Blog post not found'
+                    'message' => 'Blog post not found',
                 ], 404);
             }
 
@@ -131,7 +134,7 @@ class BlogController extends Controller
         try {
             $result = DB::transaction(function () use ($request) {
                 $data = $request->validated();
-                
+
                 // Handle checkboxes (they won't be in request if unchecked)
                 $data['is_featured'] = $request->has('is_featured');
                 $data['allow_comments'] = $request->has('allow_comments');
@@ -142,9 +145,8 @@ class BlogController extends Controller
                 // Handle featured image
                 $featuredImage = $request->file('featured_image');
 
-                // Handle tags
-                $tagsJson = $request->input('tags', '[]');
-                $tags = is_string($tagsJson) ? json_decode($tagsJson, true) : $tagsJson;
+                // Empty tags input arrives as null (ConvertEmptyStringsToNull)
+                $tags = json_decode($request->input('tags') ?? '[]', true) ?? [];
 
                 // Create blog post
                 $post = $this->blogService->createBlogPost(
@@ -160,7 +162,7 @@ class BlogController extends Controller
                 return response()->json([
                     'success' => true,
                     'data' => $result->load(['category', 'author', 'tagModels']),
-                    'message' => 'Blog post created successfully'
+                    'message' => 'Blog post created successfully',
                 ]);
             }
 
@@ -168,19 +170,19 @@ class BlogController extends Controller
                 ->route('blog-posts.show', $result->id)
                 ->with('success', 'Blog post created successfully');
         } catch (\Exception $e) {
-            Log::error('Failed to create blog post: ' . $e->getMessage());
-            
+            Log::error('Failed to create blog post: '.$e->getMessage());
+
             if ($request->ajax()) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Failed to create blog post',
-                    'error' => $e->getMessage()
+                    'error' => $e->getMessage(),
                 ], 422);
             }
 
             return back()
                 ->withInput()
-                ->with('error', 'Failed to create blog post: ' . $e->getMessage());
+                ->with('error', 'Failed to create blog post: '.$e->getMessage());
         }
     }
 
@@ -192,7 +194,7 @@ class BlogController extends Controller
         try {
             $result = DB::transaction(function () use ($request, $id) {
                 $data = $request->validated();
-                
+
                 // Handle checkboxes (they won't be in request if unchecked)
                 $data['is_featured'] = $request->has('is_featured');
                 $data['allow_comments'] = $request->has('allow_comments');
@@ -200,9 +202,8 @@ class BlogController extends Controller
                 // Handle featured image
                 $featuredImage = $request->file('featured_image');
 
-                // Handle tags
-                $tagsJson = $request->input('tags', '[]');
-                $tags = is_string($tagsJson) ? json_decode($tagsJson, true) : $tagsJson;
+                // Empty tags input arrives as null (ConvertEmptyStringsToNull)
+                $tags = json_decode($request->input('tags') ?? '[]', true) ?? [];
 
                 // Update blog post
                 $post = $this->blogService->updateBlogPost(
@@ -219,7 +220,7 @@ class BlogController extends Controller
                 return response()->json([
                     'success' => true,
                     'data' => $result->load(['category', 'author', 'tagModels']),
-                    'message' => 'Blog post updated successfully'
+                    'message' => 'Blog post updated successfully',
                 ]);
             }
 
@@ -227,19 +228,19 @@ class BlogController extends Controller
                 ->route('blog-posts.edit', $id)
                 ->with('success', 'Blog post updated successfully');
         } catch (\Exception $e) {
-            Log::error('Failed to update blog post: ' . $e->getMessage());
-            
+            Log::error('Failed to update blog post: '.$e->getMessage());
+
             if ($request->ajax()) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Failed to update blog post',
-                    'error' => $e->getMessage()
+                    'error' => $e->getMessage(),
                 ], 422);
             }
 
             return back()
                 ->withInput()
-                ->with('error', 'Failed to update blog post: ' . $e->getMessage());
+                ->with('error', 'Failed to update blog post: '.$e->getMessage());
         }
     }
 
@@ -251,7 +252,7 @@ class BlogController extends Controller
         try {
             // $blog_post is the ID from the route, not the model instance
             $postId = (int) $blog_post;
-            
+
             DB::transaction(function () use ($postId) {
                 $this->blogService->deleteBlogPost($postId);
             });
@@ -259,7 +260,7 @@ class BlogController extends Controller
             if ($request->ajax()) {
                 return response()->json([
                     'success' => true,
-                    'message' => 'Blog post deleted successfully'
+                    'message' => 'Blog post deleted successfully',
                 ]);
             }
 
@@ -267,18 +268,18 @@ class BlogController extends Controller
                 ->route('blog-posts.index')
                 ->with('success', 'Blog post deleted successfully');
         } catch (\Exception $e) {
-            Log::error('Failed to delete blog post: ' . $e->getMessage());
-            
+            Log::error('Failed to delete blog post: '.$e->getMessage());
+
             if ($request->ajax()) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Failed to delete blog post',
-                    'error' => $e->getMessage()
+                    'error' => $e->getMessage(),
                 ], 500);
             }
 
             return back()
-                ->with('error', 'Failed to delete blog post: ' . $e->getMessage());
+                ->with('error', 'Failed to delete blog post: '.$e->getMessage());
         }
     }
 
@@ -294,13 +295,13 @@ class BlogController extends Controller
             return response()->json([
                 'success' => true,
                 'data' => $post,
-                'message' => 'Blog post published successfully'
+                'message' => 'Blog post published successfully',
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to publish blog post',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -317,13 +318,13 @@ class BlogController extends Controller
             return response()->json([
                 'success' => true,
                 'data' => $post,
-                'message' => 'Blog post unpublished successfully'
+                'message' => 'Blog post unpublished successfully',
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to unpublish blog post',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -334,7 +335,7 @@ class BlogController extends Controller
     public function schedule(Request $request, $id)
     {
         $request->validate([
-            'scheduled_at' => 'required|date|after:now'
+            'scheduled_at' => 'required|date|after:now',
         ]);
 
         try {
@@ -343,13 +344,13 @@ class BlogController extends Controller
             return response()->json([
                 'success' => true,
                 'data' => $post,
-                'message' => 'Blog post scheduled successfully'
+                'message' => 'Blog post scheduled successfully',
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to schedule blog post',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -362,7 +363,7 @@ class BlogController extends Controller
         $request->validate([
             'action' => 'required|in:delete,publish,unpublish,archive',
             'ids' => 'required|array',
-            'ids.*' => 'exists:blog_posts,id'
+            'ids.*' => 'exists:blog_posts,id',
         ]);
 
         try {
@@ -380,19 +381,19 @@ class BlogController extends Controller
                     case 'publish':
                         BlogPost::whereIn('id', $ids)->update([
                             'status' => 'published',
-                            'published_at' => now()
+                            'published_at' => now(),
                         ]);
                         break;
 
                     case 'unpublish':
                         BlogPost::whereIn('id', $ids)->update([
-                            'status' => 'draft'
+                            'status' => 'draft',
                         ]);
                         break;
 
                     case 'archive':
                         BlogPost::whereIn('id', $ids)->update([
-                            'status' => 'archived'
+                            'status' => 'archived',
                         ]);
                         break;
                 }
@@ -400,13 +401,13 @@ class BlogController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Bulk action completed successfully'
+                'message' => 'Bulk action completed successfully',
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to perform bulk action',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -418,19 +419,19 @@ class BlogController extends Controller
     {
         try {
             $post = BlogPost::findOrFail($id);
-            $post->is_featured = !$post->is_featured;
+            $post->is_featured = ! $post->is_featured;
             $post->save();
 
             return response()->json([
                 'success' => true,
                 'data' => $post,
-                'message' => $post->is_featured ? 'Blog post featured' : 'Blog post unfeatured'
+                'message' => $post->is_featured ? 'Blog post featured' : 'Blog post unfeatured',
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to toggle featured status',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -452,18 +453,18 @@ class BlogController extends Controller
                 'recent_posts' => BlogPost::with(['category', 'author'])
                     ->latest()
                     ->limit(5)
-                    ->get()
+                    ->get(),
             ];
 
             return response()->json([
                 'success' => true,
-                'data' => $stats
+                'data' => $stats,
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to get statistics',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
