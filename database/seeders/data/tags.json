@@ -1,0 +1,222 @@
+[
+    {
+        "id": 1,
+        "name": "Laravel",
+        "slug": "laravel",
+        "description": null,
+        "color": null,
+        "usage_count": 0,
+        "created_at": "2026-11-21 05:29:48",
+        "updated_at": "2026-11-21 05:29:48"
+    },
+    {
+        "id": 2,
+        "name": "Php",
+        "slug": "php",
+        "description": null,
+        "color": null,
+        "usage_count": 0,
+        "created_at": "2026-11-21 05:29:49",
+        "updated_at": "2026-11-21 05:29:49"
+    },
+    {
+        "id": 3,
+        "name": "Tips",
+        "slug": "tips",
+        "description": null,
+        "color": null,
+        "usage_count": 0,
+        "created_at": "2026-11-21 05:29:49",
+        "updated_at": "2026-11-21 05:29:49"
+    },
+    {
+        "id": 4,
+        "name": "Pwa",
+        "slug": "pwa",
+        "description": null,
+        "color": null,
+        "usage_count": 0,
+        "created_at": "2026-11-21 05:29:49",
+        "updated_at": "2026-11-21 05:29:49"
+    },
+    {
+        "id": 5,
+        "name": "Javascript",
+        "slug": "javascript",
+        "description": null,
+        "color": null,
+        "usage_count": 0,
+        "created_at": "2026-11-21 05:29:49",
+        "updated_at": "2026-11-21 05:29:49"
+    },
+    {
+        "id": 6,
+        "name": "Offline",
+        "slug": "offline",
+        "description": null,
+        "color": null,
+        "usage_count": 0,
+        "created_at": "2026-11-21 05:29:49",
+        "updated_at": "2026-11-21 05:29:49"
+    },
+    {
+        "id": 7,
+        "name": "Flutter",
+        "slug": "flutter",
+        "description": null,
+        "color": null,
+        "usage_count": 0,
+        "created_at": "2026-11-21 05:29:49",
+        "updated_at": "2026-11-21 05:29:49"
+    },
+    {
+        "id": 8,
+        "name": "React Native",
+        "slug": "react-native",
+        "description": null,
+        "color": null,
+        "usage_count": 0,
+        "created_at": "2026-11-21 05:29:49",
+        "updated_at": "2026-11-21 05:29:49"
+    },
+    {
+        "id": 9,
+        "name": "Mobile",
+        "slug": "mobile",
+        "description": null,
+        "color": null,
+        "usage_count": 0,
+        "created_at": "2026-11-21 05:29:49",
+        "updated_at": "2026-11-21 05:29:49"
+    },
+    {
+        "id": 10,
+        "name": "Api",
+        "slug": "api",
+        "description": null,
+        "color": null,
+        "usage_count": 0,
+        "created_at": "2026-11-21 05:29:50",
+        "updated_at": "2026-11-21 05:29:50"
+    },
+    {
+        "id": 11,
+        "name": "Rest",
+        "slug": "rest",
+        "description": null,
+        "color": null,
+        "usage_count": 0,
+        "created_at": "2026-11-21 05:29:50",
+        "updated_at": "2026-11-21 05:29:50"
+    },
+    {
+        "id": 12,
+        "name": "Backend",
+        "slug": "backend",
+        "description": null,
+        "color": null,
+        "usage_count": 0,
+        "created_at": "2026-11-21 05:29:50",
+        "updated_at": "2026-11-21 05:29:50"
+    },
+    {
+        "id": 13,
+        "name": "Tailwind",
+        "slug": "tailwind",
+        "description": null,
+        "color": null,
+        "usage_count": 0,
+        "created_at": "2026-11-21 05:29:50",
+        "updated_at": "2026-11-21 05:29:50"
+    },
+    {
+        "id": 14,
+        "name": "Css",
+        "slug": "css",
+        "description": null,
+        "color": null,
+        "usage_count": 0,
+        "created_at": "2026-11-21 05:29:50",
+        "updated_at": "2026-11-21 05:29:50"
+    },
+    {
+        "id": 15,
+        "name": "Frontend",
+        "slug": "frontend",
+        "description": null,
+        "color": null,
+        "usage_count": 0,
+        "created_at": "2026-11-21 05:29:50",
+        "updated_at": "2026-11-21 05:29:50"
+    },
+    {
+        "id": 16,
+        "name": "Docker",
+        "slug": "docker",
+        "description": null,
+        "color": null,
+        "usage_count": 0,
+        "created_at": "2026-11-21 05:29:50",
+        "updated_at": "2026-11-21 05:29:50"
+    },
+    {
+        "id": 17,
+        "name": "Devops",
+        "slug": "devops",
+        "description": null,
+        "color": null,
+        "usage_count": 0,
+        "created_at": "2026-11-21 05:29:50",
+        "updated_at": "2026-11-21 05:29:50"
+    },
+    {
+        "id": 18,
+        "name": "Mysql",
+        "slug": "mysql",
+        "description": null,
+        "color": null,
+        "usage_count": 0,
+        "created_at": "2026-11-21 05:29:50",
+        "updated_at": "2026-11-21 05:29:50"
+    },
+    {
+        "id": 19,
+        "name": "Database",
+        "slug": "database",
+        "description": null,
+        "color": null,
+        "usage_count": 0,
+        "created_at": "2026-11-21 05:29:51",
+        "updated_at": "2026-11-21 05:29:51"
+    },
+    {
+        "id": 20,
+        "name": "Performance",
+        "slug": "performance",
+        "description": null,
+        "color": null,
+        "usage_count": 0,
+        "created_at": "2026-11-21 05:29:51",
+        "updated_at": "2026-11-21 05:29:51"
+    },
+    {
+        "id": 21,
+        "name": "Career",
+        "slug": "career",
+        "description": null,
+        "color": null,
+        "usage_count": 0,
+        "created_at": "2026-11-21 05:29:51",
+        "updated_at": "2026-11-21 05:29:51"
+    },
+    {
+        "id": 22,
+        "name": "Growth",
+        "slug": "growth",
+        "description": null,
+        "color": null,
+        "usage_count": 0,
+        "created_at": "2026-11-21 05:29:51",
+        "updated_at": "2026-11-21 05:29:51"
+    }
+]

@@ -1,0 +1,25 @@
+[
+    {
+        "id": 1,
+        "full_name": "Mohammad Ali Khan",
+        "title": "Senior Software Engineer",
+        "subtitle": null,
+        "bio": "Hi, this is Mohammad Ali khan. I am a Computer Science graduate. My specialization area is web & software development, Digital marketing (On/Off-page SEO, social media marketing, email marketing). I assure you that I'll provide the best service in a time and efficient way. So, consider me for your job and I will give you my best. Thanks.",
+        "short_bio": "Hi, this is Mohammad Ali khan. I am a Computer Science graduate. My specialization area is web & software development, Digital marketing (On/Off-page SEO, social media marketing, email marketing). I assure you that I'll provide the best service in a time and efficient way. So, consider me for your job and I will give you my best. Thanks.",
+        "email": "xvirus.bd@gmail.com",
+        "phone": "+8801763602525",
+        "location": "Bangladesh",
+        "avatar_url": "uploads/profile/XU8DZXx8prO4fWbGcdBxgfgKWjlMtCx4I2iAh49k.jpg",
+        "years_of_experience": 8,
+        "total_projects": 260,
+        "happy_clients": 700,
+        "hero_image_url": "uploads/profile/nBte6FcI7qoixc46ZDEha2nKj4up1MjEbSF95PQ3.jpg",
+        "hero_cutout_url": "uploads/profile/MRnhxj7rxKcfnyojkeXkjmudMIRiXZZjatlQHpNB.png",
+        "resume_url": null,
+        "social_links": "{\"github\":\"https:\\/\\/github.com\\/makgr\",\"linkedin\":\"https:\\/\\/www.linkedin.com\\/in\\/xvirus\",\"twitter\":\"https:\\/\\/x.com\\/xvirusbd\",\"facebook\":\"https:\\/\\/www.facebook.com\\/makhangr\"}",
+        "meta_tags": null,
+        "is_active": 1,
+        "created_at": "2025-08-21 16:10:02",
+        "updated_at": "2026-11-21 19:56:02"
+    }
+]
