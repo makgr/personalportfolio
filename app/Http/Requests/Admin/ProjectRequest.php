@@ -15,6 +15,18 @@ class ProjectRequest extends FormRequest
         return true;
     }
 
+    /**
+     * Drop blank feature inputs the form always submits.
+     */
+    protected function prepareForValidation(): void
+    {
+        if (is_array($this->input('features'))) {
+            $this->merge([
+                'features' => array_values(array_filter($this->input('features'), 'filled')),
+            ]);
+        }
+    }
+
     public function rules()
     {
         $projectId = $this->route('project');
@@ -25,7 +37,7 @@ class ProjectRequest extends FormRequest
                 'nullable',
                 'string',
                 'max:255',
-                Rule::unique('projects')->ignore($projectId)
+                Rule::unique('projects')->ignore($projectId),
             ],
             'short_description' => ['required', 'string', 'max:500'],
             'description' => ['required', 'string'],
